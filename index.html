@@ -1,0 +1,4124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bangkok Christ Church — Broadcast CG &amp; OBS Frames</title>
+
+  <!-- Tailwind CSS for clean, responsive Studio & OBS Dock UI -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Broadcast Fonts (Inter & Montserrat with offline system fallbacks) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+
+    /* =========================================================================
+       1. BASE & OBS TRANSPARENT OVERLAY MODE
+       ========================================================================= */
+    :root {
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Transparent background for OBS Browser Sources (?view=overlay or ?view=frame) */
+    html.obs-overlay-mode,
+    html.obs-overlay-mode body {
+      background: transparent !important;
+      background-color: transparent !important;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* =========================================================================
+       2. 1920x1080 BROADCAST STAGE & THEMES (CEF-Safe RGB)
+       ========================================================================= */
+    .broadcast-stage {
+      --primary-rgb: 20, 18, 19;
+      --surface-rgb: 30, 27, 29;
+      --accent-rgb: 185, 28, 28;
+      --text-rgb: 250, 250, 250;
+      --muted-rgb: 208, 208, 214;
+      --bg-opacity: 0.94;
+      --safe-x: 6.5%;
+      --safe-y: 11.5%;
+      --lt-scale: 1;
+      --logo-size: 54px;
+
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      pointer-events: none;
+      transform-origin: top left;
+    }
+
+    .broadcast-stage[data-theme="bcc-crimson"] {
+      --primary-rgb: 20, 18, 19;
+      --surface-rgb: 31, 27, 29;
+      --accent-rgb: 185, 28, 28;
+      --text-rgb: 250, 250, 250;
+      --muted-rgb: 212, 212, 216;
+    }
+    .broadcast-stage[data-theme="bcc-light"] {
+      --primary-rgb: 248, 247, 244;
+      --surface-rgb: 255, 255, 255;
+      --accent-rgb: 153, 27, 27;
+      --text-rgb: 17, 17, 19;
+      --muted-rgb: 82, 82, 91;
+    }
+    .broadcast-stage[data-theme="classic-gold"] {
+      --primary-rgb: 17, 17, 19;
+      --surface-rgb: 27, 26, 29;
+      --accent-rgb: 200, 169, 107;
+      --text-rgb: 245, 241, 232;
+      --muted-rgb: 168, 164, 156;
+    }
+    .broadcast-stage[data-theme="navy"] {
+      --primary-rgb: 11, 19, 32;
+      --surface-rgb: 19, 30, 48;
+      --accent-rgb: 217, 119, 6;
+      --text-rgb: 248, 250, 252;
+      --muted-rgb: 148, 163, 184;
+    }
+
+    /* =========================================================================
+       3. ON-AIR LIVE BUG & BADGES
+       ========================================================================= */
+    .cg-live-bug {
+      position: absolute;
+      top: 5.5%;
+      left: var(--safe-x);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: rgba(var(--primary-rgb), 0.92);
+      border-left: 3px solid rgb(var(--accent-rgb));
+      border-radius: 4px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      transform: translate3d(0, -8px, 0);
+      transition: opacity 350ms var(--ease-out-expo), transform 350ms var(--ease-out-expo);
+      z-index: 30;
+    }
+    .cg-live-bug.is-visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+    .cg-live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.75);
+      animation: livePulse 2.4s infinite ease-in-out;
+    }
+    .cg-live-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      color: rgb(var(--text-rgb));
+    }
+    .cg-live-church {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: rgb(var(--muted-rgb));
+      padding-left: 10px;
+      border-left: 1px solid rgba(var(--text-rgb), 0.22);
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    /* =========================================================================
+       4. LOWER THIRD STYLES & DYNAMIC ANIMATION STYLES
+       ========================================================================= */
+    .cg-lt-anchor {
+      position: absolute;
+      left: var(--safe-x);
+      bottom: var(--safe-y);
+      transform: scale(var(--lt-scale));
+      transform-origin: bottom left;
+      z-index: 20;
+      transition: bottom 360ms var(--ease-out-expo), left 360ms var(--ease-out-expo);
+    }
+    .broadcast-stage.has-marquee .cg-lt-anchor {
+      bottom: calc(var(--safe-y) + 3.8%);
+    }
+
+    .cg-lt {
+      position: relative;
+      display: inline-flex;
+      align-items: stretch;
+      min-width: 480px;
+      max-width: 1200px;
+    }
+
+    .cg-spine {
+      width: 5px;
+      background: rgb(var(--accent-rgb));
+      border-radius: 2px;
+      transform: scaleY(0);
+      transform-origin: bottom center;
+      will-change: transform;
+      z-index: 2;
+    }
+
+    .cg-mask {
+      overflow: hidden;
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+      box-shadow: 0 22px 46px -10px rgba(0, 0, 0, 0.52);
+    }
+
+    .cg-surface {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      padding: 20px 38px 22px 26px;
+      background: rgba(var(--primary-rgb), var(--bg-opacity));
+      border-top: 1px solid rgba(var(--text-rgb), 0.12);
+      border-right: 1px solid rgba(var(--text-rgb), 0.10);
+      border-bottom: 1px solid rgba(var(--text-rgb), 0.12);
+      transform: translate3d(-102%, 0, 0);
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .cg-logo-slot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-right: 20px;
+      border-right: 1px solid rgba(var(--text-rgb), 0.16);
+      flex-shrink: 0;
+      opacity: 0;
+      transform: translate3d(-10px, 0, 0);
+      will-change: transform, opacity;
+    }
+    .cg-logo-slot.hidden-slot { display: none; }
+
+    .cg-logo-img {
+      width: var(--logo-size);
+      height: var(--logo-size);
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .cg-default-logo {
+      width: var(--logo-size);
+      height: var(--logo-size);
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 3px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cg-stack {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .cg-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+      opacity: 0;
+      transform: translate3d(0, 8px, 0);
+      will-change: transform, opacity;
+    }
+
+    .cg-cat {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgb(var(--accent-rgb));
+    }
+
+    .cg-meta-line {
+      width: 16px;
+      height: 1px;
+      background: rgba(var(--accent-rgb), 0.60);
+    }
+
+    .cg-church {
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgb(var(--muted-rgb));
+    }
+
+    .cg-primary {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: rgb(var(--text-rgb));
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transform: translate3d(-14px, 0, 0);
+      will-change: transform, opacity;
+      margin: 0;
+    }
+
+    .cg-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+      opacity: 0;
+      transform: translate3d(0, 6px, 0);
+      will-change: transform, opacity;
+    }
+
+    .cg-secondary {
+      font-size: 17px;
+      font-weight: 400;
+      color: rgb(var(--muted-rgb));
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .cg-badge {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgb(var(--text-rgb));
+      background: rgba(var(--accent-rgb), 0.24);
+      border: 1px solid rgba(var(--accent-rgb), 0.50);
+      padding: 2px 9px;
+      border-radius: 4px;
+      display: none;
+    }
+    .cg-badge.has-badge { display: inline-block; }
+
+    /* Mode-Specific Typography */
+    .cg-lt.mode-scripture .cg-primary {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 26px;
+      line-height: 1.38;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .cg-lt.mode-scripture .cg-secondary {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgb(var(--accent-rgb));
+    }
+    .cg-lt.mode-sermon .cg-primary {
+      font-size: 34px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* --- ANIMATION STYLES --- */
+
+    /* Style 1: Modern Slide (Default) */
+    .cg-lt.style-modern-slide.is-active .cg-spine     { transform: scaleY(1); transition: transform 320ms var(--ease-out-expo) 0ms; }
+    .cg-lt.style-modern-slide.is-active .cg-surface   { transform: translate3d(0,0,0); opacity: 1; transition: transform 460ms var(--ease-out-expo) 80ms, opacity 340ms ease-out 80ms; }
+    .cg-lt.style-modern-slide.is-active .cg-logo-slot { transform: translate3d(0,0,0); opacity: 1; transition: transform 400ms var(--ease-out-expo) 180ms, opacity 340ms ease-out 180ms; }
+    .cg-lt.style-modern-slide.is-active .cg-meta      { transform: translate3d(0,0,0); opacity: 1; transition: transform 380ms var(--ease-out-expo) 200ms, opacity 320ms ease-out 200ms; }
+    .cg-lt.style-modern-slide.is-active .cg-primary   { transform: translate3d(0,0,0); opacity: 1; transition: transform 420ms var(--ease-out-expo) 260ms, opacity 360ms ease-out 260ms; }
+    .cg-lt.style-modern-slide.is-active .cg-sub-row   { transform: translate3d(0,0,0); opacity: 1; transition: transform 400ms var(--ease-out-expo) 340ms, opacity 360ms ease-out 340ms; }
+
+    .cg-lt.style-modern-slide.is-exiting .cg-sub-row   { transform: translate3d(0,5px,0); opacity: 0; transition: transform 180ms var(--ease-in-out) 0ms, opacity 150ms ease-in 0ms; }
+    .cg-lt.style-modern-slide.is-exiting .cg-primary   { transform: translate3d(-12px,0,0); opacity: 0; transition: transform 220ms var(--ease-in-out) 60ms, opacity 180ms ease-in 60ms; }
+    .cg-lt.style-modern-slide.is-exiting .cg-meta,
+    .cg-lt.style-modern-slide.is-exiting .cg-logo-slot { transform: translate3d(-8px,0,0); opacity: 0; transition: transform 200ms var(--ease-in-out) 80ms, opacity 160ms ease-in 80ms; }
+    .cg-lt.style-modern-slide.is-exiting .cg-surface   { transform: translate3d(-103%,0,0); opacity: 0; transition: transform 340ms var(--ease-in-out) 140ms, opacity 280ms ease-in 160ms; }
+    .cg-lt.style-modern-slide.is-exiting .cg-spine     { transform: scaleY(0); transition: transform 240ms var(--ease-in-out) 240ms; }
+
+    /* Style 2: Minimal Fade */
+    .cg-lt.style-minimal-fade .cg-surface { transform: translate3d(0, 10px, 0); }
+    .cg-lt.style-minimal-fade.is-active .cg-spine { transform: scaleY(1); transition: transform 280ms ease-out; }
+    .cg-lt.style-minimal-fade.is-active .cg-surface { transform: translate3d(0,0,0); opacity: 1; transition: opacity 350ms ease-out, transform 350ms ease-out; }
+    .cg-lt.style-minimal-fade.is-active .cg-logo-slot,
+    .cg-lt.style-minimal-fade.is-active .cg-meta,
+    .cg-lt.style-minimal-fade.is-active .cg-primary,
+    .cg-lt.style-minimal-fade.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 300ms ease-out 100ms; }
+
+    .cg-lt.style-minimal-fade.is-exiting .cg-surface,
+    .cg-lt.style-minimal-fade.is-exiting .cg-spine { opacity: 0; transform: translate3d(0, 8px, 0); transition: opacity 260ms ease-in, transform 260ms ease-in; }
+
+    /* Style 3: Elegant Reveal (Curtain drop) */
+    .cg-lt.style-elegant-reveal .cg-surface { transform: translate3d(0, -100%, 0); }
+    .cg-lt.style-elegant-reveal.is-active .cg-spine { transform: scaleY(1); transition: transform 300ms ease-out; }
+    .cg-lt.style-elegant-reveal.is-active .cg-surface { transform: translate3d(0,0,0); opacity: 1; transition: transform 420ms var(--ease-out-expo) 60ms, opacity 300ms ease 60ms; }
+    .cg-lt.style-elegant-reveal.is-active .cg-logo-slot,
+    .cg-lt.style-elegant-reveal.is-active .cg-meta,
+    .cg-lt.style-elegant-reveal.is-active .cg-primary,
+    .cg-lt.style-elegant-reveal.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 350ms ease 150ms, transform 350ms ease 150ms; }
+
+    .cg-lt.style-elegant-reveal.is-exiting .cg-surface { transform: translate3d(0, -100%, 0); opacity: 0; transition: transform 280ms ease-in, opacity 250ms ease-in; }
+    .cg-lt.style-elegant-reveal.is-exiting .cg-spine { transform: scaleY(0); transition: transform 220ms ease-in 100ms; }
+
+    /* Style 4: Classic Bar (Immediate clean expand) */
+    .cg-lt.style-classic-bar .cg-surface { transform: scaleX(0.01); transform-origin: left center; }
+    .cg-lt.style-classic-bar.is-active .cg-spine { transform: scaleY(1); transition: transform 200ms ease-out; }
+    .cg-lt.style-classic-bar.is-active .cg-surface { transform: scaleX(1); opacity: 1; transition: transform 320ms ease-out 60ms, opacity 250ms ease 60ms; }
+    .cg-lt.style-classic-bar.is-active .cg-logo-slot,
+    .cg-lt.style-classic-bar.is-active .cg-meta,
+    .cg-lt.style-classic-bar.is-active .cg-primary,
+    .cg-lt.style-classic-bar.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 280ms ease 160ms; }
+
+    .cg-lt.style-classic-bar.is-exiting .cg-surface { transform: scaleX(0.01); opacity: 0; transition: transform 240ms ease-in, opacity 200ms ease-in; }
+    .cg-lt.style-classic-bar.is-exiting .cg-spine { transform: scaleY(0); transition: transform 180ms ease-in 120ms; }
+
+    /* =========================================================================
+       5. SCROLLING MARQUEE / TICKER
+       ========================================================================= */
+    .cg-marquee {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 48px;
+      background: rgba(var(--primary-rgb), 0.96);
+      border-top: 2px solid rgb(var(--accent-rgb));
+      display: flex;
+      align-items: center;
+      z-index: 25;
+      transform: translate3d(0, 100%, 0);
+      opacity: 0;
+      transition: transform 380ms var(--ease-out-expo), opacity 300ms ease;
+    }
+    .cg-marquee.is-visible {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+    .cg-marquee-tag {
+      height: 100%;
+      padding: 0 24px;
+      background: rgb(var(--accent-rgb));
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-shrink: 0;
+      box-shadow: 4px 0 16px rgba(0,0,0,0.3);
+      z-index: 2;
+    }
+    .cg-marquee-tag-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ffffff;
+      animation: livePulse 2.4s infinite ease-in-out;
+    }
+    .cg-marquee-viewport {
+      flex: 1;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .cg-marquee-track {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      will-change: transform;
+      animation: marqueeScroll var(--marquee-duration, 32s) linear infinite;
+    }
+    .cg-marquee.is-paused .cg-marquee-track,
+    .cg-marquee:not(.is-visible) .cg-marquee-track {
+      animation-play-state: paused;
+    }
+    .cg-marquee-item {
+      display: inline-flex;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: rgb(var(--text-rgb));
+      padding-right: 36px;
+    }
+    .cg-marquee-sep {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgb(var(--accent-rgb));
+      margin-right: 36px;
+      flex-shrink: 0;
+    }
+    @keyframes marqueeScroll {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+
+    /* =========================================================================
+       6. READY-MADE OBS FRAMES (?view=frame&frame=<id>)
+       ========================================================================= */
+    .fr-layer {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      pointer-events: none;
+    }
+
+    .fr-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(var(--text-rgb), 0.12);
+    }
+    .fr-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .fr-brand-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgb(var(--text-rgb));
+    }
+    .fr-brand-sub {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgb(var(--accent-rgb));
+      margin-top: 2px;
+    }
+
+    .fr-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: 6px;
+      background: rgba(var(--surface-rgb), 0.94);
+      border: 1px solid rgba(var(--text-rgb), 0.14);
+      border-left: 4px solid rgb(var(--accent-rgb));
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgb(var(--text-rgb));
+    }
+
+    .fr-card {
+      background: rgba(var(--surface-rgb), 0.94);
+      border: 1px solid rgba(var(--text-rgb), 0.12);
+      border-radius: 14px;
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.32);
+      overflow: hidden;
+    }
+    .fr-card-top-bar {
+      height: 5px;
+      width: 100%;
+      background: rgb(var(--accent-rgb));
+    }
+    .fr-section-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgb(var(--accent-rgb));
+    }
+    .fr-title-lg {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.22;
+      color: rgb(var(--text-rgb));
+    }
+    .fr-sub-md {
+      font-size: 18px;
+      font-weight: 500;
+      color: rgb(var(--muted-rgb));
+      line-height: 1.4;
+    }
+    .fr-window-tag {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      background: rgba(var(--primary-rgb), 0.88);
+      border: 1px solid rgba(var(--text-rgb), 0.16);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgb(var(--text-rgb));
+    }
+    .fr-announce-item {
+      padding: 16px 20px;
+      border-radius: 8px;
+      background: rgba(var(--primary-rgb), 0.58);
+      border: 1px solid rgba(var(--text-rgb), 0.09);
+      border-left: 4px solid rgb(var(--accent-rgb));
+    }
+    .fr-verse-text {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: italic;
+      color: rgb(var(--text-rgb));
+      line-height: 1.48;
+    }
+    .fr-countdown-digits {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 96px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      color: rgb(var(--text-rgb));
+      line-height: 1;
+    }
+
+    /* Preview Stage Backdrops */
+    .bg-stage {
+      background:
+        radial-gradient(circle at 70% 25%, rgba(200, 169, 107, 0.22), transparent 45%),
+        radial-gradient(circle at 25% 45%, rgba(59, 130, 246, 0.18), transparent 55%),
+        linear-gradient(180deg, #12141c 0%, #1c1917 55%, #0c0b0a 100%);
+    }
+    .bg-bright {
+      background: linear-gradient(135deg, #e8e4db 0%, #d4cdc1 55%, #bcb4a8 100%);
+    }
+    .bg-checker {
+      background-color: #141416;
+      background-image:
+        linear-gradient(45deg, #202024 25%, transparent 25%),
+        linear-gradient(-45deg, #202024 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #202024 75%),
+        linear-gradient(-45deg, transparent 75%, #202024 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+    }
+
+    /* =========================================================================
+       7. STREAM DECK & OBS DECK VIEW (?view=deck)
+       ========================================================================= */
+    .deck-container {
+      width: 100vw;
+      min-height: 100vh;
+      background: #09090b;
+      color: #fafafa;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .deck-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #27272a;
+    }
+
+    .deck-section-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+
+    .deck-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .deck-btn {
+      min-height: 86px;
+      padding: 12px 10px;
+      border-radius: 12px;
+      border: 1px solid #3f3f46;
+      background: #18181b;
+      color: #f4f4f5;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 150ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .deck-btn:active {
+      transform: scale(0.96);
+    }
+    .deck-btn.action-primary {
+      background: linear-gradient(135deg, #15803d, #166534);
+      border-color: #22c55e;
+      color: #ffffff;
+    }
+    .deck-btn.action-danger {
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+    .deck-btn.action-warning {
+      background: linear-gradient(135deg, #b45309, #92400e);
+      border-color: #f59e0b;
+      color: #ffffff;
+    }
+    .deck-btn.action-frame {
+      background: linear-gradient(135deg, #1e3a8a, #1e40af);
+      border-color: #3b82f6;
+      color: #ffffff;
+    }
+    .deck-btn.is-active {
+      box-shadow: 0 0 0 3px #ef4444, 0 0 16px rgba(239, 68, 68, 0.8);
+      background: #7f1d1d !important;
+      border-color: #ef4444 !important;
+    }
+
+    /* =========================================================================
+       8. CUE FEED DOCK VIEW (?view=feed)
+       ========================================================================= */
+    .feed-container {
+      width: 100vw;
+      min-height: 100vh;
+      background: #09090b;
+      color: #f4f4f5;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .feed-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      transition: all 180ms ease;
+    }
+    .feed-item.is-on-air {
+      border-color: #ef4444;
+      background: rgba(127, 29, 29, 0.35);
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.25);
+    }
+    .feed-item.is-preview {
+      border-color: #3b82f6;
+      background: rgba(30, 58, 138, 0.3);
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+  </style>
+</head>
+<body class="bg-zinc-950 text-slate-100 min-h-screen antialiased selection:bg-red-700 selection:text-white">
+
+  <!-- Standalone OBS Overlay / Frame Mount (?view=overlay or ?view=frame&frame=...) -->
+  <div id="obs-mount" class="hidden w-screen h-screen overflow-hidden relative"></div>
+
+  <!-- Stream Deck Dedicated View (?view=deck) -->
+  <div id="deck-view" class="hidden deck-container">
+    <div class="deck-header">
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-red-600 animate-pulse"></span>
+        <span class="font-bold text-sm tracking-wide uppercase font-['Montserrat']">BCC Deck Control</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="clearAllGraphics()" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider shadow">
+          CLEAR ALL
+        </button>
+        <button onclick="triggerHide()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-red-300 font-bold text-xs uppercase tracking-wider">
+          Hide LT
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Global Actions -->
+    <div>
+      <div class="deck-section-title">Quick Actions</div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <button onclick="triggerShow()" class="deck-btn action-primary">
+          <span class="text-xs font-bold uppercase">Show Active LT</span>
+        </button>
+        <button onclick="triggerHide()" class="deck-btn action-danger">
+          <span class="text-xs font-bold uppercase">Hide Active LT</span>
+        </button>
+        <button onclick="toggleTickerPause()" class="deck-btn action-warning">
+          <span class="text-xs font-bold uppercase">Pause/Resume Ticker</span>
+        </button>
+        <button onclick="clearAllGraphics()" class="deck-btn action-danger">
+          <span class="text-xs font-bold uppercase">EMERGENCY CLEAR</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- One-Click Lower Thirds -->
+    <div>
+      <div class="deck-section-title">One-Click Lower Thirds</div>
+      <div id="deck-grid-cues" class="deck-grid"></div>
+    </div>
+
+    <!-- One-Click Marquee Presets -->
+    <div>
+      <div class="deck-section-title">Marquee / Ticker Presets</div>
+      <div id="deck-grid-marquee" class="deck-grid"></div>
+    </div>
+
+    <!-- One-Click OBS Frame Layouts -->
+    <div>
+      <div class="deck-section-title">OBS Frame Layouts</div>
+      <div id="deck-grid-frames" class="deck-grid"></div>
+    </div>
+  </div>
+
+  <!-- Feed Dock Dedicated View (?view=feed) -->
+  <div id="feed-view" class="hidden feed-container">
+    <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-xs tracking-wider uppercase text-amber-400 font-['Montserrat']">Broadcast Rundown</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button onclick="feedPrev()" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200">◀ Prev</button>
+        <button onclick="feedNext()" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200">Next ▶</button>
+        <button onclick="triggerHide()" class="px-2.5 py-1 rounded bg-red-700 hover:bg-red-600 text-xs font-bold text-white">Hide</button>
+      </div>
+    </div>
+    <div id="feed-cue-list" class="space-y-2"></div>
+  </div>
+
+  <!-- Studio / OBS Control Dock App (Default & ?view=control) -->
+  <div id="studio-app" class="flex flex-col min-h-screen">
+
+    <!-- Top Header -->
+    <header class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-zinc-900 border-b border-zinc-800">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-white p-0.5 flex items-center justify-center shrink-0 shadow-sm" aria-hidden="true">
+          <svg viewBox="0 0 120 120" width="24" height="24" fill="none">
+            <rect x="52" y="16" width="16" height="88" rx="4" fill="#9E1B1E" stroke="#111" stroke-width="3"/>
+            <rect x="22" y="38" width="76" height="16" rx="4" fill="#9E1B1E" stroke="#111" stroke-width="3"/>
+            <path d="M42 46 C47 39, 54 41, 56 49 C58 36, 68 27, 74 25 C71 35, 72 42, 79 34 C75 45, 73 53, 68 58 C73 61, 74 66, 71 69 C63 63, 53 60, 49 52 L42 46 Z" fill="#FFFFFF" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="font-bold text-xs sm:text-sm tracking-wide uppercase font-['Montserrat']">
+            Bangkok Christ Church <span class="text-amber-400 font-semibold">Broadcast CG</span>
+          </div>
+          <div class="text-[11px] text-zinc-400">Production Lower-Thirds, Tickers, 12 Frames &amp; Stream Deck</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- On-Air Tally Pill -->
+        <div id="tally-pill" class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-bold tracking-wider text-zinc-400">
+          <span id="tally-dot" class="w-2 h-2 rounded-full bg-zinc-600"></span>
+          <span id="tally-text">STANDBY</span>
+          <span id="tally-timer" class="text-red-300 font-mono"></span>
+        </div>
+
+        <button id="btn-toggle-dock" onclick="toggleDockLayout()" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold text-zinc-200 transition">
+          Dock View
+        </button>
+        <button onclick="testCurrentSourceFullscreen()" class="px-2.5 py-1.5 rounded-lg bg-red-700 hover:bg-red-600 border border-red-600 text-xs font-semibold text-white transition shadow-sm">
+          Test Fullscreen
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main id="workspace" class="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_460px] min-h-0">
+
+      <!-- Left / Top: Live 16:9 Program Preview -->
+      <section id="monitor-col" class="bg-black/80 p-3 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col gap-2.5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span id="monitor-title" class="text-[11px] font-bold tracking-widest uppercase text-red-400">Preview: Lower Third Overlay</span>
+            <button id="btn-switch-preview" onclick="togglePreviewTarget()" class="px-2 py-0.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-[10.5px] font-semibold text-amber-300 transition">
+              Switch to OBS Frames
+            </button>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="setBackdrop('bg-stage')" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-zinc-300">Stage</button>
+            <button onclick="setBackdrop('bg-bright')" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-zinc-300">Bright</button>
+            <button onclick="setBackdrop('bg-checker')" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-emerald-300" title="Verify true transparent cutouts">Alpha Check</button>
+            <button onclick="toggleSafeGuide()" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-amber-300">Safe Area</button>
+          </div>
+        </div>
+
+        <!-- 16:9 Auto-Scaled Monitor Shell -->
+        <div id="stage-wrap" class="w-full aspect-video max-h-[460px] bg-black border border-zinc-800 rounded-xl overflow-hidden flex items-center justify-center relative">
+          <div id="stage-shell" class="relative w-[1920px] h-[1080px] shrink-0 overflow-hidden bg-stage" style="transform-origin: center center;">
+
+            <!-- Preview-Only Mock Cutout Guides -->
+            <div id="preview-mock-layer" class="hidden absolute inset-0 pointer-events-none"></div>
+
+            <!-- Broadcast Safe Guide -->
+            <div id="safe-guide" class="hidden absolute inset-[6.5%] border-2 border-dashed border-amber-400/50 pointer-events-none z-40"></div>
+
+            <!-- SOURCE A: LOWER-THIRD & TICKER OVERLAY (?view=overlay) -->
+            <div id="cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
+              <!-- Top-Left LIVE Indicator -->
+              <div id="cg-live-bug" class="cg-live-bug is-visible">
+                <span class="cg-live-dot"></span>
+                <span class="cg-live-label">LIVE</span>
+                <span id="cg-live-church" class="cg-live-church">BANGKOK CHRIST CHURCH</span>
+              </div>
+
+              <!-- Lower Third Graphic -->
+              <div class="cg-lt-anchor">
+                <div id="cg-lt" class="cg-lt mode-speaker style-modern-slide">
+                  <div class="cg-spine"></div>
+                  <div class="cg-mask">
+                    <div class="cg-surface">
+                      <!-- Church Logo Slot -->
+                      <div id="cg-logo-slot" class="cg-logo-slot">
+                        <img id="cg-logo-img" class="cg-logo-img hidden" src="" alt="Church Logo" />
+                        <div id="cg-default-logo" class="cg-default-logo">
+                          <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
+                            <defs>
+                              <path id="bcc-arch" d="M 28,96 A 74,74 0 0,1 172,96" />
+                            </defs>
+                            <text fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="800" letter-spacing="1.1">
+                              <textPath href="#bcc-arch" startOffset="50%" text-anchor="middle">BANGKOK CHRIST CHURCH</textPath>
+                            </text>
+                            <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                            <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                            <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
+                            <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
+                            <path d="M74 80 C81 72, 89 74, 92 84 C95 66, 108 55, 117 52 C112 65, 114 74, 124 63 C119 77, 116 88, 109 95 C115 99, 116 105, 112 109 C101 102, 87 98, 82 87 L74 80 Z" fill="#fff" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
+                            <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
+                          </svg>
+                        </div>
+                      </div>
+
+                      <!-- Text Stack -->
+                      <div class="cg-stack">
+                        <div class="cg-meta">
+                          <span id="cg-cat" class="cg-cat">SPEAKER</span>
+                          <span id="cg-meta-line" class="cg-meta-line"></span>
+                          <span id="cg-church" class="cg-church">BANGKOK CHRIST CHURCH</span>
+                        </div>
+                        <h1 id="cg-primary" class="cg-primary">Pastor John Smith</h1>
+                        <div class="cg-sub-row">
+                          <p id="cg-secondary" class="cg-secondary">Senior Pastor</p>
+                          <span id="cg-badge" class="cg-badge has-badge">JOHN 14:6</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Scrolling News Ticker -->
+              <div id="cg-marquee" class="cg-marquee">
+                <div class="cg-marquee-tag">
+                  <span class="cg-marquee-tag-dot"></span>
+                  <span id="cg-marquee-tag">CHURCH NEWS</span>
+                </div>
+                <div class="cg-marquee-viewport">
+                  <div id="cg-marquee-track" class="cg-marquee-track"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SOURCE B: READY-MADE OBS FRAMES (?view=frame&frame=...) -->
+            <div id="frame-canvas" class="broadcast-stage hidden" data-theme="bcc-crimson"></div>
+
+          </div>
+        </div>
+
+        <!-- Shortcuts & Sync Status -->
+        <div class="flex items-center justify-between flex-wrap gap-2 text-[11px] text-zinc-400">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span>Hotkeys:</span>
+            <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">Space</kbd> Show/Hide
+            <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">Esc</kbd> Hide
+            <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">1–4</kbd> Mode
+          </div>
+          <div id="sync-status" class="font-mono text-emerald-400 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span id="sync-status-text">Ready</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right / Bottom: Operator Control Panel -->
+      <aside class="bg-zinc-900 flex flex-col overflow-y-auto">
+
+        <!-- Sticky Master Transport -->
+        <div class="sticky top-0 z-20 p-3 bg-zinc-900/95 backdrop-blur border-b border-zinc-800 space-y-2.5">
+          <div class="grid grid-cols-4 gap-1.5">
+            <button onclick="triggerShow()" class="py-2.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-bold text-xs tracking-wider uppercase transition shadow">
+              Show
+            </button>
+            <button onclick="triggerHide()" class="py-2.5 px-2 rounded-lg bg-red-600 hover:bg-red-500 active:scale-[0.98] text-white font-bold text-xs tracking-wider uppercase transition shadow">
+              Hide
+            </button>
+            <button onclick="triggerSwapLive()" class="py-2.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-amber-500/40 text-amber-200 font-bold text-xs tracking-wider uppercase transition">
+              Swap
+            </button>
+            <button onclick="clearAllGraphics()" class="py-2.5 px-2 rounded-lg bg-zinc-950 hover:bg-red-950 border border-red-600/80 text-red-400 font-bold text-xs tracking-wider uppercase transition">
+              Clear All
+            </button>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-800 text-xs text-zinc-300">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+              <input type="checkbox" id="ctrl-auto-hide" onchange="handleControlChange()" class="accent-red-600 rounded w-3.5 h-3.5" />
+              <span>Auto-Hide</span>
+              <input type="number" id="ctrl-duration" value="10" min="3" max="120" onchange="handleControlChange()" class="w-12 px-1.5 py-0.5 text-center rounded bg-zinc-950 border border-zinc-700 text-xs text-white focus:border-amber-400 outline-none" />
+              <span class="text-zinc-400">s</span>
+            </label>
+
+            <div class="flex items-center gap-3">
+              <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="ctrl-show-ticker" onchange="handleControlChange()" class="accent-red-600 rounded w-3.5 h-3.5" />
+                <span>Ticker</span>
+              </label>
+              <button onclick="toggleTickerPause()" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-[10.5px] text-amber-300 border border-zinc-700" title="Pause / Resume Ticker">
+                ⏸
+              </button>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="ctrl-show-live" checked onchange="handleControlChange()" class="accent-red-600 rounded w-3.5 h-3.5" />
+                <span>LIVE</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Primary Navigation Tabs -->
+        <div class="flex border-b border-zinc-800 bg-zinc-950/70 px-3 gap-3 overflow-x-auto">
+          <button id="tab-btn-control" onclick="switchTab('control')" class="py-2.5 text-xs font-semibold border-b-2 border-amber-400 text-amber-200 transition shrink-0">
+            1. Live Control
+          </button>
+          <button id="tab-btn-library" onclick="switchTab('library')" class="py-2.5 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition shrink-0">
+            2. Graphics Library
+          </button>
+          <button id="tab-btn-frames" onclick="switchTab('frames')" class="py-2.5 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition shrink-0">
+            3. Frame Editor
+          </button>
+          <button id="tab-btn-settings" onclick="switchTab('settings')" class="py-2.5 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition shrink-0">
+            4. Settings &amp; OBS
+          </button>
+        </div>
+
+        <!-- TAB 1: LIVE CONTROL -->
+        <div id="tab-control" class="p-3 space-y-3">
+          <!-- Quick Mode Grid -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Graphic Mode (Keys 1–4)</span>
+              <select id="in-anim-style" onchange="handleControlChange()" class="px-2 py-0.5 rounded bg-zinc-950 border border-zinc-700 text-[10.5px] text-zinc-200 outline-none">
+                <option value="modern-slide">Modern Slide</option>
+                <option value="minimal-fade">Minimal Fade</option>
+                <option value="elegant-reveal">Elegant Reveal</option>
+                <option value="classic-bar">Classic Bar</option>
+              </select>
+            </div>
+            <div id="mode-grid" class="grid grid-cols-4 gap-1.5"></div>
+          </div>
+
+          <!-- Live Text Editor -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Category</span>
+                <input type="text" id="in-category" oninput="handleLiveTextEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:border-amber-400 outline-none" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Church Name</span>
+                <input type="text" id="in-church" oninput="handleLiveTextEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:border-amber-400 outline-none" />
+              </label>
+            </div>
+
+            <label class="block space-y-1">
+              <span id="lbl-primary" class="text-[11px] text-zinc-400">Main Headline / Name</span>
+              <input type="text" id="in-primary" oninput="handleLiveTextEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:border-amber-400 outline-none" />
+            </label>
+
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span id="lbl-secondary" class="text-[11px] text-zinc-400">Subtitle / Role</span>
+                <input type="text" id="in-secondary" oninput="handleLiveTextEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:border-amber-400 outline-none" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Badge (Optional)</span>
+                <input type="text" id="in-badge" placeholder="e.g. JOHN 14:6" oninput="handleLiveTextEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:border-amber-400 outline-none" />
+              </label>
+            </div>
+          </div>
+
+          <!-- One-Click Lower Third Cues -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">One-Click Lower Thirds</span>
+              <button onclick="saveCurrentCue()" class="px-2.5 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-[11px] font-semibold transition">
+                + Save Current
+              </button>
+            </div>
+            <div id="cue-list" class="space-y-2 max-h-72 overflow-y-auto pr-0.5"></div>
+          </div>
+        </div>
+
+        <!-- TAB 2: GRAPHICS LIBRARY -->
+        <div id="tab-library" class="hidden p-3 space-y-3">
+          <!-- Lower Third Presets -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Saved Lower Third Presets</span>
+              <button onclick="saveCurrentCue()" class="px-2.5 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-[11px] font-semibold">
+                + New Preset
+              </button>
+            </div>
+            <div id="lib-cue-list" class="space-y-2 max-h-80 overflow-y-auto pr-0.5"></div>
+          </div>
+
+          <!-- Marquee / Ticker Presets -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Ticker / Marquee Presets</span>
+              <button onclick="saveCurrentMarqueePreset()" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-semibold">
+                + Save Marquee
+              </button>
+            </div>
+            <div id="marquee-preset-list" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- TAB 3: FRAME EDITOR -->
+        <div id="tab-frames" class="hidden p-3 space-y-3">
+          <!-- 12 Ready-Made Frame Picker -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">12 Ready-Made OBS Frames (1920×1080)</span>
+              <span class="text-[10px] text-zinc-400">Click to preview</span>
+            </div>
+
+            <div id="frame-selector-grid" class="grid grid-cols-2 gap-2"></div>
+
+            <!-- Frame OBS URL Box -->
+            <div class="pt-2 border-t border-zinc-700/60 space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span id="selected-frame-url-label" class="text-[11px] font-semibold text-zinc-200">OBS Frame URL</span>
+                <span id="selected-frame-hint" class="text-[10px] font-mono text-amber-300 text-right"></span>
+              </div>
+              <div class="flex gap-1.5">
+                <input type="text" id="url-selected-frame" readonly onclick="this.select()" class="flex-1 px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 font-mono text-[11px] text-emerald-300 outline-none" />
+                <button onclick="copySelectedFrameUrl(this)" class="px-3 py-1.5 rounded-lg bg-red-700 hover:bg-red-600 text-white text-[11px] font-semibold shrink-0">
+                  Copy URL
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Per-Frame Visual Customizer -->
+          <div class="p-3 rounded-xl bg-zinc-800/60 border border-amber-500/30 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span id="customizer-frame-title" class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Customize Frame</span>
+              <button onclick="resetSelectedFrameSettings()" class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-medium text-zinc-300">
+                Reset Frame
+              </button>
+            </div>
+
+            <!-- Theme & Custom Accent Override -->
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Frame Theme</span>
+                <select id="in-fc-theme" onchange="handleFrameCustomizeChange()" class="w-full px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none">
+                  <option value="inherit">Use Global Theme</option>
+                  <option value="bcc-crimson">BCC Dark</option>
+                  <option value="bcc-light">Light</option>
+                  <option value="classic-gold">Gold</option>
+                  <option value="navy">Navy</option>
+                </select>
+              </label>
+              <div class="space-y-1">
+                <span class="text-[11px] text-zinc-400 block">Accent Override</span>
+                <div class="flex items-center gap-1.5">
+                  <input type="color" id="in-fc-accent" oninput="handleFrameAccentPick()" class="h-[30px] w-10 rounded bg-zinc-950 border border-zinc-700 cursor-pointer p-0.5" />
+                  <button id="btn-fc-accent-auto" onclick="clearFrameCustomAccent()" class="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10.5px] font-medium text-zinc-300 truncate">
+                    Theme Auto
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Header Badge & Panel Title -->
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Header Badge</span>
+                <input type="text" id="in-fc-header-badge" oninput="handleFrameCustomizeChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Panel Heading</span>
+                <input type="text" id="in-fc-panel-title" oninput="handleFrameCustomizeChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+            </div>
+
+            <!-- Geometry Sliders -->
+            <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+              <label class="block space-y-0.5">
+                <span class="text-[10.5px] text-zinc-400">Corner Radius: <strong id="lbl-fc-radius" class="text-zinc-200">14px</strong></span>
+                <input type="range" id="in-fc-radius" min="0" max="32" step="2" value="14" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+              </label>
+              <label class="block space-y-0.5">
+                <span class="text-[10.5px] text-zinc-400">Cutout Border: <strong id="lbl-fc-border" class="text-zinc-200">3px</strong></span>
+                <input type="range" id="in-fc-border" min="0" max="8" step="1" value="3" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+              </label>
+              <label class="block space-y-0.5">
+                <span class="text-[10.5px] text-zinc-400">Text Size: <strong id="lbl-fc-text-scale" class="text-zinc-200">100%</strong></span>
+                <input type="range" id="in-fc-text-scale" min="0.85" max="1.25" step="0.05" value="1" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+              </label>
+              <label class="block space-y-0.5">
+                <span class="text-[10.5px] text-zinc-400">Matte Opacity: <strong id="lbl-fc-opacity" class="text-zinc-200">100%</strong></span>
+                <input type="range" id="in-fc-opacity" min="0.5" max="1" step="0.05" value="1" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+              </label>
+            </div>
+
+            <!-- Toggles -->
+            <div class="flex flex-wrap items-center gap-x-3.5 gap-y-2 pt-2 border-t border-zinc-700/60 text-[11px] text-zinc-200">
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="in-fc-mirror" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                <span>Flip Left/Right</span>
+              </label>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="in-fc-header" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                <span>Header</span>
+              </label>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="in-fc-infobar" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                <span>Info Bar</span>
+              </label>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="in-fc-live" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                <span>LIVE</span>
+              </label>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" id="in-fc-logo" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                <span>Logo</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Scripture Content Editor -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Scripture Frame Content</span>
+              <button onclick="pullLowerThirdToBible()" class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-medium text-zinc-200">
+                Use Active LT Text
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Reference</span>
+                <input type="text" id="in-fr-verse-ref" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Translation</span>
+                <input type="text" id="in-fr-verse-ver" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+            </div>
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">Verse Text</span>
+              <textarea id="in-fr-verse-text" rows="3" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none"></textarea>
+            </label>
+          </div>
+
+          <!-- Announcements Content Editor -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Announcements Frame Content</div>
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">One per line: <code class="text-amber-300">Title | Details</code></span>
+              <textarea id="in-fr-announcements" rows="3" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none"></textarea>
+            </label>
+          </div>
+
+          <!-- Worship & Prayer Extra Fields -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Worship / Praise Frame Content</div>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Song / Hymn Title</span>
+                <input type="text" id="in-fr-song-title" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Key / Worship Team</span>
+                <input type="text" id="in-fr-song-details" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Welcome & Countdown Controls -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Starting Soon &amp; Countdown Timer</div>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Welcome Title</span>
+                <input type="text" id="in-fr-welcome-title" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Slideshow Window Tag</span>
+                <input type="text" id="in-fr-slide-tag" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+            </div>
+
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">Welcome Subtitle</span>
+              <input type="text" id="in-fr-welcome-sub" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+            </label>
+
+            <!-- Countdown Timer Synced -->
+            <div class="pt-2 border-t border-zinc-700/60 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <div class="inline-flex rounded-lg bg-zinc-950 p-0.5 border border-zinc-800">
+                  <button id="btn-cd-mode-duration" onclick="setCountdownMode('duration')" class="px-2.5 py-1 rounded-md text-[10.5px] font-semibold bg-red-700 text-white">Duration</button>
+                  <button id="btn-cd-mode-target" onclick="setCountdownMode('target')" class="px-2.5 py-1 rounded-md text-[10.5px] font-semibold text-zinc-400">Start Time</button>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span id="ctrl-cd-status" class="text-[10px] text-zinc-400"></span>
+                  <strong id="ctrl-cd-readout" class="font-mono text-xs text-amber-300">05:00</strong>
+                </div>
+              </div>
+
+              <div id="cd-duration-controls" class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 text-xs">
+                  <span class="text-zinc-400">Length:</span>
+                  <input type="number" id="in-cd-mins" value="5" min="1" max="90" onchange="resetCountdown()" class="w-12 px-1.5 py-1 text-center rounded bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                  <span class="text-zinc-400">min</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button id="btn-cd-toggle" onclick="toggleCountdown()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold">Start</button>
+                  <button onclick="resetCountdown()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-[11px]">Reset</button>
+                </div>
+              </div>
+
+              <div id="cd-target-controls" class="hidden flex flex-wrap items-center justify-between gap-2">
+                <label class="flex items-center gap-2 text-xs">
+                  <span class="text-zinc-400">Starts At:</span>
+                  <input type="time" id="in-cd-target-time" value="10:00" oninput="handleTargetTimeChange()" class="px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+                <span class="text-[10.5px] text-emerald-400 font-medium">Clock-synced</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: SETTINGS & OBS SETUP -->
+        <div id="tab-settings" class="hidden p-3 space-y-3">
+          <!-- Core OBS Studio URLs -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">OBS Studio &amp; Deck URLs</div>
+
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">1. Lower-Third &amp; Ticker Overlay (1920×1080)</span>
+              <div class="flex gap-1.5">
+                <input type="text" id="url-overlay" readonly onclick="this.select()" class="flex-1 px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 font-mono text-[11px] text-emerald-300 outline-none" />
+                <button onclick="copyText(getTargetUrl('overlay'), this)" class="px-2.5 py-1.5 rounded-lg bg-red-700 hover:bg-red-600 text-white text-[11px] font-semibold shrink-0">Copy</button>
+              </div>
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">2. OBS Custom Browser Dock (Control Panel)</span>
+              <div class="flex gap-1.5">
+                <input type="text" id="url-control" readonly onclick="this.select()" class="flex-1 px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 font-mono text-[11px] text-emerald-300 outline-none" />
+                <button onclick="copyText(getTargetUrl('control'), this)" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-[11px] font-semibold shrink-0">Copy</button>
+              </div>
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">3. OBS Custom Feed Dock (Rundown List)</span>
+              <div class="flex gap-1.5">
+                <input type="text" id="url-feed" readonly onclick="this.select()" class="flex-1 px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 font-mono text-[11px] text-emerald-300 outline-none" />
+                <button onclick="copyText(getTargetUrl('feed'), this)" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-[11px] font-semibold shrink-0">Copy</button>
+              </div>
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">4. Stream Deck Touch Browser URL</span>
+              <div class="flex gap-1.5">
+                <input type="text" id="url-deck" readonly onclick="this.select()" class="flex-1 px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 font-mono text-[11px] text-emerald-300 outline-none" />
+                <button onclick="copyText(getTargetUrl('deck'), this)" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-[11px] font-semibold shrink-0">Copy</button>
+              </div>
+            </label>
+          </div>
+
+          <!-- Global Theme, Logo & Geometry -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-3">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Global Theme &amp; Logo</div>
+
+            <div class="grid grid-cols-4 gap-1.5" id="theme-grid">
+              <button data-theme-btn="bcc-crimson" onclick="setTheme('bcc-crimson')" class="py-1.5 px-2 rounded-lg bg-zinc-900 border border-zinc-700 text-[11px] font-semibold text-zinc-200">BCC Dark</button>
+              <button data-theme-btn="bcc-light" onclick="setTheme('bcc-light')" class="py-1.5 px-2 rounded-lg bg-zinc-900 border border-zinc-700 text-[11px] font-semibold text-zinc-200">Light</button>
+              <button data-theme-btn="classic-gold" onclick="setTheme('classic-gold')" class="py-1.5 px-2 rounded-lg bg-zinc-900 border border-zinc-700 text-[11px] font-semibold text-zinc-200">Gold</button>
+              <button data-theme-btn="navy" onclick="setTheme('navy')" class="py-1.5 px-2 rounded-lg bg-zinc-900 border border-zinc-700 text-[11px] font-semibold text-zinc-200">Navy</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Lower-Third Size: <strong id="lbl-scale" class="text-zinc-200">100%</strong></span>
+                <input type="range" id="ctrl-scale" min="0.80" max="1.25" step="0.05" value="1" oninput="handleControlChange()" class="w-full accent-red-600" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Opacity: <strong id="lbl-opacity" class="text-zinc-200">94%</strong></span>
+                <input type="range" id="ctrl-opacity" min="0.65" max="1" step="0.02" value="0.94" oninput="handleControlChange()" class="w-full accent-red-600" />
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-zinc-700/60">
+              <label class="inline-flex items-center gap-1.5 text-xs text-zinc-200 cursor-pointer">
+                <input type="checkbox" id="ctrl-show-logo" checked onchange="handleControlChange()" class="accent-red-600 rounded" />
+                <span>Show Logo</span>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <label class="px-2.5 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-[11px] font-semibold cursor-pointer transition">
+                  Upload Logo
+                  <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="hidden" />
+                </label>
+                <button onclick="resetLogo()" class="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[11px] font-medium text-zinc-300">
+                  Default
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Global Marquee Settings -->
+          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Global Ticker Settings</div>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Tag Label</span>
+                <input type="text" id="in-marquee-tag" value="CHURCH NEWS" oninput="handleControlChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Speed: <strong id="lbl-speed" class="text-zinc-200">32s</strong></span>
+                <input type="range" id="in-marquee-speed" min="14" max="60" value="32" oninput="handleControlChange()" class="w-full accent-red-600 mt-1.5" />
+              </label>
+            </div>
+            <label class="block space-y-1">
+              <span class="text-[11px] text-zinc-400">Messages (separate with <code class="text-amber-300">|</code>)</span>
+              <textarea id="in-marquee-text" rows="2" oninput="handleControlChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none"></textarea>
+            </label>
+          </div>
+
+          <!-- Beginner-Friendly OBS & Stream Deck Setup Guide -->
+          <details class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 group">
+            <summary class="text-xs font-bold uppercase tracking-wider text-amber-400 cursor-pointer flex items-center justify-between">
+              <span>📖 Beginner OBS &amp; Stream Deck Setup Guide</span>
+              <span class="text-zinc-400 group-open:rotate-180 transition">▼</span>
+            </summary>
+            <div class="mt-3 space-y-2.5 text-xs text-zinc-300 leading-relaxed border-t border-zinc-700/60 pt-3">
+              <div>
+                <strong class="text-white">1. Add Lower Thirds into OBS:</strong>
+                <p class="text-zinc-400 mt-0.5">In OBS, add a <span class="text-amber-300">Browser Source</span> → Paste URL 1 (<code>?view=overlay</code>) → Set Width: <code class="text-emerald-300">1920</code>, Height: <code class="text-emerald-300">1080</code>. Keep it on top of your camera layer.</p>
+              </div>
+              <div>
+                <strong class="text-white">2. Add Ready-Made OBS Frames:</strong>
+                <p class="text-zinc-400 mt-0.5">Select any frame in the Frame Editor tab, copy its URL, and add as a 1920×1080 Browser Source above your camera. The camera will fit seamlessly behind the transparent cutouts.</p>
+              </div>
+              <div>
+                <strong class="text-white">3. Add OBS Custom Browser Dock:</strong>
+                <p class="text-zinc-400 mt-0.5">In OBS menu: <span class="text-amber-300">Docks → Custom Browser Docks</span> → Name: "Church CG" → URL: URL 2 (<code>?view=control</code>). Dock it neatly into OBS for one-click volunteer operation!</p>
+              </div>
+              <div>
+                <strong class="text-white">4. Stream Deck / iPad Touch Control:</strong>
+                <p class="text-zinc-400 mt-0.5">Open URL 4 (<code>?view=deck</code>) in any browser or Stream Deck browser plugin. You get big touch buttons for every lower third, frame, marquee, and emergency clear!</p>
+              </div>
+            </div>
+          </details>
+
+          <!-- Safe Reset Defaults -->
+          <div class="flex justify-end pt-1">
+            <button id="btn-reset-all" onclick="handleResetClick()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-red-950/60 border border-zinc-700 text-xs text-red-300 font-medium transition">
+              Reset All Defaults
+            </button>
+          </div>
+        </div>
+
+      </aside>
+    </main>
+  </div>
+
+  <!-- Quick Edit Cue Modal -->
+  <div id="cue-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+    <div class="bg-zinc-900 border border-amber-500/50 rounded-xl w-full max-w-md p-4 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-400 font-['Montserrat']">Edit Lower Third</span>
+        <button onclick="closeCueModal()" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <label class="block space-y-1">
+          <span class="text-[11px] text-zinc-400">Mode</span>
+          <select id="edit-mode" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none">
+            <option value="speaker">Speaker</option>
+            <option value="sermon">Sermon</option>
+            <option value="scripture">Scripture</option>
+            <option value="announcement">Notice</option>
+          </select>
+        </label>
+        <label class="block space-y-1">
+          <span class="text-[11px] text-zinc-400">Category</span>
+          <input type="text" id="edit-category" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+        </label>
+      </div>
+      <label class="block space-y-1">
+        <span class="text-[11px] text-zinc-400">Main Text</span>
+        <input type="text" id="edit-primary" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+      </label>
+      <div class="grid grid-cols-2 gap-2">
+        <label class="block space-y-1">
+          <span class="text-[11px] text-zinc-400">Subtitle</span>
+          <input type="text" id="edit-secondary" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+        </label>
+        <label class="block space-y-1">
+          <span class="text-[11px] text-zinc-400">Badge</span>
+          <input type="text" id="edit-badge" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+        </label>
+      </div>
+      <label class="block space-y-1">
+        <span class="text-[11px] text-zinc-400">Display Duration (Seconds)</span>
+        <input type="number" id="edit-duration" value="10" min="0" max="120" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+      </label>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeCueModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200">Cancel</button>
+        <button onclick="saveEditedCue(false)" class="px-3 py-1.5 rounded-lg bg-red-700 hover:bg-red-600 text-xs font-semibold text-white">Save</button>
+        <button onclick="saveEditedCue(true)" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white">Save &amp; Show</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-zinc-900 border border-amber-400/70 text-xs font-semibold text-amber-200 shadow-2xl z-50"></div>
+
+  <!-- Floating Exit Fullscreen Button -->
+  <button id="exit-overlay-btn" onclick="exitOverlayMode()" class="hidden fixed top-4 right-4 z-50 px-4 py-2 rounded-full bg-zinc-950/90 border border-amber-400 text-xs font-semibold text-white shadow-xl hover:bg-zinc-900">
+    ← Return to Studio Control
+  </button>
+
+  <script>
+
+    /* =========================================================================
+       1. CONSTANTS, THEME PALETTES & 12 OBS FRAME DEFINITIONS
+       ========================================================================= */
+    const STORAGE_KEY = 'bcc_cg_pro_v4';
+    const CHANNEL_NAME = 'bcc_cg_pro_bus_v4';
+
+    const THEME_PALETTES = {
+      'bcc-crimson': {
+        bgStart: '#181416', bgEnd: '#0d0b0c',
+        surface: '#1f1b1d', accent: '#b91c1c', accentSoft: 'rgba(185,28,28,0.38)',
+        border: 'rgba(255,255,255,0.14)', text: '#fafafa'
+      },
+      'bcc-light': {
+        bgStart: '#f5f3ee', bgEnd: '#e6e2d8',
+        surface: '#ffffff', accent: '#991b1b', accentSoft: 'rgba(153,27,27,0.35)',
+        border: 'rgba(17,17,19,0.14)', text: '#111113'
+      },
+      'classic-gold': {
+        bgStart: '#151518', bgEnd: '#0b0b0d',
+        surface: '#1b1a1d', accent: '#c8a96b', accentSoft: 'rgba(200,169,107,0.42)',
+        border: 'rgba(245,241,232,0.14)', text: '#f5f1e8'
+      },
+      'navy': {
+        bgStart: '#0e1828', bgEnd: '#070d17',
+        surface: '#131e30', accent: '#d97706', accentSoft: 'rgba(217,119,6,0.42)',
+        border: 'rgba(248,250,252,0.14)', text: '#f8fafc'
+      }
+    };
+
+    // 12 Professional OBS Frame Definitions (1920x1080 transparent cutouts)
+    const FRAME_DEFS = [
+      {
+        id: 'main-cam',
+        name: 'Main Camera',
+        short: 'Full 16:9 cinematic camera border',
+        hint: 'Full Cam: 1872×1032 @ (24,24)',
+        cutouts: [{ x: 24, y: 24, w: 1872, h: 1032, r: 16, label: 'MAIN CAMERA (16:9)' }]
+      },
+      {
+        id: 'pastor-info',
+        name: 'Pastor & Sermon',
+        short: 'Camera + Pastor profile card',
+        hint: 'Cam: 1152×648 @ (48,156)',
+        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'PASTOR CAMERA (1152×648)' }]
+      },
+      {
+        id: 'cam-bible',
+        name: 'Camera + Bible Verse',
+        short: '16:9 Cam + Scripture card',
+        hint: 'Cam: 1152×648 @ (48,156)',
+        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'MAIN CAMERA (1152×648)' }]
+      },
+      {
+        id: 'cam-announce',
+        name: 'Camera + Announcements',
+        short: '16:9 Cam + News panel right',
+        hint: 'Cam: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'MAIN CAMERA (1216×684)' }]
+      },
+      {
+        id: 'cam-slides',
+        name: 'Camera + Slideshow',
+        short: 'Slides left + Speaker PiP right',
+        hint: 'Slides: 1216×684 @ 48,148 • Cam: 576×324 @ 1296,148',
+        cutouts: [
+          { x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'SLIDESHOW / LYRICS (1216×684)' },
+          { x: 1296, y: 148, w: 576, h: 324, r: 14, label: 'SPEAKER CAM (576×324)' }
+        ]
+      },
+      {
+        id: 'cam-pip',
+        name: 'Camera PiP Corner',
+        short: 'Wide camera with corner inset',
+        hint: 'Wide: 1600×900 @ 24,24 • PiP: 384×216 @ 1512,840',
+        cutouts: [
+          { x: 24, y: 24, w: 1600, h: 900, r: 16, label: 'WIDE CAMERA' },
+          { x: 1512, y: 840, w: 384, h: 216, r: 12, label: 'INSET PiP' }
+        ]
+      },
+      {
+        id: 'worship',
+        name: 'Worship Service',
+        short: 'Wide Cam + Song & Hymn footer',
+        hint: 'Wide Cam: 1824×788 @ (48,36)',
+        cutouts: [{ x: 48, y: 36, w: 1824, h: 788, r: 14, label: 'WORSHIP CAMERA (FULL WIDTH)' }]
+      },
+      {
+        id: 'prayer',
+        name: 'Prayer Session',
+        short: 'Camera + Prayer petition card',
+        hint: 'Cam: 1152×648 @ (48,156)',
+        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'SANCTUARY CAMERA (1152×648)' }]
+      },
+      {
+        id: 'interview',
+        name: 'Two-Camera Split',
+        short: 'Two equal side-by-side feeds',
+        hint: 'Cam 1: 912×684 @ 48,148 • Cam 2: 912×684 @ 960,148',
+        cutouts: [
+          { x: 48, y: 148, w: 912, h: 684, r: 14, label: 'CAMERA 1 (HOST)' },
+          { x: 960, y: 148, w: 912, h: 684, r: 14, label: 'CAMERA 2 (GUEST)' }
+        ]
+      },
+      {
+        id: 'welcome-cam',
+        name: 'Starting Soon & Cam',
+        short: 'Sanctuary Cam + Countdown',
+        hint: 'Sanctuary Cam: 1152×648 @ (48,156)',
+        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'SANCTUARY CAMERA (1152×648)' }]
+      },
+      {
+        id: 'event-announce',
+        name: 'Church Event Cards',
+        short: 'Wide Cam + 3 event bulletins below',
+        hint: 'Wide Cam: 1824×620 @ (48,36)',
+        cutouts: [{ x: 48, y: 36, w: 1824, h: 620, r: 14, label: 'STAGE CAMERA (1824×620)' }]
+      },
+      {
+        id: 'countdown-closing',
+        name: 'Benediction & Closing',
+        short: 'Post-service closing & next schedule',
+        hint: 'Closing Graphic (No camera cutout)',
+        cutouts: []
+      }
+    ];
+
+    const FRAME_BASE_DEFAULTS = {
+      theme: 'inherit',
+      customAccent: '',
+      cornerRadius: 14,
+      borderWidth: 3,
+      textScale: 1.0,
+      matteOpacity: 1.0,
+      mirror: false,
+      showHeader: true,
+      showInfoBar: true,
+      showLive: true,
+      showLogo: true,
+      showLowerThirdInFrame: true,
+      showMarqueeInFrame: false
+    };
+
+    const FRAME_SPECIFIC_DEFAULTS = {
+      'main-cam':          { cornerRadius: 16, headerBadge: 'LIVE',                 panelTitle: '' },
+      'pastor-info':       { cornerRadius: 14, headerBadge: 'SUNDAY MESSAGE',       panelTitle: 'SENIOR PASTOR' },
+      'cam-bible':         { cornerRadius: 14, headerBadge: 'SCRIPTURE READING',    panelTitle: 'HOLY BIBLE' },
+      'cam-announce':      { cornerRadius: 14, headerBadge: 'CHURCH ANNOUNCEMENTS', panelTitle: 'Church News' },
+      'cam-slides':        { cornerRadius: 14, headerBadge: 'SERMON SLIDES',        panelTitle: 'LIVE SPEAKER' },
+      'cam-pip':           { cornerRadius: 16, headerBadge: 'LIVE BROADCAST',       panelTitle: 'SANCTUARY' },
+      'worship':           { cornerRadius: 14, headerBadge: 'WORSHIP & PRAISE',     panelTitle: 'SONG TITLE' },
+      'prayer':            { cornerRadius: 14, headerBadge: 'INTERCESSORY PRAYER',  panelTitle: 'PRAYER REQUESTS' },
+      'interview':         { cornerRadius: 14, headerBadge: 'CONVERSATION & DIALOGUE', panelTitle: 'INTERVIEW' },
+      'welcome-cam':       { cornerRadius: 14, headerBadge: 'STARTING SOON',        panelTitle: 'SERVICE BEGINS IN' },
+      'event-announce':    { cornerRadius: 14, headerBadge: 'UPCOMING EVENTS',      panelTitle: 'CHURCH CALENDAR' },
+      'countdown-closing': { cornerRadius: 14, headerBadge: 'CLOSING BENEDICTION',  panelTitle: 'GO IN PEACE' }
+    };
+
+    const PRESETS = {
+      speaker: {
+        key: '1', label: 'Speaker', category: 'SPEAKER',
+        primary: 'Pastor John Smith', secondary: 'Senior Pastor', badge: 'JOHN 14:6',
+        pLabel: 'Speaker Name', sLabel: 'Title / Role'
+      },
+      sermon: {
+        key: '2', label: 'Sermon', category: "TODAY'S MESSAGE",
+        primary: 'Walking by Faith', secondary: 'Pastor John Smith • Sunday Service', badge: 'PART 1',
+        pLabel: 'Sermon Title', sLabel: 'Speaker / Series'
+      },
+      scripture: {
+        key: '3', label: 'Scripture', category: 'SCRIPTURE READING',
+        primary: '“I am the way and the truth and the life. No one comes to the Father except through me.”',
+        secondary: 'John 14:6 (NIV)', badge: '',
+        pLabel: 'Bible Verse', sLabel: 'Reference'
+      },
+      announcement: {
+        key: '4', label: 'Notice', category: 'ANNOUNCEMENT',
+        primary: 'Sunday Worship Service', secondary: 'Every Sunday at 10:00 AM • Bangkok Christ Church', badge: 'WELCOME',
+        pLabel: 'Headline', sLabel: 'Date, Time & Location'
+      }
+    };
+
+    const DEFAULT_CONFIG = {
+      mode: 'speaker',
+      animStyle: 'modern-slide', // 'modern-slide' | 'minimal-fade' | 'elegant-reveal' | 'classic-bar'
+      category: 'SPEAKER',
+      churchName: 'Bangkok Christ Church',
+      primary: 'Pastor John Smith',
+      secondary: 'Senior Pastor',
+      badge: 'JOHN 14:6',
+      theme: 'bcc-crimson',
+      bgOpacity: 0.94,
+      showLogo: true,
+      customLogo: '',
+      showLive: true,
+      showTicker: false,
+      tickerPaused: false,
+      marqueeTag: 'CHURCH NEWS',
+      marqueeSpeed: 32,
+      marqueeText: 'Welcome to Bangkok Christ Church (John 14:6) | Sunday Worship Service at 10:00 AM | Wednesday Prayer & Bible Study at 7:00 PM | Follow us online at bcc.church',
+      scale: 1.0,
+      autoHide: false,
+      durationSec: 10,
+
+      // Ready-Made OBS Frame Content
+      frameVerseRef: 'John 14:6',
+      frameVerseVer: 'NIV',
+      frameVerseText: 'Jesus answered, “I am the way and the truth and the life. No one comes to the Father except through me.”',
+      frameAnnouncements: [
+        'Sunday Worship Service | Every Sunday at 10:00 AM • Sanctuary & Online',
+        'Wednesday Prayer & Bible Study | Every Wednesday at 7:00 PM • Fellowship Hall',
+        'Youth & Young Adults Fellowship | Fridays at 6:30 PM • Welcome Center',
+        'Online Tithes & Offerings | Transfer via PromptPay or visit bcc.church/give'
+      ].join('\n'),
+      frameSlideTag: 'SERMON SLIDES',
+      frameWelcomeTitle: 'Sunday Worship Service',
+      frameWelcomeSub: 'We are glad you are worshiping with us today • Bangkok Christ Church',
+      frameSongTitle: 'Amazing Grace (My Chains Are Gone)',
+      frameSongDetails: 'Worship Team • Key of G • 4/4 Time',
+      framePrayerTitle: 'Prayer for Our Community and Nation',
+      framePrayerDetails: 'Lord, grant wisdom, peace, and healing to all families and leaders.',
+      frameInterviewHost: 'Pastor John Smith | Host',
+      frameInterviewGuest: 'Dr. David Lee | Visiting Missionary',
+      
+      countdownMode: 'duration',
+      countdownTargetTime: '10:00',
+      countdownMinutes: 5,
+      countdownRemainingSec: 300,
+      countdownRunning: false,
+      countdownEndTs: 0,
+
+      frameSettings: {}
+    };
+
+    const DEFAULT_CUES = [
+      { id: 'c1', mode: 'speaker', category: 'SENIOR PASTOR', primary: 'Pastor John Smith', secondary: 'Senior Pastor • Bangkok Christ Church', badge: 'JOHN 14:6', duration: 10 },
+      { id: 'c2', mode: 'sermon', category: "TODAY'S MESSAGE", primary: 'Walking by Faith, Not by Sight', secondary: 'Sermon Series: Unshakable Kingdom', badge: 'HEBREWS 11:1', duration: 15 },
+      { id: 'c3', mode: 'scripture', category: 'SCRIPTURE READING', primary: '“I am the way and the truth and the life. No one comes to the Father except through me.”', secondary: 'John 14:6 (NIV)', badge: '', duration: 20 },
+      { id: 'c4', mode: 'speaker', category: 'GUEST SPEAKER', primary: 'Rev. Timothy Vance', secondary: 'Global Mission Director', badge: 'GUEST', duration: 10 },
+      { id: 'c5', mode: 'speaker', category: 'WORSHIP LEADER', primary: 'Sarah & BCC Worship Team', secondary: 'Praise & Adoration', badge: 'PSALM 100', duration: 12 },
+      { id: 'c6', mode: 'announcement', category: 'ANNOUNCEMENT', primary: 'Wednesday Prayer Meeting', secondary: 'Every Wednesday at 7:00 PM • Fellowship Hall & Zoom', badge: 'JOIN US', duration: 15 },
+      { id: 'c7', mode: 'announcement', category: 'WELCOME', primary: 'First Time Visiting?', secondary: 'Please scan the QR code in the lobby for our Welcome Gift!', badge: 'WELCOME', duration: 15 },
+      { id: 'c8', mode: 'speaker', category: 'BENEDICTION', primary: 'The Lord Bless You and Keep You', secondary: 'Numbers 6:24-26 • Go in His Peace', badge: 'AMEN', duration: 15 }
+    ];
+
+    const DEFAULT_MARQUEE_PRESETS = [
+      {
+        id: 'mq1',
+        name: 'Sunday Service & Welcome',
+        tag: 'CHURCH NEWS',
+        speed: 32,
+        text: 'Welcome to Bangkok Christ Church • John 14:6 | Sunday Worship Service at 10:00 AM | Children Sunday School in Room 204'
+      },
+      {
+        id: 'mq2',
+        name: 'Weekly Schedule & Prayer',
+        tag: 'WEEKLY EVENTS',
+        speed: 30,
+        text: 'Wednesday Prayer Meeting at 7:00 PM | Friday Youth Fellowship at 6:30 PM | Saturday Choir Rehearsal at 4:00 PM'
+      },
+      {
+        id: 'mq3',
+        name: 'Giving & Tithes',
+        tag: 'GIVING & TITHES',
+        speed: 35,
+        text: 'Support the Lord’s work: Bangkok Bank A/C 123-4-56789-0 • Bangkok Christ Church | PromptPay QR available at welcome desk'
+      },
+      {
+        id: 'mq4',
+        name: 'Prayer Requests & Pastoral Care',
+        tag: 'PRAYER LINE',
+        speed: 28,
+        text: 'Need prayer or counseling? Contact our pastoral team: prayer@bcc.church or call 02-123-4567 | God bless you'
+      }
+    ];
+
+
+    /* =========================================================================
+       2. RUNTIME STATE & BROADCAST SYNCHRONIZATION
+       ========================================================================= */
+    let config = { ...DEFAULT_CONFIG, frameSettings: {} };
+    let cues = DEFAULT_CUES.map(c => ({ ...c }));
+    let marqueePresets = DEFAULT_MARQUEE_PRESETS.map(m => ({ ...m }));
+    
+    // Animation State Machine: 'IDLE' | 'ENTERING' | 'ACTIVE' | 'EXITING'
+    let animState = 'IDLE';
+    let isOnAir = false;
+    let activeCueId = null;
+    let previewCueId = null;
+    let activeMarqueeId = 'mq1';
+    let isOverlayOnly = false;
+    let overlayTarget = 'overlay'; // 'overlay' | 'frame'
+    let previewTarget = 'overlay'; // 'overlay' | 'frame'
+    let activeFrameId = 'main-cam';
+    let syncRev = 0;
+
+    let remainingDurationSec = 0;
+    let durationInterval = null;
+    let autoHideTimer = null;
+    let swapTimer = null;
+    let countdownLoopTimer = null;
+    let bus = null;
+    let lastMarqueeKey = '';
+    let lastCountdownFormatted = '';
+
+    /* Utility Helpers */
+    function esc(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function hexToRgbString(hex) {
+      const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || '').trim());
+      if (!m) return null;
+      return `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}`;
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      if (!el || isOverlayOnly) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.add('hidden'), 2000);
+    }
+
+    function getFrameDef(id) {
+      return FRAME_DEFS.find(f => f.id === id) || FRAME_DEFS[0];
+    }
+
+    function getFrameDefaultSettings(id) {
+      return {
+        ...FRAME_BASE_DEFAULTS,
+        ...(FRAME_SPECIFIC_DEFAULTS[id] || { headerBadge: 'LIVE', panelTitle: '' })
+      };
+    }
+
+    function getFrameSettings(id) {
+      const saved = (config.frameSettings && config.frameSettings[id]) || {};
+      return { ...getFrameDefaultSettings(id), ...saved };
+    }
+
+    function isFrameCustomized(id) {
+      const saved = config.frameSettings && config.frameSettings[id];
+      if (!saved) return false;
+      const defs = getFrameDefaultSettings(id);
+      return Object.keys(defs).some(k => saved[k] !== undefined && saved[k] !== defs[k]);
+    }
+
+    /* Persistence & State Sync */
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('bcc_cg_lite_v3');
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (parsed.config) {
+          config = {
+            ...DEFAULT_CONFIG,
+            ...parsed.config,
+            frameSettings: parsed.config.frameSettings ? { ...parsed.config.frameSettings } : {}
+          };
+        }
+        if (Array.isArray(parsed.cues) && parsed.cues.length) cues = parsed.cues;
+        if (Array.isArray(parsed.marqueePresets) && parsed.marqueePresets.length) marqueePresets = parsed.marqueePresets;
+        if (typeof parsed.onAir === 'boolean') isOnAir = parsed.onAir;
+        if (parsed.activeCueId) activeCueId = parsed.activeCueId;
+        if (parsed.activeFrameId) activeFrameId = parsed.activeFrameId;
+        if (typeof parsed.rev === 'number') syncRev = parsed.rev;
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function broadcastState(cmd, onAirState) {
+      syncRev += 1;
+      const payload = {
+        cmd: cmd || 'SYNC',
+        rev: syncRev,
+        config,
+        cues,
+        marqueePresets,
+        onAir: (typeof onAirState === 'boolean') ? onAirState : isOnAir,
+        activeCueId,
+        previewCueId,
+        activeFrameId,
+        activeMarqueeId,
+        ts: Date.now()
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (_) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            ...payload,
+            config: { ...config, customLogo: '' }
+          }));
+        } catch (__) {}
+      }
+
+      if (bus) {
+        try { bus.postMessage(payload); } catch (_) {}
+      }
+    }
+
+    function initSyncChannel() {
+      if ('BroadcastChannel' in window) {
+        try {
+          bus = new BroadcastChannel(CHANNEL_NAME);
+          bus.onmessage = (e) => {
+            const msg = e.data;
+            if (!msg) return;
+            if (msg.type === 'HELLO_FROM_OBS') {
+              if (bus) {
+                bus.postMessage({
+                  cmd: 'SYNC',
+                  rev: syncRev,
+                  config,
+                  cues,
+                  marqueePresets,
+                  onAir: isOnAir,
+                  activeCueId,
+                  previewCueId,
+                  activeFrameId
+                });
+              }
+              const syncEl = document.getElementById('sync-status-text');
+              if (syncEl) syncEl.textContent = 'OBS Linked';
+              return;
+            }
+            if (msg.cmd) {
+              applyIncomingPayload(msg);
+            }
+          };
+        } catch (_) {}
+      }
+
+      window.addEventListener('storage', (e) => {
+        if (e.key !== STORAGE_KEY || !e.newValue) return;
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && parsed.config) applyIncomingPayload(parsed);
+        } catch (_) {}
+      });
+
+      // Regular check fallback
+      setInterval(() => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.rev && parsed.rev > syncRev) {
+            applyIncomingPayload(parsed);
+          }
+        } catch (_) {}
+      }, 600);
+    }
+
+    function applyIncomingPayload(msg) {
+      if (typeof msg.rev === 'number' && msg.rev < syncRev) return;
+      if (typeof msg.rev === 'number') syncRev = msg.rev;
+
+      if (msg.config) {
+        config = {
+          ...DEFAULT_CONFIG,
+          ...msg.config,
+          frameSettings: msg.config.frameSettings ? { ...msg.config.frameSettings } : {}
+        };
+      }
+      if (Array.isArray(msg.cues)) cues = msg.cues;
+      if (Array.isArray(msg.marqueePresets)) marqueePresets = msg.marqueePresets;
+      if (msg.activeFrameId) activeFrameId = msg.activeFrameId;
+      if (msg.activeCueId !== undefined) activeCueId = msg.activeCueId;
+      if (msg.previewCueId !== undefined) previewCueId = msg.previewCueId;
+
+      const cmd = msg.cmd || 'SYNC';
+
+      if (cmd === 'CLEAR_ALL') {
+        executeClearAllGraphics();
+      } else if (cmd === 'SWAP') {
+        playCrossSwap();
+      } else if (cmd === 'SHOW') {
+        renderLowerThirdCanvas();
+        playIntro();
+      } else if (cmd === 'HIDE') {
+        renderLowerThirdCanvas();
+        playOutro();
+      } else {
+        renderLowerThirdCanvas();
+        if (msg.onAir && !isOnAir) playIntro();
+        else if (msg.onAir === false && isOnAir) playOutro();
+      }
+
+      renderActiveFrame();
+
+      if (!isOverlayOnly) {
+        populateAllInputs();
+        renderCues();
+        renderMarqueePresets();
+        renderFrameSelectorGrid();
+        updateSelectedFrameUrlBox();
+        renderDeckView();
+        renderFeedView();
+      }
+    }
+
+    /* =========================================================================
+       3. BULLETPROOF LOWER-THIRD ANIMATION STATE MACHINE
+       ========================================================================= */
+    function clearLowerThirdTimers() {
+      if (swapTimer) { clearTimeout(swapTimer); swapTimer = null; }
+      if (autoHideTimer) { clearTimeout(autoHideTimer); autoHideTimer = null; }
+      if (durationInterval) { clearInterval(durationInterval); durationInterval = null; }
+      remainingDurationSec = 0;
+      updateTallyUI();
+    }
+
+    function playIntro(customDuration) {
+      clearLowerThirdTimers();
+      const lt = document.getElementById('cg-lt');
+      if (!lt) return;
+
+      animState = 'ENTERING';
+      lt.classList.remove('is-exiting');
+      void lt.offsetWidth; // Force reflow
+      lt.classList.add('is-active');
+
+      isOnAir = true;
+      animState = 'ACTIVE';
+      updateTallyUI();
+
+      // Duration auto-hide handling
+      const dur = customDuration !== undefined ? customDuration : (config.autoHide ? config.durationSec : 0);
+      if (dur > 0) {
+        startDurationCountdown(dur);
+      }
+    }
+
+    function playOutro() {
+      clearLowerThirdTimers();
+      const lt = document.getElementById('cg-lt');
+      if (lt && lt.classList.contains('is-active')) {
+        animState = 'EXITING';
+        lt.classList.remove('is-active');
+        lt.classList.add('is-exiting');
+        setTimeout(() => {
+          lt.classList.remove('is-exiting');
+          animState = 'IDLE';
+        }, 360);
+      } else {
+        animState = 'IDLE';
+      }
+      isOnAir = false;
+      activeCueId = null;
+      updateTallyUI();
+    }
+
+    function playCrossSwap(customDuration) {
+      clearLowerThirdTimers();
+      const lt = document.getElementById('cg-lt');
+      if (!lt) return;
+
+      if (isOnAir) {
+        animState = 'EXITING';
+        lt.classList.remove('is-active');
+        lt.classList.add('is-exiting');
+        swapTimer = setTimeout(() => {
+          swapTimer = null;
+          renderLowerThirdCanvas();
+          lt.classList.remove('is-exiting');
+          void lt.offsetWidth;
+          lt.classList.add('is-active');
+          animState = 'ACTIVE';
+          isOnAir = true;
+          updateTallyUI();
+          const dur = customDuration !== undefined ? customDuration : (config.autoHide ? config.durationSec : 0);
+          if (dur > 0) startDurationCountdown(dur);
+        }, 340);
+      } else {
+        renderLowerThirdCanvas();
+        playIntro(customDuration);
+      }
+    }
+
+    function startDurationCountdown(seconds) {
+      remainingDurationSec = Math.max(1, parseInt(seconds, 10));
+      updateTallyUI();
+
+      durationInterval = setInterval(() => {
+        remainingDurationSec -= 1;
+        updateTallyUI();
+        if (remainingDurationSec <= 0) {
+          clearInterval(durationInterval);
+          durationInterval = null;
+          triggerHide();
+        }
+      }, 1000);
+    }
+
+    function triggerShow(duration) {
+      renderLowerThirdCanvas();
+      playIntro(duration);
+      broadcastState('SHOW', true);
+    }
+
+    function triggerHide() {
+      playOutro();
+      broadcastState('HIDE', false);
+    }
+
+    function triggerSwapLive(duration) {
+      playCrossSwap(duration);
+      broadcastState('SWAP', true);
+    }
+
+    function clearAllGraphics() {
+      executeClearAllGraphics();
+      broadcastState('CLEAR_ALL', false);
+      showToast('Emergency: Cleared All Graphics');
+    }
+
+    function executeClearAllGraphics() {
+      playOutro();
+      config.showTicker = false;
+      const bar = document.getElementById('cg-marquee');
+      if (bar) bar.classList.remove('is-visible');
+      const tickerBox = document.getElementById('ctrl-show-ticker');
+      if (tickerBox) tickerBox.checked = false;
+      renderLowerThirdCanvas();
+      updateTallyUI();
+    }
+
+    function updateTallyUI() {
+      const pill = document.getElementById('tally-pill');
+      const dot = document.getElementById('tally-dot');
+      const text = document.getElementById('tally-text');
+      const timer = document.getElementById('tally-timer');
+      if (!pill || !text || !dot) return;
+
+      if (isOnAir) {
+        pill.className = 'inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-red-950/80 border border-red-500/80 text-[11px] font-bold tracking-wider text-red-100 shadow-sm';
+        dot.className = 'w-2 h-2 rounded-full bg-red-500 animate-pulse';
+        text.textContent = `ON AIR • ${(config.mode || 'GRAPHIC').toUpperCase()}`;
+        if (timer) {
+          timer.textContent = remainingDurationSec > 0 ? `(${remainingDurationSec}s)` : '';
+        }
+      } else {
+        pill.className = 'inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-bold tracking-wider text-zinc-400';
+        dot.className = 'w-2 h-2 rounded-full bg-zinc-600';
+        text.textContent = 'STANDBY';
+        if (timer) timer.textContent = '';
+      }
+
+      // Update Deck and Feed views
+      if (!isOverlayOnly) {
+        renderDeckView();
+        renderFeedView();
+      }
+    }
+
+    /* =========================================================================
+       4. LOWER-THIRD RENDERER & LOGO MARKUP
+       ========================================================================= */
+    function getLogoMarkup(sizePx, showFlag) {
+      const visible = (typeof showFlag === 'boolean') ? showFlag : config.showLogo;
+      if (!visible) return '';
+      if (config.customLogo) {
+        return `<img src="${config.customLogo}" alt="Logo" style="width:${sizePx}px;height:${sizePx}px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;box-shadow:0 6px 18px rgba(0,0,0,0.3);flex-shrink:0;" />`;
+      }
+      return `
+        <div style="width:${sizePx}px;height:${sizePx}px;background:#fff;border-radius:8px;padding:3px;box-shadow:0 6px 18px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 120 120" width="100%" height="100%" fill="none">
+            <rect x="52" y="14" width="16" height="92" rx="4" fill="#9E1B1E" stroke="#111" stroke-width="3.2"/>
+            <rect x="20" y="38" width="80" height="16" rx="4" fill="#9E1B1E" stroke="#111" stroke-width="3.2"/>
+            <path d="M41 46 C46 39, 53 41, 56 49 C58 35, 68 26, 75 24 C71 34, 73 42, 80 34 C76 45, 73 53, 68 58 C73 61, 74 66, 71 69 C63 63, 53 60, 49 52 L41 46 Z" fill="#FFFFFF" stroke="#111" stroke-width="3.2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    function renderLowerThirdCanvas() {
+      const canvas = document.getElementById('cg-canvas');
+      const lt = document.getElementById('cg-lt');
+      if (!canvas || !lt) return;
+
+      canvas.dataset.theme = config.theme;
+      canvas.style.setProperty('--bg-opacity', config.bgOpacity);
+      canvas.style.setProperty('--lt-scale', config.scale);
+      canvas.classList.toggle('has-marquee', !!config.showTicker);
+
+      // Animation Style class
+      lt.classList.remove('style-modern-slide', 'style-minimal-fade', 'style-elegant-reveal', 'style-classic-bar');
+      lt.classList.add(`style-${config.animStyle || 'modern-slide'}`);
+
+      // Mode class
+      lt.classList.remove('mode-speaker', 'mode-sermon', 'mode-scripture', 'mode-announcement');
+      lt.classList.add(`mode-${config.mode}`);
+
+      document.getElementById('cg-cat').textContent = config.category || 'LIVE';
+      document.getElementById('cg-primary').textContent = config.primary || '';
+      document.getElementById('cg-secondary').textContent = config.secondary || '';
+
+      const churchEl = document.getElementById('cg-church');
+      const lineEl = document.getElementById('cg-meta-line');
+      const liveChurch = document.getElementById('cg-live-church');
+      if (config.churchName) {
+        churchEl.textContent = config.churchName;
+        churchEl.style.display = 'inline';
+        lineEl.style.display = 'inline-block';
+        if (liveChurch) liveChurch.textContent = config.churchName;
+      } else {
+        churchEl.style.display = 'none';
+        lineEl.style.display = 'none';
+        if (liveChurch) liveChurch.textContent = 'LIVE';
+      }
+
+      const badgeEl = document.getElementById('cg-badge');
+      if (config.badge) {
+        badgeEl.textContent = config.badge;
+        badgeEl.classList.add('has-badge');
+      } else {
+        badgeEl.classList.remove('has-badge');
+      }
+
+      // Logo handling
+      const logoSlot = document.getElementById('cg-logo-slot');
+      const logoImg = document.getElementById('cg-logo-img');
+      const defLogo = document.getElementById('cg-default-logo');
+      logoSlot.classList.toggle('hidden-slot', !config.showLogo);
+      if (config.customLogo) {
+        if (logoImg.getAttribute('src') !== config.customLogo) logoImg.src = config.customLogo;
+        logoImg.classList.remove('hidden');
+        defLogo.classList.add('hidden');
+      } else {
+        logoImg.classList.add('hidden');
+        defLogo.classList.remove('hidden');
+      }
+
+      // Live Bug
+      const liveBug = document.getElementById('cg-live-bug');
+      if (liveBug) liveBug.classList.toggle('is-visible', !!config.showLive);
+
+      // Render Marquee with diffing
+      renderMarquee();
+    }
+
+    /* =========================================================================
+       5. SCROLLING MARQUEE RENDERER (Zero-Glitch Diffed)
+       ========================================================================= */
+    function renderMarquee() {
+      const bar = document.getElementById('cg-marquee');
+      const tagEl = document.getElementById('cg-marquee-tag');
+      const track = document.getElementById('cg-marquee-track');
+      if (!bar || !tagEl || !track) return;
+
+      bar.classList.toggle('is-visible', !!config.showTicker);
+      bar.classList.toggle('is-paused', !!config.tickerPaused);
+      bar.style.setProperty('--marquee-duration', `${config.marqueeSpeed || 32}s`);
+      tagEl.textContent = config.marqueeTag || 'CHURCH NEWS';
+
+      const key = String(config.marqueeText || '').trim();
+      if (key === lastMarqueeKey && track.innerHTML) return;
+      lastMarqueeKey = key;
+
+      const items = key.split('|').map(s => s.trim()).filter(Boolean);
+      if (!items.length) items.push('Welcome to Bangkok Christ Church • John 14:6');
+
+      const joinedLen = items.join('   ').length;
+      const repeats = Math.max(1, Math.ceil(150 / Math.max(1, joinedLen)));
+      let halfHtml = '';
+      for (let i = 0; i < repeats; i++) {
+        halfHtml += items
+          .map(txt => `<span class="cg-marquee-item"><span class="cg-marquee-sep"></span>${esc(txt)}</span>`)
+          .join('');
+      }
+      track.innerHTML = halfHtml + halfHtml;
+    }
+
+    function toggleTickerPause() {
+      config.tickerPaused = !config.tickerPaused;
+      const bar = document.getElementById('cg-marquee');
+      if (bar) bar.classList.toggle('is-paused', !!config.tickerPaused);
+      broadcastState('SYNC', isOnAir);
+      showToast(config.tickerPaused ? 'Marquee Paused' : 'Marquee Resumed');
+    }
+
+    /* =========================================================================
+       6. 12 READY-MADE OBS FRAMES RENDERER ENGINE
+       ========================================================================= */
+    function getRemainingCountdownSeconds() {
+      if (config.countdownMode === 'target') {
+        const parts = String(config.countdownTargetTime || '10:00').split(':');
+        const h = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        if (Number.isNaN(h) || Number.isNaN(m)) return 0;
+
+        const now = new Date();
+        const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+        const diffMs = target.getTime() - now.getTime();
+        return diffMs > 0 ? Math.ceil(diffMs / 1000) : 0;
+      }
+
+      if (config.countdownRunning && config.countdownEndTs > 0) {
+        return Math.max(0, Math.ceil((config.countdownEndTs - Date.now()) / 1000));
+      }
+      return Math.max(0, config.countdownRemainingSec || 0);
+    }
+
+    function formatRemainingCountdown() {
+      const sec = getRemainingCountdownSeconds();
+      const hrs = Math.floor(sec / 3600);
+      const mins = Math.floor((sec % 3600) / 60);
+      const secs = sec % 60;
+      if (hrs > 0) {
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function parseAnnouncements() {
+      const lines = String(config.frameAnnouncements || '')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
+        .slice(0, 5);
+      if (!lines.length) {
+        return [{ title: 'Sunday Worship Service', detail: 'Every Sunday at 10:00 AM • Bangkok Christ Church' }];
+      }
+      return lines.map(line => {
+        const idx = line.indexOf('|');
+        if (idx === -1) return { title: line, detail: '' };
+        return {
+          title: line.slice(0, idx).trim(),
+          detail: line.slice(idx + 1).trim()
+        };
+      });
+    }
+
+    function getTransformedCutouts(def, fs) {
+      const r = Math.max(0, Number(fs.cornerRadius ?? 14));
+      return def.cutouts.map(c => ({
+        ...c,
+        x: fs.mirror ? (1920 - c.x - c.w) : c.x,
+        r
+      }));
+    }
+
+    function getDynamicFrameHint(def, fs) {
+      const cuts = getTransformedCutouts(def, fs);
+      if (!cuts.length) return 'No camera cutout (Full graphics)';
+      if (cuts.length >= 2) {
+        return `1: ${cuts[0].w}×${cuts[0].h} @ (${cuts[0].x},${cuts[0].y}) • 2: ${cuts[1].w}×${cuts[1].h} @ (${cuts[1].x},${cuts[1].y})`;
+      }
+      const c = cuts[0];
+      return `Cutout: ${c.w}×${c.h} @ (${c.x},${c.y})`;
+    }
+
+    function buildSvgMatteMask(cutouts, palette, fs) {
+      const maskId = `cut-mask-${activeFrameId}`;
+      const gradId = `matte-grad-${activeFrameId}`;
+      const bw = Math.max(0, Number(fs.borderWidth ?? 3));
+      const matteOp = Math.min(1, Math.max(0.4, Number(fs.matteOpacity ?? 1)));
+
+      const holes = cutouts
+        .map(c => `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="${c.r}" ry="${c.r}" fill="black" />`)
+        .join('');
+
+      const frames = bw > 0 ? cutouts
+        .map(c => `
+          <rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="${c.r}" ry="${c.r}"
+                fill="none" stroke="${palette.accent}" stroke-width="${bw}" stroke-opacity="0.92" />
+          <rect x="${c.x + bw}" y="${c.y + bw}" width="${Math.max(0, c.w - bw * 2)}" height="${Math.max(0, c.h - bw * 2)}" rx="${Math.max(2, c.r - bw)}" ry="${Math.max(2, c.r - bw)}"
+                fill="none" stroke="${palette.border}" stroke-width="1" />
+        `).join('') : '';
+
+      return `
+        <svg viewBox="0 0 1920 1080" width="1920" height="1080" style="position:absolute;inset:0;display:block;">
+          <defs>
+            <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="${palette.bgStart}" />
+              <stop offset="100%" stop-color="${palette.bgEnd}" />
+            </linearGradient>
+            <mask id="${maskId}">
+              <rect x="0" y="0" width="1920" height="1080" fill="white" />
+              ${holes}
+            </mask>
+          </defs>
+          <rect x="0" y="0" width="1920" height="1080" fill="url(#${gradId})" fill-opacity="${matteOp}" mask="url(#${maskId})" />
+          <rect x="0" y="0" width="1920" height="4" fill="${palette.accent}" mask="url(#${maskId})" />
+          ${frames}
+        </svg>
+      `;
+    }
+
+    function buildFrameHeader(rightBadgeText, fs) {
+      if (!fs.showHeader) return '';
+      const ts = Number(fs.textScale || 1);
+      const sz = (n) => Math.round(n * ts);
+      const showLive = fs.showLive && config.showLive;
+      return `
+        <div class="fr-header">
+          <div class="fr-brand">
+            ${getLogoMarkup(56, fs.showLogo)}
+            <div>
+              <div class="fr-brand-title" style="font-size:${sz(24)}px;">${esc(config.churchName || 'BANGKOK CHRIST CHURCH')}</div>
+              <div class="fr-brand-sub" style="font-size:${sz(13)}px;">${esc(config.badge || 'JOHN 14:6')} • LIVE BROADCAST</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;">
+            ${rightBadgeText ? `
+              <div style="padding:8px 16px;border-radius:6px;background:rgba(var(--accent-rgb),0.18);border:1px solid rgba(var(--accent-rgb),0.48);font-family:'Montserrat',sans-serif;font-size:${sz(13)}px;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                ${esc(rightBadgeText)}
+              </div>
+            ` : ''}
+            ${showLive ? `
+              <div class="fr-live-pill" style="font-size:${sz(14)}px;">
+                <span class="cg-live-dot"></span>
+                <span>LIVE</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderActiveFrame() {
+      const container = document.getElementById('frame-canvas');
+      if (!container) return;
+
+      const def = getFrameDef(activeFrameId);
+      const fs = getFrameSettings(def.id);
+      const effectiveTheme = fs.theme === 'inherit' ? config.theme : fs.theme;
+      const basePalette = THEME_PALETTES[effectiveTheme] || THEME_PALETTES['bcc-crimson'];
+      const customRgb = fs.customAccent ? hexToRgbString(fs.customAccent) : null;
+      const palette = customRgb
+        ? { ...basePalette, accent: fs.customAccent, accentSoft: `rgba(${customRgb}, 0.38)` }
+        : basePalette;
+
+      const ts = Number(fs.textScale || 1);
+      const sz = (n) => Math.round(n * ts);
+      const r = Math.max(0, Number(fs.cornerRadius ?? 14));
+      const radiusStyle = `border-radius:${r}px;`;
+      const cutouts = getTransformedCutouts(def, fs);
+      const posX = (x, w) => (fs.mirror ? (1920 - x - w) : x);
+
+      container.dataset.theme = effectiveTheme;
+      if (customRgb) {
+        container.style.setProperty('--accent-rgb', customRgb);
+      } else {
+        container.style.removeProperty('--accent-rgb');
+      }
+
+      // Studio Mock Guide
+      const mockLayer = document.getElementById('preview-mock-layer');
+      if (mockLayer) {
+        if (!isOverlayOnly && previewTarget === 'frame' && cutouts.length) {
+          mockLayer.classList.remove('hidden');
+          mockLayer.innerHTML = cutouts.map(c => `
+            <div style="position:absolute;left:${c.x}px;top:${c.y}px;width:${c.w}px;height:${c.h}px;border-radius:${c.r}px;display:flex;align-items:center;justify-content:center;">
+              <div style="padding:12px 24px;border-radius:10px;background:rgba(0,0,0,0.5);border:2px dashed rgba(255,255,255,0.35);color:rgba(255,255,255,0.85);font-family:'Montserrat',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">
+                ${esc(c.label)}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          mockLayer.classList.add('hidden');
+          mockLayer.innerHTML = '';
+        }
+      }
+
+      let innerHtml = buildSvgMatteMask(cutouts, palette, fs);
+
+      // Frame 1: main-cam
+      if (def.id === 'main-cam') {
+        const showLive = fs.showLive && config.showLive;
+        const leftBadge = fs.mirror ? 'right:52px;' : 'left:52px;';
+        const rightBadge = fs.mirror ? 'left:52px;' : 'right:52px;';
+        innerHtml += `
+          ${showLive ? `
+            <div class="fr-live-pill" style="position:absolute;top:48px;${leftBadge}font-size:${sz(14)}px;">
+              <span class="cg-live-dot"></span>
+              <span>${esc(fs.headerBadge || 'LIVE')}</span>
+              <span style="color:rgb(var(--muted-rgb));font-weight:600;padding-left:10px;border-left:1px solid rgba(var(--text-rgb),0.2);">${esc(config.churchName)}</span>
+            </div>
+          ` : ''}
+          ${fs.showHeader ? `
+            <div style="position:absolute;top:44px;${rightBadge}display:flex;align-items:center;gap:14px;padding:10px 18px;border-radius:10px;background:rgba(var(--primary-rgb),0.85);border:1px solid rgba(var(--text-rgb),0.14);">
+              ${getLogoMarkup(44, fs.showLogo)}
+              <div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(14)}px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:rgb(var(--text-rgb));">${esc(config.churchName)}</div>
+                <div style="font-size:${sz(11)}px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgb(var(--accent-rgb));">${esc(config.badge || 'JOHN 14:6')}</div>
+              </div>
+            </div>
+          ` : ''}
+          ${fs.showInfoBar ? `
+            <div style="position:absolute;left:52px;right:52px;bottom:48px;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-radius:10px;background:rgba(var(--primary-rgb),0.85);border:1px solid rgba(var(--text-rgb),0.12);border-left:5px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(11)}px;">${esc(config.category || 'LIVE')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(22)}px;font-weight:800;color:rgb(var(--text-rgb));">${esc(config.primary)}</div>
+              </div>
+              <div style="font-size:${sz(16)}px;color:rgb(var(--muted-rgb));font-weight:500;">${esc(config.secondary)}</div>
+            </div>
+          ` : ''}
+        `;
+      }
+
+      // Frame 2: pastor-info
+      else if (def.id === 'pastor-info') {
+        const camLeft = posX(48, 1152);
+        const cardLeft = posX(1236, 636);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'SUNDAY MESSAGE', fs);
+        innerHtml += `
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(13)}px;">${esc(config.category || "TODAY'S MESSAGE")}</div>
+                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.primary)}</div>
+                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.secondary)}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:42px 36px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;flex:1;justify-content:center;">
+              ${getLogoMarkup(96, fs.showLogo)}
+              <div>
+                <div class="fr-section-tag">${esc(fs.panelTitle || 'SENIOR PASTOR')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(32)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">
+                  ${esc(config.primary || 'Pastor John Smith')}
+                </div>
+                <div style="font-size:${sz(18)}px;color:rgb(var(--muted-rgb));margin-top:4px;">
+                  ${esc(config.secondary || 'Bangkok Christ Church')}
+                </div>
+              </div>
+              <div style="width:64px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
+              <div style="padding:14px 20px;border-radius:10px;background:rgba(var(--primary-rgb),0.5);border:1px solid rgba(var(--text-rgb),0.1);width:100%;">
+                <div class="fr-section-tag" style="font-size:${sz(11)}px;">KEY SCRIPTURE</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(20)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">
+                  ${esc(config.frameVerseRef || 'John 14:6')}
+                </div>
+              </div>
+            </div>
+            <div style="padding:18px 32px;background:rgba(var(--primary-rgb),0.5);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">${esc(config.badge || 'JOHN 14:6')}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 3: cam-bible
+      else if (def.id === 'cam-bible') {
+        const camLeft = posX(48, 1152);
+        const cardLeft = posX(1236, 636);
+        const cleanVerse = config.frameVerseText.replace(/^[“"]|[”"]$/g, '');
+        const baseVersePx = cleanVerse.length > 180 ? 25 : cleanVerse.length > 110 ? 29 : 34;
+        innerHtml += buildFrameHeader(fs.headerBadge || 'SCRIPTURE READING', fs);
+        innerHtml += `
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(13)}px;">${esc(config.category || 'SPEAKER')}</div>
+                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.primary)}</div>
+                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.secondary)}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:34px 40px 20px;border-bottom:1px solid rgba(var(--text-rgb),0.10);display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(12)}px;">${esc(fs.panelTitle || 'HOLY BIBLE')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(30)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">${esc(config.frameVerseRef || 'John 14:6')}</div>
+              </div>
+              ${config.frameVerseVer ? `
+                <div style="padding:6px 12px;border-radius:6px;background:rgba(var(--accent-rgb),0.22);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:${sz(14)}px;font-weight:800;letter-spacing:0.12em;color:rgb(var(--text-rgb));">
+                  ${esc(config.frameVerseVer)}
+                </div>
+              ` : ''}
+            </div>
+            <div style="padding:40px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;">
+              <div style="font-family:Georgia,serif;font-size:78px;line-height:0.5;color:rgba(var(--accent-rgb),0.55);">“</div>
+              <div class="fr-verse-text" style="font-size:${sz(baseVersePx)}px;">
+                ${esc(cleanVerse)}
+              </div>
+            </div>
+            <div style="padding:20px 40px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">SCRIPTURE</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 4: cam-announce
+      else if (def.id === 'cam-announce') {
+        const items = parseAnnouncements();
+        const camLeft = posX(48, 1216);
+        const panelLeft = posX(1296, 576);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'CHURCH ANNOUNCEMENTS', fs);
+        innerHtml += `
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:862px;width:1216px;height:168px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(13)}px;">${esc(config.category || 'WORSHIP SERVICE')}</div>
+                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.primary)}</div>
+                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.secondary)}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${panelLeft}px;top:148px;width:576px;height:882px;${radiusStyle}display:flex;flex-direction:column;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:26px 30px 16px;border-bottom:1px solid rgba(var(--text-rgb),0.10);">
+              <div class="fr-section-tag" style="font-size:${sz(12)}px;">UPCOMING EVENTS</div>
+              <div class="fr-title-lg" style="font-size:${sz(28)}px;margin-top:6px;">${esc(fs.panelTitle || 'Church News')}</div>
+            </div>
+            <div style="padding:20px 26px;display:flex;flex-direction:column;gap:14px;flex:1;overflow:hidden;">
+              ${items.map(it => `
+                <div class="fr-announce-item">
+                  <div style="font-family:'Montserrat',sans-serif;font-size:${sz(18)}px;font-weight:700;color:rgb(var(--text-rgb));line-height:1.3;">${esc(it.title)}</div>
+                  ${it.detail ? `<div style="font-size:${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:4px;line-height:1.4;">${esc(it.detail)}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 5: cam-slides
+      else if (def.id === 'cam-slides') {
+        const slidesLeft = posX(48, 1216);
+        const sideLeft = posX(1296, 576);
+        innerHtml += buildFrameHeader(fs.headerBadge || config.frameSlideTag || 'SERMON SLIDES', fs);
+        innerHtml += `
+          <div class="fr-window-tag" style="left:${slidesLeft + 18}px;top:164px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:rgb(var(--accent-rgb));"></span>
+            <span>${esc(config.frameSlideTag || 'SERMON SLIDES')}</span>
+          </div>
+
+          <div class="fr-window-tag" style="left:${sideLeft + 16}px;top:164px;">
+            <span class="cg-live-dot" style="width:7px;height:7px;"></span>
+            <span>${esc(fs.panelTitle || 'LIVE SPEAKER')}</span>
+          </div>
+
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${slidesLeft}px;top:862px;width:1216px;height:168px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(13)}px;">${esc(config.category || "TODAY'S MESSAGE")}</div>
+                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.primary)}</div>
+                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.secondary)}</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="fr-section-tag" style="font-size:${sz(12)}px;">KEY SCRIPTURE</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(22)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">${esc(config.frameVerseRef || 'John 14:6')}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${sideLeft}px;top:502px;width:576px;height:528px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:28px 30px;display:flex;flex-direction:column;gap:16px;flex:1;">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(12)}px;">SCRIPTURE FOCUS</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(22)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">
+                  ${esc(config.frameVerseRef)} <span style="color:rgb(var(--accent-rgb));font-size:${sz(15)}px;">${esc(config.frameVerseVer)}</span>
+                </div>
+              </div>
+              <div class="fr-verse-text" style="font-size:${sz(22)}px;">
+                “${esc(config.frameVerseText.replace(/^[“"]|[”"]$/g, ''))}”
+              </div>
+            </div>
+            <div style="padding:18px 30px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">${esc(config.badge || 'JOHN 14:6')}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 6: cam-pip
+      else if (def.id === 'cam-pip') {
+        innerHtml += `
+          <div class="fr-window-tag" style="left:48px;top:48px;">
+            <span class="cg-live-dot" style="width:7px;height:7px;"></span>
+            <span>${esc(fs.headerBadge || 'LIVE')}</span>
+            <span style="color:rgb(var(--muted-rgb));margin-left:6px;">${esc(config.churchName)}</span>
+          </div>
+          <div class="fr-window-tag" style="left:1530px;top:856px;">
+            <span>${esc(fs.panelTitle || 'SANCTUARY')}</span>
+          </div>
+        `;
+      }
+
+      // Frame 7: worship
+      else if (def.id === 'worship') {
+        innerHtml += buildFrameHeader(fs.headerBadge || 'WORSHIP & PRAISE', fs);
+        innerHtml += `
+          <div class="fr-card" style="position:absolute;left:48px;top:852px;width:1824px;height:186px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 40px;border-left:7px solid rgb(var(--accent-rgb));">
+            <div style="display:flex;align-items:center;gap:24px;">
+              ${getLogoMarkup(68, fs.showLogo)}
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(12)}px;">${esc(fs.panelTitle || 'CURRENT SONG')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(30)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">
+                  ${esc(config.frameSongTitle || 'Amazing Grace')}
+                </div>
+                <div style="font-size:${sz(16)}px;color:rgb(var(--muted-rgb));margin-top:4px;">
+                  ${esc(config.frameSongDetails || 'Worship Team • Bangkok Christ Church')}
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span style="padding:10px 22px;border-radius:8px;background:rgba(var(--accent-rgb),0.2);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:${sz(14)}px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                ${esc(config.badge || 'JOHN 14:6')}
+              </span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 8: prayer
+      else if (def.id === 'prayer') {
+        const camLeft = posX(48, 1152);
+        const cardLeft = posX(1236, 636);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'INTERCESSORY PRAYER', fs);
+        innerHtml += `
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(13)}px;">LET US PRAY TOGETHER</div>
+                <div class="fr-title-lg" style="font-size:${sz(30)}px;margin-top:6px;">${esc(config.primary || 'Prayer for Healing and Hope')}</div>
+                <div class="fr-sub-md" style="font-size:${sz(18)}px;margin-top:4px;">${esc(config.secondary || 'Philippians 4:6-7')}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:36px;display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+              <div class="fr-section-tag">${esc(fs.panelTitle || 'PRAYER PETITIONS')}</div>
+              <div style="font-family:'Montserrat',sans-serif;font-size:${sz(28)}px;font-weight:800;color:rgb(var(--text-rgb));line-height:1.3;">
+                ${esc(config.framePrayerTitle || 'Prayer for Our Church and City')}
+              </div>
+              <div class="fr-verse-text" style="font-size:${sz(22)}px;color:rgb(var(--muted-rgb));">
+                ${esc(config.framePrayerDetails || 'Heavenly Father, we lift up all individuals and families in need of your peace, healing, and guidance.')}
+              </div>
+            </div>
+            <div style="padding:20px 36px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">AMEN</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 9: interview
+      else if (def.id === 'interview') {
+        const hostInfo = (config.frameInterviewHost || 'Pastor John Smith | Host').split('|');
+        const guestInfo = (config.frameInterviewGuest || 'Dr. David Lee | Visiting Missionary').split('|');
+        innerHtml += buildFrameHeader(fs.headerBadge || 'CONVERSATION & DIALOGUE', fs);
+        innerHtml += `
+          <div class="fr-card" style="position:absolute;left:48px;top:862px;width:912px;height:168px;${radiusStyle}display:flex;align-items:center;padding:0 30px;border-left:6px solid rgb(var(--accent-rgb));">
+            <div>
+              <div class="fr-section-tag">${esc(hostInfo[1] ? hostInfo[1].trim() : 'HOST')}</div>
+              <div class="fr-title-lg" style="font-size:${sz(28)}px;margin-top:4px;">${esc(hostInfo[0].trim())}</div>
+              <div class="fr-sub-md" style="font-size:${sz(16)}px;margin-top:2px;">${esc(config.churchName)}</div>
+            </div>
+          </div>
+
+          <div class="fr-card" style="position:absolute;left:960px;top:862px;width:912px;height:168px;${radiusStyle}display:flex;align-items:center;padding:0 30px;border-left:6px solid rgb(var(--accent-rgb));">
+            <div>
+              <div class="fr-section-tag">${esc(guestInfo[1] ? guestInfo[1].trim() : 'GUEST')}</div>
+              <div class="fr-title-lg" style="font-size:${sz(28)}px;margin-top:4px;">${esc(guestInfo[0].trim())}</div>
+              <div class="fr-sub-md" style="font-size:${sz(16)}px;margin-top:2px;">Special Discussion</div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 10: welcome-cam
+      else if (def.id === 'welcome-cam') {
+        const formatted = formatRemainingCountdown();
+        lastCountdownFormatted = formatted;
+        const camLeft = posX(48, 1152);
+        const cardLeft = posX(1236, 636);
+        const digitsSize = formatted.length > 5 ? sz(70) : sz(94);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'STARTING SOON', fs);
+        innerHtml += `
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag">WELCOME TO WORSHIP</div>
+                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.frameWelcomeTitle)}</div>
+                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.frameWelcomeSub)}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;text-align:center;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:48px 40px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+              ${getLogoMarkup(100, fs.showLogo)}
+              <div>
+                <div class="fr-section-tag" style="margin-bottom:6px;">WELCOME TO</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(28)}px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                  ${esc(config.churchName)}
+                </div>
+              </div>
+              <div style="width:64px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
+              <div style="font-family:'Montserrat',sans-serif;font-size:${sz(15)}px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:rgb(var(--muted-rgb));">
+                ${esc(fs.panelTitle || 'SERVICE BEGINS IN')}
+              </div>
+              <div id="frame-countdown-display" class="fr-countdown-digits" data-base-scale="${ts}" style="font-size:${digitsSize}px;">${formatted}</div>
+              <div style="padding:8px 20px;border-radius:999px;background:rgba(var(--accent-rgb),0.2);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:${sz(13)}px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                ${esc(config.badge || 'JOHN 14:6')}
+              </div>
+            </div>
+            <div style="padding:18px 30px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);font-size:14px;color:rgb(var(--muted-rgb));">
+              Please invite your friends and family to join online!
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 11: event-announce
+      else if (def.id === 'event-announce') {
+        const items = parseAnnouncements().slice(0, 3);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'UPCOMING EVENTS', fs);
+        innerHtml += `
+          <div style="position:absolute;left:48px;top:680px;right:48px;height:360px;display:grid;grid-template-columns:repeat(3, 1fr);gap:24px;">
+            ${items.map(it => `
+              <div class="fr-card" style="${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;padding:24px 28px;border-top:4px solid rgb(var(--accent-rgb));">
+                <div>
+                  <div class="fr-section-tag" style="font-size:${sz(11)}px;">EVENT BULLETIN</div>
+                  <div style="font-family:'Montserrat',sans-serif;font-size:${sz(22)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:8px;line-height:1.25;">
+                    ${esc(it.title)}
+                  </div>
+                  ${it.detail ? `
+                    <div style="font-size:${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:10px;line-height:1.4;">
+                      ${esc(it.detail)}
+                    </div>
+                  ` : ''}
+                </div>
+                <div style="font-size:${sz(13)}px;font-weight:700;color:rgb(var(--accent-rgb));text-transform:uppercase;margin-top:14px;">
+                  Bangkok Christ Church
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      // Frame 12: countdown-closing
+      else if (def.id === 'countdown-closing') {
+        innerHtml += `
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px;gap:26px;">
+            ${getLogoMarkup(120, fs.showLogo)}
+            <div>
+              <div class="fr-section-tag" style="font-size:${sz(16)}px;margin-bottom:8px;">${esc(fs.panelTitle || 'THANK YOU FOR JOINING US')}</div>
+              <div style="font-family:'Montserrat',sans-serif;font-size:${sz(46)}px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                ${esc(config.churchName)}
+              </div>
+              <div style="font-size:${sz(22)}px;color:rgb(var(--muted-rgb));margin-top:10px;">
+                “The Lord bless you and keep you; the Lord make his face shine upon you.” — Numbers 6:24-25
+              </div>
+            </div>
+            <div style="width:120px;height:4px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
+            <div style="display:flex;gap:36px;font-size:${sz(16)}px;color:rgb(var(--muted-rgb));font-weight:500;">
+              <div>Sunday Worship: <strong>10:00 AM</strong></div>
+              <div>•</div>
+              <div>Wednesday Prayer: <strong>7:00 PM</strong></div>
+              <div>•</div>
+              <div>Website: <strong>bcc.church</strong></div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `<div class="fr-layer">${innerHtml}</div>`;
+    }
+
+    /* Countdown interval loop */
+    function startCountdownLoop() {
+      if (countdownLoopTimer) return;
+      countdownLoopTimer = setInterval(() => {
+        const formatted = formatRemainingCountdown();
+        if (formatted === lastCountdownFormatted) return;
+        lastCountdownFormatted = formatted;
+
+        const disp = document.getElementById('frame-countdown-display');
+        if (disp) {
+          disp.textContent = formatted;
+          const baseScale = parseFloat(disp.dataset.baseScale) || 1;
+          disp.style.fontSize = `${Math.round((formatted.length > 5 ? 70 : 94) * baseScale)}px`;
+        }
+        const ctrlReadout = document.getElementById('ctrl-cd-readout');
+        if (ctrlReadout) ctrlReadout.textContent = formatted;
+
+        updateCountdownStatusLabel();
+
+        if (config.countdownMode !== 'target' && config.countdownRunning && formatted === '00:00') {
+          config.countdownRunning = false;
+          config.countdownRemainingSec = 0;
+          updateCountdownButtons();
+        }
+      }, 250);
+    }
+
+    function updateCountdownStatusLabel() {
+      const statusEl = document.getElementById('ctrl-cd-status');
+      if (!statusEl) return;
+      if (config.countdownMode === 'target') {
+        const rem = getRemainingCountdownSeconds();
+        statusEl.textContent = rem > 0 ? `Until ${config.countdownTargetTime || '10:00'}` : 'Time reached';
+      } else {
+        statusEl.textContent = config.countdownRunning ? 'Running' : 'Paused';
+      }
+    }
+
+    function updateCountdownButtons() {
+      const isTarget = config.countdownMode === 'target';
+      const durBtn = document.getElementById('btn-cd-mode-duration');
+      const tgtBtn = document.getElementById('btn-cd-mode-target');
+      const durBox = document.getElementById('cd-duration-controls');
+      const tgtBox = document.getElementById('cd-target-controls');
+
+      if (durBtn && tgtBtn) {
+        const activeCls = 'px-2.5 py-1 rounded-md text-[10.5px] font-semibold bg-red-700 text-white transition';
+        const idleCls = 'px-2.5 py-1 rounded-md text-[10.5px] font-semibold text-zinc-400 hover:text-zinc-200 transition';
+        durBtn.className = isTarget ? idleCls : activeCls;
+        tgtBtn.className = isTarget ? activeCls : idleCls;
+      }
+      if (durBox) durBox.classList.toggle('hidden', isTarget);
+      if (tgtBox) tgtBox.classList.toggle('hidden', !isTarget);
+
+      const btn = document.getElementById('btn-cd-toggle');
+      const readout = document.getElementById('ctrl-cd-readout');
+      if (readout) readout.textContent = formatRemainingCountdown();
+      updateCountdownStatusLabel();
+
+      if (!btn) return;
+      if (config.countdownRunning) {
+        btn.textContent = 'Pause';
+        btn.className = 'px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-semibold';
+      } else {
+        btn.textContent = 'Start';
+        btn.className = 'px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold';
+      }
+    }
+
+    function setCountdownMode(mode) {
+      config.countdownMode = mode === 'target' ? 'target' : 'duration';
+      lastCountdownFormatted = '';
+      updateCountdownButtons();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function handleTargetTimeChange() {
+      const val = document.getElementById('in-cd-target-time').value;
+      if (!val) return;
+      config.countdownTargetTime = val;
+      config.countdownMode = 'target';
+      lastCountdownFormatted = '';
+      updateCountdownButtons();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function toggleCountdown() {
+      config.countdownMode = 'duration';
+      if (config.countdownRunning) {
+        config.countdownRemainingSec = getRemainingCountdownSeconds();
+        config.countdownRunning = false;
+        config.countdownEndTs = 0;
+      } else {
+        const rem = config.countdownRemainingSec > 0
+          ? config.countdownRemainingSec
+          : (Math.max(1, parseInt(config.countdownMinutes, 10) || 5) * 60);
+        config.countdownRemainingSec = rem;
+        config.countdownEndTs = Date.now() + rem * 1000;
+        config.countdownRunning = true;
+      }
+      lastCountdownFormatted = '';
+      updateCountdownButtons();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function resetCountdown() {
+      const mins = Math.max(1, Math.min(90, parseInt(document.getElementById('in-cd-mins').value, 10) || 5));
+      config.countdownMode = 'duration';
+      config.countdownMinutes = mins;
+      config.countdownRemainingSec = mins * 60;
+      config.countdownRunning = false;
+      config.countdownEndTs = 0;
+      lastCountdownFormatted = '';
+      updateCountdownButtons();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+
+    /* =========================================================================
+       7. UI CONTROLLERS, CUES, MARQUEES, DECK & FEED VIEWS
+       ========================================================================= */
+    let editingCueIdx = -1;
+    let editingMarqueeIdx = -1;
+    let resetArmed = false;
+    let resetArmTimer = null;
+    let currentFeedIndex = 0;
+
+    /* Mode Selection */
+    function renderModeButtons() {
+      const grid = document.getElementById('mode-grid');
+      if (!grid) return;
+      grid.innerHTML = Object.entries(PRESETS).map(([id, p]) => {
+        const active = config.mode === id;
+        return `
+          <button onclick="selectMode('${id}')" class="py-1.5 px-2 rounded-lg border text-[11px] font-semibold flex items-center justify-center gap-1.5 transition ${
+            active
+              ? 'bg-red-700/40 border-red-500 text-white shadow-sm'
+              : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+          }">
+            <span>${p.label}</span>
+            <span class="opacity-60 font-mono text-[10px]">${p.key}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectMode(modeId) {
+      const p = PRESETS[modeId];
+      if (!p) return;
+      config.mode = modeId;
+      config.category = p.category;
+      config.primary = p.primary;
+      config.secondary = p.secondary;
+      config.badge = p.badge;
+
+      const lblP = document.getElementById('lbl-primary');
+      const lblS = document.getElementById('lbl-secondary');
+      if (lblP) lblP.textContent = p.pLabel;
+      if (lblS) lblS.textContent = p.sLabel;
+      
+      populateAllInputs();
+      renderActiveFrame();
+      triggerSwapLive();
+    }
+
+    /* Live Text & Controls Editing */
+    function handleLiveTextEdit() {
+      config.category = document.getElementById('in-category').value;
+      config.churchName = document.getElementById('in-church').value;
+      config.primary = document.getElementById('in-primary').value;
+      config.secondary = document.getElementById('in-secondary').value;
+      config.badge = document.getElementById('in-badge').value.trim();
+      renderLowerThirdCanvas();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function handleControlChange() {
+      config.autoHide = document.getElementById('ctrl-auto-hide').checked;
+      config.durationSec = Math.max(3, parseInt(document.getElementById('ctrl-duration').value, 10) || 10);
+      config.showLive = document.getElementById('ctrl-show-live').checked;
+      config.showTicker = document.getElementById('ctrl-show-ticker').checked;
+      config.showLogo = document.getElementById('ctrl-show-logo').checked;
+      
+      const animStyleEl = document.getElementById('in-anim-style');
+      if (animStyleEl) config.animStyle = animStyleEl.value;
+
+      config.marqueeTag = document.getElementById('in-marquee-tag').value.trim() || 'CHURCH NEWS';
+      config.marqueeSpeed = parseInt(document.getElementById('in-marquee-speed').value, 10) || 32;
+      const lblSpeed = document.getElementById('lbl-speed');
+      if (lblSpeed) lblSpeed.textContent = `${config.marqueeSpeed}s`;
+      config.marqueeText = document.getElementById('in-marquee-text').value;
+
+      config.scale = parseFloat(document.getElementById('ctrl-scale').value) || 1;
+      const lblScale = document.getElementById('lbl-scale');
+      if (lblScale) lblScale.textContent = `${Math.round(config.scale * 100)}%`;
+      
+      config.bgOpacity = parseFloat(document.getElementById('ctrl-opacity').value) || 0.94;
+      const lblOpacity = document.getElementById('lbl-opacity');
+      if (lblOpacity) lblOpacity.textContent = `${Math.round(config.bgOpacity * 100)}%`;
+
+      renderLowerThirdCanvas();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function setTheme(themeId) {
+      config.theme = themeId;
+      highlightActiveThemeButton();
+      populateFrameCustomizer();
+      renderLowerThirdCanvas();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+      showToast(`Theme set to ${themeId}`);
+    }
+
+    function highlightActiveThemeButton() {
+      document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+        const active = btn.getAttribute('data-theme-btn') === config.theme;
+        btn.className = active
+          ? 'py-1.5 px-2 rounded-lg bg-red-700/50 border border-red-500 text-[11px] font-semibold text-white shadow-sm'
+          : 'py-1.5 px-2 rounded-lg bg-zinc-900 border border-zinc-700 text-[11px] font-semibold text-zinc-300 hover:bg-zinc-800';
+      });
+    }
+
+    function handleLogoUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 256;
+          const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * ratio));
+          c.height = Math.max(1, Math.round(img.height * ratio));
+          const ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          config.customLogo = c.toDataURL('image/png');
+          config.showLogo = true;
+          const logoCheck = document.getElementById('ctrl-show-logo');
+          if (logoCheck) logoCheck.checked = true;
+          renderLowerThirdCanvas();
+          renderActiveFrame();
+          broadcastState('SYNC', isOnAir);
+          showToast('Church logo uploaded and synced');
+        };
+        img.src = e.target.result;
+        event.target.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetLogo() {
+      config.customLogo = '';
+      renderLowerThirdCanvas();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+      showToast('Restored default church logo');
+    }
+
+    function handleResetClick() {
+      const btn = document.getElementById('btn-reset-all');
+      if (!resetArmed) {
+        resetArmed = true;
+        btn.textContent = 'Click to Confirm Reset';
+        btn.className = 'px-2.5 py-1.5 rounded-lg bg-red-700 text-white text-[11px] font-bold shadow-md transition';
+        resetArmTimer = setTimeout(() => {
+          resetArmed = false;
+          btn.textContent = 'Reset All Defaults';
+          btn.className = 'px-2.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-red-950/60 border border-zinc-700 text-[11px] text-red-300 font-medium transition';
+        }, 3500);
+        return;
+      }
+
+      clearTimeout(resetArmTimer);
+      resetArmed = false;
+      btn.textContent = 'Reset All Defaults';
+      btn.className = 'px-2.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-red-950/60 border border-zinc-700 text-[11px] text-red-300 font-medium transition';
+
+      localStorage.removeItem(STORAGE_KEY);
+      config = { ...DEFAULT_CONFIG, frameSettings: {} };
+      cues = DEFAULT_CUES.map(c => ({ ...c }));
+      marqueePresets = DEFAULT_MARQUEE_PRESETS.map(m => ({ ...m }));
+      lastMarqueeKey = '';
+      lastCountdownFormatted = '';
+      populateAllInputs();
+      renderCues();
+      renderMarqueePresets();
+      renderFrameSelectorGrid();
+      updateSelectedFrameUrlBox();
+      renderLowerThirdCanvas();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+      showToast('Reset all settings & presets to factory defaults');
+    }
+
+    /* Saved Cues Management (One-Click Show with Individual Duration) */
+    function renderCues() {
+      const list = document.getElementById('cue-list');
+      const libList = document.getElementById('lib-cue-list');
+      if (!list && !libList) return;
+
+      const html = cues.length ? cues.map((c, idx) => {
+        const isCurrentOnAir = isOnAir && activeCueId === c.id;
+        const dur = c.duration || 10;
+        return `
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border transition ${
+            isCurrentOnAir
+              ? 'bg-red-950/40 border-red-500/80 shadow-md'
+              : 'bg-zinc-950/90 border-zinc-800/90 hover:border-zinc-700'
+          }">
+            <div class="min-w-0 flex-1 cursor-pointer" onclick="fireCue(${idx})" title="Click to show live">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">${esc(c.category || c.mode)}</span>
+                ${isCurrentOnAir ? '<span class="px-1.5 py-0.2 rounded bg-red-600 text-white font-bold text-[9px] animate-pulse">ON AIR</span>' : ''}
+              </div>
+              <div class="text-xs font-bold text-white truncate mt-0.5">${esc(c.primary)}</div>
+              <div class="text-[11px] text-zinc-400 truncate">${esc(c.secondary)}</div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <select onchange="updateCueDuration(${idx}, this.value)" class="px-1.5 py-1 rounded-md bg-zinc-900 border border-zinc-700 text-[10.5px] text-zinc-300 outline-none" title="Duration">
+                <option value="5" ${dur === 5 ? 'selected' : ''}>5s</option>
+                <option value="10" ${dur === 10 ? 'selected' : ''}>10s</option>
+                <option value="15" ${dur === 15 ? 'selected' : ''}>15s</option>
+                <option value="30" ${dur === 30 ? 'selected' : ''}>30s</option>
+                <option value="0" ${dur === 0 ? 'selected' : ''}>Manual</option>
+              </select>
+
+              <button onclick="fireCue(${idx})" class="px-3 py-1.5 rounded-lg ${isCurrentOnAir ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'} text-white text-[11px] font-bold shadow-sm transition">
+                ${isCurrentOnAir ? 'Replay' : 'Show'}
+              </button>
+              <button onclick="openCueModal(${idx})" class="p-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs" title="Edit">✏️</button>
+              <button onclick="deleteCue(${idx})" class="p-1.5 rounded-md bg-zinc-900 hover:bg-red-950 text-red-400 text-xs" title="Delete">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('') : '<div class="text-xs text-zinc-500 text-center py-4">No saved lower thirds. Click "+ Save Current" to add.</div>';
+
+      if (list) list.innerHTML = html;
+      if (libList) libList.innerHTML = html;
+    }
+
+    function fireCue(idx) {
+      const c = cues[idx];
+      if (!c) return;
+      activeCueId = c.id;
+      config.mode = c.mode || 'speaker';
+      config.category = c.category;
+      config.primary = c.primary;
+      config.secondary = c.secondary;
+      config.badge = c.badge || '';
+      
+      const dur = (c.duration !== undefined) ? c.duration : (config.autoHide ? config.durationSec : 0);
+      populateAllInputs();
+      renderActiveFrame();
+      triggerSwapLive(dur);
+      renderCues();
+      showToast(`Showing ${c.primary}`);
+    }
+
+    function updateCueDuration(idx, val) {
+      if (!cues[idx]) return;
+      cues[idx].duration = parseInt(val, 10) || 0;
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function saveCurrentCue() {
+      const newCue = {
+        id: 'c_' + Date.now(),
+        mode: config.mode,
+        category: config.category,
+        primary: config.primary,
+        secondary: config.secondary,
+        badge: config.badge,
+        duration: config.durationSec || 10
+      };
+      cues.push(newCue);
+      renderCues();
+      broadcastState('SYNC', isOnAir);
+      showToast('Lower third saved to library');
+    }
+
+    function deleteCue(idx) {
+      cues.splice(idx, 1);
+      renderCues();
+      broadcastState('SYNC', isOnAir);
+      showToast('Cue deleted');
+    }
+
+    function openCueModal(idx) {
+      const c = cues[idx];
+      if (!c) return;
+      editingCueIdx = idx;
+      document.getElementById('edit-mode').value = c.mode || 'speaker';
+      document.getElementById('edit-category').value = c.category || '';
+      document.getElementById('edit-primary').value = c.primary || '';
+      document.getElementById('edit-secondary').value = c.secondary || '';
+      document.getElementById('edit-badge').value = c.badge || '';
+      document.getElementById('edit-duration').value = c.duration || 10;
+      document.getElementById('cue-modal').classList.remove('hidden');
+    }
+
+    function closeCueModal() {
+      editingCueIdx = -1;
+      document.getElementById('cue-modal').classList.add('hidden');
+    }
+
+    function saveEditedCue(andShow) {
+      if (editingCueIdx < 0 || !cues[editingCueIdx]) return;
+      cues[editingCueIdx] = {
+        ...cues[editingCueIdx],
+        mode: document.getElementById('edit-mode').value,
+        category: document.getElementById('edit-category').value.trim(),
+        primary: document.getElementById('edit-primary').value.trim(),
+        secondary: document.getElementById('edit-secondary').value.trim(),
+        badge: document.getElementById('edit-badge').value.trim(),
+        duration: parseInt(document.getElementById('edit-duration').value, 10) || 10
+      };
+      const idx = editingCueIdx;
+      renderCues();
+      closeCueModal();
+      broadcastState('SYNC', isOnAir);
+      if (andShow) fireCue(idx);
+    }
+
+    /* Marquee Presets Management */
+    function renderMarqueePresets() {
+      const list = document.getElementById('marquee-preset-list');
+      if (!list) return;
+
+      list.innerHTML = marqueePresets.length ? marqueePresets.map((m, idx) => {
+        const isActive = config.showTicker && activeMarqueeId === m.id;
+        return `
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border ${
+            isActive
+              ? 'bg-amber-950/40 border-amber-500/80'
+              : 'bg-zinc-950/90 border-zinc-800'
+          }">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">${esc(m.tag)}</span>
+                ${isActive ? '<span class="px-1.5 py-0.2 rounded bg-amber-500 text-black font-bold text-[9px]">LIVE</span>' : ''}
+              </div>
+              <div class="text-xs font-semibold text-white truncate mt-0.5">${esc(m.name)}</div>
+              <div class="text-[11px] text-zinc-400 truncate">${esc(m.text)}</div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="applyMarqueePreset(${idx})" class="px-2.5 py-1 rounded-lg ${isActive ? 'bg-amber-600' : 'bg-zinc-800 hover:bg-zinc-700'} text-white text-[11px] font-semibold">
+                ${isActive ? 'Active' : 'Apply & Run'}
+              </button>
+              <button onclick="deleteMarqueePreset(${idx})" class="p-1 rounded-md bg-zinc-900 hover:bg-red-950 text-red-400 text-xs">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('') : '<div class="text-xs text-zinc-500 text-center py-2">No marquee presets.</div>';
+    }
+
+    function applyMarqueePreset(idx) {
+      const m = marqueePresets[idx];
+      if (!m) return;
+      activeMarqueeId = m.id;
+      config.marqueeTag = m.tag;
+      config.marqueeSpeed = m.speed;
+      config.marqueeText = m.text;
+      config.showTicker = true;
+      populateAllInputs();
+      renderLowerThirdCanvas();
+      broadcastState('SYNC', isOnAir);
+      renderMarqueePresets();
+      showToast(`Marquee: ${m.name}`);
+    }
+
+    function saveCurrentMarqueePreset() {
+      const name = prompt('Preset Name:', config.marqueeTag || 'Church Announcements');
+      if (!name) return;
+      marqueePresets.push({
+        id: 'mq_' + Date.now(),
+        name,
+        tag: config.marqueeTag,
+        speed: config.marqueeSpeed,
+        text: config.marqueeText
+      });
+      renderMarqueePresets();
+      broadcastState('SYNC', isOnAir);
+      showToast('Marquee preset saved');
+    }
+
+    function deleteMarqueePreset(idx) {
+      marqueePresets.splice(idx, 1);
+      renderMarqueePresets();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    /* 12 Frame Selector Grid & Frame Customizer UI */
+    function renderFrameSelectorGrid() {
+      const grid = document.getElementById('frame-selector-grid');
+      if (!grid) return;
+
+      grid.innerHTML = FRAME_DEFS.map(f => {
+        const active = f.id === activeFrameId;
+        const customized = isFrameCustomized(f.id);
+        return `
+          <button onclick="selectObsFrame('${f.id}')" class="text-left p-2.5 rounded-xl border transition relative ${
+            active
+              ? 'bg-red-950/70 border-red-500/90 text-white shadow-sm'
+              : 'bg-zinc-900/90 border-zinc-700/80 text-zinc-200 hover:bg-zinc-800'
+          }">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-xs font-bold leading-tight">${esc(f.name)}</span>
+              ${customized ? '<span class="w-2 h-2 rounded-full bg-amber-400 shrink-0" title="Customized"></span>' : ''}
+            </div>
+            <div class="text-[10px] text-zinc-400 mt-0.5 leading-snug">${esc(f.short)}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectObsFrame(frameId) {
+      activeFrameId = frameId;
+      setPreviewTarget('frame');
+      renderFrameSelectorGrid();
+      populateFrameCustomizer();
+      updateSelectedFrameUrlBox();
+      renderActiveFrame();
+      broadcastState('FRAME_CHANGE', isOnAir);
+    }
+
+    function updateSelectedFrameUrlBox() {
+      const def = getFrameDef(activeFrameId);
+      const fs = getFrameSettings(def.id);
+      const urlEl = document.getElementById('url-selected-frame');
+      const labelEl = document.getElementById('selected-frame-url-label');
+      const hintEl = document.getElementById('selected-frame-hint');
+      if (urlEl) urlEl.value = getFrameUrl(def.id);
+      if (labelEl) labelEl.textContent = `${def.name} — OBS Browser Source URL`;
+      if (hintEl) hintEl.textContent = getDynamicFrameHint(def, fs);
+    }
+
+    function populateFrameCustomizer() {
+      const def = getFrameDef(activeFrameId);
+      const fs = getFrameSettings(def.id);
+      const effectiveTheme = fs.theme === 'inherit' ? config.theme : fs.theme;
+      const palette = THEME_PALETTES[effectiveTheme] || THEME_PALETTES['bcc-crimson'];
+
+      const titleEl = document.getElementById('customizer-frame-title');
+      if (titleEl) titleEl.textContent = `Customize: ${def.name}`;
+
+      document.getElementById('in-fc-theme').value = fs.theme || 'inherit';
+      document.getElementById('in-fc-accent').value = fs.customAccent || palette.accent;
+
+      const autoBtn = document.getElementById('btn-fc-accent-auto');
+      if (autoBtn) {
+        autoBtn.textContent = fs.customAccent ? 'Reset Auto' : 'Theme Auto';
+      }
+
+      document.getElementById('in-fc-header-badge').value = fs.headerBadge || '';
+      document.getElementById('in-fc-panel-title').value = fs.panelTitle || '';
+
+      document.getElementById('in-fc-radius').value = fs.cornerRadius;
+      document.getElementById('lbl-fc-radius').textContent = `${fs.cornerRadius}px`;
+
+      document.getElementById('in-fc-border').value = fs.borderWidth;
+      document.getElementById('lbl-fc-border').textContent = `${fs.borderWidth}px`;
+
+      document.getElementById('in-fc-text-scale').value = fs.textScale;
+      document.getElementById('lbl-fc-text-scale').textContent = `${Math.round(fs.textScale * 100)}%`;
+
+      document.getElementById('in-fc-opacity').value = fs.matteOpacity;
+      document.getElementById('lbl-fc-opacity').textContent = `${Math.round(fs.matteOpacity * 100)}%`;
+
+      document.getElementById('in-fc-mirror').checked = !!fs.mirror;
+      document.getElementById('in-fc-header').checked = !!fs.showHeader;
+      document.getElementById('in-fc-infobar').checked = !!fs.showInfoBar;
+      document.getElementById('in-fc-live').checked = !!fs.showLive;
+      document.getElementById('in-fc-logo').checked = !!fs.showLogo;
+    }
+
+    function saveFrameSettingPatch(patch) {
+      if (!config.frameSettings) config.frameSettings = {};
+      const current = getFrameSettings(activeFrameId);
+      config.frameSettings[activeFrameId] = { ...current, ...patch };
+      renderFrameSelectorGrid();
+      updateSelectedFrameUrlBox();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function handleFrameCustomizeChange() {
+      const radius = parseInt(document.getElementById('in-fc-radius').value, 10) || 0;
+      const border = parseInt(document.getElementById('in-fc-border').value, 10) || 0;
+      const textScale = parseFloat(document.getElementById('in-fc-text-scale').value) || 1;
+      const matteOpacity = parseFloat(document.getElementById('in-fc-opacity').value) || 1;
+
+      document.getElementById('lbl-fc-radius').textContent = `${radius}px`;
+      document.getElementById('lbl-fc-border').textContent = `${border}px`;
+      document.getElementById('lbl-fc-text-scale').textContent = `${Math.round(textScale * 100)}%`;
+      document.getElementById('lbl-fc-opacity').textContent = `${Math.round(matteOpacity * 100)}%`;
+
+      saveFrameSettingPatch({
+        theme: document.getElementById('in-fc-theme').value,
+        headerBadge: document.getElementById('in-fc-header-badge').value,
+        panelTitle: document.getElementById('in-fc-panel-title').value,
+        cornerRadius: radius,
+        borderWidth: border,
+        textScale,
+        matteOpacity,
+        mirror: document.getElementById('in-fc-mirror').checked,
+        showHeader: document.getElementById('in-fc-header').checked,
+        showInfoBar: document.getElementById('in-fc-infobar').checked,
+        showLive: document.getElementById('in-fc-live').checked,
+        showLogo: document.getElementById('in-fc-logo').checked
+      });
+    }
+
+    function handleFrameAccentPick() {
+      const hex = document.getElementById('in-fc-accent').value;
+      saveFrameSettingPatch({ customAccent: hex });
+      populateFrameCustomizer();
+    }
+
+    function clearFrameCustomAccent() {
+      saveFrameSettingPatch({ customAccent: '' });
+      populateFrameCustomizer();
+    }
+
+    function resetSelectedFrameSettings() {
+      if (config.frameSettings && config.frameSettings[activeFrameId]) {
+        delete config.frameSettings[activeFrameId];
+      }
+      populateFrameCustomizer();
+      renderFrameSelectorGrid();
+      updateSelectedFrameUrlBox();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+      showToast(`Reset ${getFrameDef(activeFrameId).name} to defaults`);
+    }
+
+    function copySelectedFrameUrl(btn) {
+      copyText(getFrameUrl(activeFrameId), btn);
+    }
+
+    function handleFrameContentEdit() {
+      config.frameVerseRef = document.getElementById('in-fr-verse-ref').value;
+      config.frameVerseVer = document.getElementById('in-fr-verse-ver').value;
+      config.frameVerseText = document.getElementById('in-fr-verse-text').value;
+      config.frameAnnouncements = document.getElementById('in-fr-announcements').value;
+      config.frameSlideTag = document.getElementById('in-fr-slide-tag').value;
+      config.frameWelcomeTitle = document.getElementById('in-fr-welcome-title').value;
+      config.frameWelcomeSub = document.getElementById('in-fr-welcome-sub').value;
+      
+      const songTitle = document.getElementById('in-fr-song-title');
+      if (songTitle) config.frameSongTitle = songTitle.value;
+      const songDetails = document.getElementById('in-fr-song-details');
+      if (songDetails) config.frameSongDetails = songDetails.value;
+
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function pullLowerThirdToBible() {
+      config.frameVerseText = config.primary || config.frameVerseText;
+      config.frameVerseRef = config.secondary || config.frameVerseRef;
+      populateAllInputs();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+      showToast('Copied Lower Third text to Bible Verse Frame');
+    }
+
+    /* Populate All Input Fields */
+    function populateAllInputs() {
+      const inCat = document.getElementById('in-category');
+      if (inCat) inCat.value = config.category;
+      const inChurch = document.getElementById('in-church');
+      if (inChurch) inChurch.value = config.churchName;
+      const inPrimary = document.getElementById('in-primary');
+      if (inPrimary) inPrimary.value = config.primary;
+      const inSec = document.getElementById('in-secondary');
+      if (inSec) inSec.value = config.secondary;
+      const inBadge = document.getElementById('in-badge');
+      if (inBadge) inBadge.value = config.badge;
+
+      const autoHide = document.getElementById('ctrl-auto-hide');
+      if (autoHide) autoHide.checked = !!config.autoHide;
+      const dur = document.getElementById('ctrl-duration');
+      if (dur) dur.value = config.durationSec;
+      const showLive = document.getElementById('ctrl-show-live');
+      if (showLive) showLive.checked = !!config.showLive;
+      const showTicker = document.getElementById('ctrl-show-ticker');
+      if (showTicker) showTicker.checked = !!config.showTicker;
+      const showLogo = document.getElementById('ctrl-show-logo');
+      if (showLogo) showLogo.checked = !!config.showLogo;
+
+      const animStyle = document.getElementById('in-anim-style');
+      if (animStyle) animStyle.value = config.animStyle || 'modern-slide';
+
+      const mqTag = document.getElementById('in-marquee-tag');
+      if (mqTag) mqTag.value = config.marqueeTag;
+      const mqSpeed = document.getElementById('in-marquee-speed');
+      if (mqSpeed) mqSpeed.value = config.marqueeSpeed;
+      const lblSpeed = document.getElementById('lbl-speed');
+      if (lblSpeed) lblSpeed.textContent = `${config.marqueeSpeed}s`;
+      const mqText = document.getElementById('in-marquee-text');
+      if (mqText) mqText.value = config.marqueeText;
+
+      const scale = document.getElementById('ctrl-scale');
+      if (scale) scale.value = config.scale;
+      const lblScale = document.getElementById('lbl-scale');
+      if (lblScale) lblScale.textContent = `${Math.round(config.scale * 100)}%`;
+      const op = document.getElementById('ctrl-opacity');
+      if (op) op.value = config.bgOpacity;
+      const lblOp = document.getElementById('lbl-opacity');
+      if (lblOp) lblOp.textContent = `${Math.round(config.bgOpacity * 100)}%`;
+
+      // Frame text fields
+      const fRef = document.getElementById('in-fr-verse-ref');
+      if (fRef) fRef.value = config.frameVerseRef;
+      const fVer = document.getElementById('in-fr-verse-ver');
+      if (fVer) fVer.value = config.frameVerseVer;
+      const fText = document.getElementById('in-fr-verse-text');
+      if (fText) fText.value = config.frameVerseText;
+      const fAnn = document.getElementById('in-fr-announcements');
+      if (fAnn) fAnn.value = config.frameAnnouncements;
+      const fSlideTag = document.getElementById('in-fr-slide-tag');
+      if (fSlideTag) fSlideTag.value = config.frameSlideTag;
+      const fWTitle = document.getElementById('in-fr-welcome-title');
+      if (fWTitle) fWTitle.value = config.frameWelcomeTitle;
+      const fWSub = document.getElementById('in-fr-welcome-sub');
+      if (fWSub) fWSub.value = config.frameWelcomeSub;
+      const cdMins = document.getElementById('in-cd-mins');
+      if (cdMins) cdMins.value = config.countdownMinutes || 5;
+      const cdTarget = document.getElementById('in-cd-target-time');
+      if (cdTarget) cdTarget.value = config.countdownTargetTime || '10:00';
+
+      const songTitle = document.getElementById('in-fr-song-title');
+      if (songTitle) songTitle.value = config.frameSongTitle || '';
+      const songDetails = document.getElementById('in-fr-song-details');
+      if (songDetails) songDetails.value = config.frameSongDetails || '';
+
+      updateCountdownButtons();
+      renderModeButtons();
+      highlightActiveThemeButton();
+      populateFrameCustomizer();
+    }
+
+    /* =========================================================================
+       8. STREAM DECK / OBS DECK VIEW (?view=deck)
+       ========================================================================= */
+    function renderDeckView() {
+      const container = document.getElementById('deck-grid-cues');
+      if (!container) return;
+
+      // Saved Lower Thirds Deck Buttons
+      container.innerHTML = cues.map((c, idx) => {
+        const isCurrentOnAir = isOnAir && activeCueId === c.id;
+        return `
+          <button onclick="fireCue(${idx})" class="deck-btn ${isCurrentOnAir ? 'is-active' : 'action-primary'}">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300 opacity-90">${esc(c.category || c.mode)}</span>
+            <span class="text-xs font-bold mt-1 line-clamp-2 leading-tight">${esc(c.primary)}</span>
+            ${isCurrentOnAir ? '<span class="text-[10px] font-bold text-red-200 mt-1 uppercase">● ON AIR</span>' : ''}
+          </button>
+        `;
+      }).join('');
+
+      // Marquee Presets Deck Buttons
+      const mqGrid = document.getElementById('deck-grid-marquee');
+      if (mqGrid) {
+        mqGrid.innerHTML = marqueePresets.map((m, idx) => {
+          const isActive = config.showTicker && activeMarqueeId === m.id;
+          return `
+            <button onclick="applyMarqueePreset(${idx})" class="deck-btn ${isActive ? 'is-active' : 'action-warning'}">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-white opacity-80">${esc(m.tag)}</span>
+              <span class="text-xs font-bold mt-1 line-clamp-2 leading-tight">${esc(m.name)}</span>
+            </button>
+          `;
+        }).join('');
+      }
+
+      // Frames Deck Buttons
+      const frGrid = document.getElementById('deck-grid-frames');
+      if (frGrid) {
+        frGrid.innerHTML = FRAME_DEFS.map(f => {
+          const isActive = activeFrameId === f.id;
+          return `
+            <button onclick="selectObsFrame('${f.id}')" class="deck-btn ${isActive ? 'is-active' : 'action-frame'}">
+              <span class="text-xs font-bold line-clamp-2 leading-tight">${esc(f.name)}</span>
+            </button>
+          `;
+        }).join('');
+      }
+    }
+
+    /* =========================================================================
+       9. LIVE FEED DOCK VIEW (?view=feed)
+       ========================================================================= */
+    function renderFeedView() {
+      const container = document.getElementById('feed-cue-list');
+      if (!container) return;
+
+      if (!cues.length) {
+        container.innerHTML = '<div class="text-xs text-zinc-500 text-center py-6">No cues prepared in rundown.</div>';
+        return;
+      }
+
+      container.innerHTML = cues.map((c, idx) => {
+        const isCurrentOnAir = isOnAir && activeCueId === c.id;
+        const isPreview = !isOnAir && previewCueId === c.id;
+        return `
+          <div class="feed-item ${isCurrentOnAir ? 'is-on-air' : isPreview ? 'is-preview' : ''}">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center font-mono text-[11px] font-bold text-zinc-300">${idx + 1}</span>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] font-bold text-amber-400 uppercase">${esc(c.category || c.mode)}</span>
+                  ${isCurrentOnAir ? '<span class="px-1.5 py-0.2 rounded bg-red-600 text-white font-bold text-[9px] animate-pulse">ON AIR</span>' : ''}
+                  ${isPreview ? '<span class="px-1.5 py-0.2 rounded bg-blue-600 text-white font-bold text-[9px]">PREVIEW</span>' : ''}
+                </div>
+                <div class="text-xs font-bold text-white truncate max-w-[200px]">${esc(c.primary)}</div>
+                <div class="text-[10px] text-zinc-400 truncate max-w-[200px]">${esc(c.secondary)}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <button onclick="feedPreview(${idx})" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10.5px]">Preview</button>
+              <button onclick="feedTakeLive(${idx})" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10.5px] font-bold">Take</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function feedPreview(idx) {
+      const c = cues[idx];
+      if (!c) return;
+      currentFeedIndex = idx;
+      previewCueId = c.id;
+      config.mode = c.mode || 'speaker';
+      config.category = c.category;
+      config.primary = c.primary;
+      config.secondary = c.secondary;
+      config.badge = c.badge || '';
+      populateAllInputs();
+      renderLowerThirdCanvas();
+      renderFeedView();
+      showToast(`Previewing cue #${idx + 1}`);
+    }
+
+    function feedTakeLive(idx) {
+      currentFeedIndex = idx;
+      previewCueId = null;
+      fireCue(idx);
+    }
+
+    function feedNext() {
+      if (currentFeedIndex < cues.length - 1) {
+        currentFeedIndex += 1;
+        feedTakeLive(currentFeedIndex);
+      } else {
+        showToast('End of cue list');
+      }
+    }
+
+    function feedPrev() {
+      if (currentFeedIndex > 0) {
+        currentFeedIndex -= 1;
+        feedTakeLive(currentFeedIndex);
+      } else {
+        showToast('Start of cue list');
+      }
+    }
+
+    /* =========================================================================
+       10. NAVIGATION, OBS DOCK RESIZING, BACKDROPS & URLS
+       ========================================================================= */
+    function switchTab(name) {
+      ['control', 'library', 'frames', 'settings'].forEach(t => {
+        const tabEl = document.getElementById(`tab-${t}`);
+        if (tabEl) tabEl.classList.toggle('hidden', t !== name);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (btn) {
+          if (t === name) {
+            btn.className = 'py-2.5 text-xs font-semibold border-b-2 border-amber-400 text-amber-200 transition';
+          } else {
+            btn.className = 'py-2.5 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition';
+          }
+        }
+      });
+
+      if (name === 'frames') setPreviewTarget('frame');
+      else if (name === 'control' || name === 'library') setPreviewTarget('overlay');
+    }
+
+    function setPreviewTarget(target) {
+      previewTarget = target;
+      const cg = document.getElementById('cg-canvas');
+      const fr = document.getElementById('frame-canvas');
+      const title = document.getElementById('monitor-title');
+      const switchBtn = document.getElementById('btn-switch-preview');
+
+      if (target === 'frame') {
+        if (cg) cg.classList.add('hidden');
+        if (fr) fr.classList.remove('hidden');
+        const def = getFrameDef(activeFrameId);
+        if (title) title.textContent = `Preview Frame: ${def.name}`;
+        if (switchBtn) switchBtn.textContent = 'Switch to Lower Third';
+        renderActiveFrame();
+      } else {
+        if (fr) fr.classList.add('hidden');
+        if (cg) cg.classList.remove('hidden');
+        if (title) title.textContent = 'Preview: Lower Third Overlay';
+        if (switchBtn) switchBtn.textContent = 'Switch to OBS Frames';
+        const mockLayer = document.getElementById('preview-mock-layer');
+        if (mockLayer) {
+          mockLayer.classList.add('hidden');
+          mockLayer.innerHTML = '';
+        }
+      }
+    }
+
+    function togglePreviewTarget() {
+      setPreviewTarget(previewTarget === 'overlay' ? 'frame' : 'overlay');
+    }
+
+    function toggleDockLayout(forceDock) {
+      const ws = document.getElementById('workspace');
+      const wrap = document.getElementById('stage-wrap');
+      const btn = document.getElementById('btn-toggle-dock');
+      const isDock = (typeof forceDock === 'boolean') ? forceDock : !ws.dataset.dock;
+
+      if (isDock) {
+        ws.dataset.dock = '1';
+        ws.className = 'flex-1 grid grid-cols-1 max-w-[580px] w-full mx-auto border-x border-zinc-800 min-h-0';
+        if (wrap) {
+          wrap.classList.remove('max-h-[460px]');
+          wrap.classList.add('max-h-[220px]');
+        }
+        if (btn) btn.textContent = 'Wide View';
+      } else {
+        delete ws.dataset.dock;
+        ws.className = 'flex-1 grid grid-cols-1 lg:grid-cols-[1fr_450px] min-h-0';
+        if (wrap) {
+          wrap.classList.remove('max-h-[220px]');
+          wrap.classList.add('max-h-[460px]');
+        }
+        if (btn) btn.textContent = 'Dock View';
+      }
+      setTimeout(scalePreviewMonitor, 30);
+    }
+
+    function setBackdrop(cls) {
+      const shell = document.getElementById('stage-shell');
+      if (!shell) return;
+      shell.classList.remove('bg-stage', 'bg-bright', 'bg-checker');
+      shell.classList.add(cls);
+    }
+
+    function toggleSafeGuide() {
+      const guide = document.getElementById('safe-guide');
+      if (guide) guide.classList.toggle('hidden');
+    }
+
+    function scalePreviewMonitor() {
+      const wrap = document.getElementById('stage-wrap');
+      const shell = document.getElementById('stage-shell');
+      if (!wrap || !shell || isOverlayOnly) return;
+      const scale = Math.min(wrap.clientWidth / 1920, wrap.clientHeight / 1080);
+      shell.style.transform = `scale(${scale})`;
+    }
+
+    function fitObsSource() {
+      const el = document.getElementById(overlayTarget === 'frame' ? 'frame-canvas' : 'cg-canvas');
+      if (!el) return;
+      const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      el.style.transform = `scale(${scale})`;
+    }
+
+    function testCurrentSourceFullscreen() {
+      enterOverlayMode(previewTarget, true);
+    }
+
+    function enterOverlayMode(target, showExitBtn) {
+      isOverlayOnly = true;
+      overlayTarget = (target === 'frame') ? 'frame' : 'overlay';
+
+      document.documentElement.classList.add('obs-overlay-mode');
+      const app = document.getElementById('studio-app');
+      if (app) app.classList.add('hidden');
+
+      const mount = document.getElementById('obs-mount');
+      if (mount) {
+        mount.classList.remove('hidden');
+        const el = document.getElementById(overlayTarget === 'frame' ? 'frame-canvas' : 'cg-canvas');
+        if (el) {
+          el.classList.remove('hidden');
+          mount.appendChild(el);
+        }
+      }
+
+      if (overlayTarget === 'frame') renderActiveFrame();
+      else renderLowerThirdCanvas();
+
+      const exitBtn = document.getElementById('exit-overlay-btn');
+      if (exitBtn) exitBtn.classList.toggle('hidden', !showExitBtn);
+
+      fitObsSource();
+      window.addEventListener('resize', fitObsSource);
+    }
+
+    function exitOverlayMode() {
+      isOverlayOnly = false;
+      window.removeEventListener('resize', fitObsSource);
+      document.documentElement.classList.remove('obs-overlay-mode');
+
+      const shell = document.getElementById('stage-shell');
+      const cg = document.getElementById('cg-canvas');
+      const fr = document.getElementById('frame-canvas');
+      if (cg) { cg.style.transform = ''; shell.appendChild(cg); }
+      if (fr) { fr.style.transform = ''; shell.appendChild(fr); }
+
+      const mount = document.getElementById('obs-mount');
+      if (mount) mount.classList.add('hidden');
+      const exitBtn = document.getElementById('exit-overlay-btn');
+      if (exitBtn) exitBtn.classList.add('hidden');
+      const app = document.getElementById('studio-app');
+      if (app) app.classList.remove('hidden');
+
+      setPreviewTarget(previewTarget);
+      scalePreviewMonitor();
+    }
+
+    function getBaseUrl() {
+      return window.location.href.split('?')[0].split('#')[0];
+    }
+    function getTargetUrl(view) {
+      return `${getBaseUrl()}?view=${view}`;
+    }
+    function getFrameUrl(frameId) {
+      return `${getBaseUrl()}?view=frame&frame=${encodeURIComponent(frameId)}`;
+    }
+
+    function populateCoreObsUrls() {
+      const uO = document.getElementById('url-overlay');
+      if (uO) uO.value = getTargetUrl('overlay');
+      const uC = document.getElementById('url-control');
+      if (uC) uC.value = getTargetUrl('control');
+      const uF = document.getElementById('url-feed');
+      if (uF) uF.value = getTargetUrl('feed');
+      const uD = document.getElementById('url-deck');
+      if (uD) uD.value = getTargetUrl('deck');
+    }
+
+    function copyText(text, btn) {
+      try {
+        const tmp = document.createElement('textarea');
+        tmp.value = text;
+        tmp.style.position = 'fixed';
+        tmp.style.opacity = '0';
+        document.body.appendChild(tmp);
+        tmp.focus();
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+      } catch (_) {}
+
+      if (btn) {
+        const prev = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = prev; }, 1400);
+      }
+      showToast('URL copied to clipboard');
+    }
+
+    /* Keyboard Shortcuts */
+    window.addEventListener('keydown', (e) => {
+      if (isOverlayOnly) return;
+      const tag = (e.target && e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+        if (e.key === 'Escape') e.target.blur();
+        return;
+      }
+      if (e.code === 'Space') {
+        e.preventDefault();
+        isOnAir ? triggerHide() : triggerShow();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        triggerHide();
+      } else if (['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        const keys = ['speaker', 'sermon', 'scripture', 'announcement'];
+        selectMode(keys[Number(e.key) - 1]);
+      }
+    });
+
+    /* App Boot Initialization */
+    window.addEventListener('DOMContentLoaded', () => {
+      const hadSaved = loadSavedState();
+      initSyncChannel();
+      startCountdownLoop();
+
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view');
+      const frameParam = params.get('frame');
+
+      if (frameParam && FRAME_DEFS.some(f => f.id === frameParam)) {
+        activeFrameId = frameParam;
+      }
+
+      if (view === 'overlay') {
+        renderLowerThirdCanvas();
+        enterOverlayMode('overlay', false);
+        if (isOnAir) playIntro();
+        if (bus) bus.postMessage({ type: 'HELLO_FROM_OBS' });
+      } else if (view === 'frame') {
+        enterOverlayMode('frame', false);
+        if (bus) bus.postMessage({ type: 'HELLO_FROM_OBS' });
+      } else if (view === 'deck') {
+        document.getElementById('studio-app').classList.add('hidden');
+        const deckView = document.getElementById('deck-view');
+        if (deckView) deckView.classList.remove('hidden');
+        renderDeckView();
+      } else if (view === 'feed') {
+        document.getElementById('studio-app').classList.add('hidden');
+        const feedView = document.getElementById('feed-view');
+        if (feedView) feedView.classList.remove('hidden');
+        renderFeedView();
+      } else {
+        populateCoreObsUrls();
+        populateAllInputs();
+        renderCues();
+        renderMarqueePresets();
+        renderFrameSelectorGrid();
+        updateSelectedFrameUrlBox();
+        renderLowerThirdCanvas();
+        renderActiveFrame();
+
+        if (view === 'control') toggleDockLayout(true);
+
+        const wrap = document.getElementById('stage-wrap');
+        if ('ResizeObserver' in window && wrap) {
+          new ResizeObserver(scalePreviewMonitor).observe(wrap);
+        } else {
+          window.addEventListener('resize', scalePreviewMonitor);
+        }
+        scalePreviewMonitor();
+
+        if (!hadSaved || isOnAir) {
+          setTimeout(() => playIntro(), 280);
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>
