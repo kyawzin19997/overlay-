@@ -29,6 +29,8 @@ module.exports = `
     };
 
     // 12 Professional OBS Frame Definitions (1920x1080 transparent cutouts)
+    // Note: Frames with sidebars (cam-bible, cam-announce, welcome-cam, cam-slides, pastor-info, prayer)
+    // all share the EXACT same primary window: 1216x684 @ (48, 148) with radius 14!
     const FRAME_DEFS = [
       {
         id: 'main-cam',
@@ -38,45 +40,42 @@ module.exports = `
         cutouts: [{ x: 24, y: 24, w: 1872, h: 1032, r: 16, label: 'MAIN CAMERA (16:9)' }]
       },
       {
-        id: 'pastor-info',
-        name: 'Pastor & Sermon',
-        short: 'Camera + Pastor profile card',
-        hint: 'Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'PASTOR CAMERA (1152×648)' }]
-      },
-      {
         id: 'cam-bible',
         name: 'Camera + Bible Verse',
         short: '16:9 Cam + Scripture card',
-        hint: 'Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'MAIN CAMERA (1152×648)' }]
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'MAIN CAMERA (1216×684)' }]
       },
       {
         id: 'cam-announce',
         name: 'Camera + Announcements',
         short: '16:9 Cam + News panel right',
-        hint: 'Cam: 1216×684 @ (48,148)',
+        hint: 'Primary: 1216×684 @ (48,148)',
         cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'MAIN CAMERA (1216×684)' }]
+      },
+      {
+        id: 'welcome-cam',
+        name: 'Starting Soon & Cam',
+        short: 'Sanctuary Cam + Countdown',
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'SANCTUARY CAMERA (1216×684)' }]
       },
       {
         id: 'cam-slides',
         name: 'Camera + Slideshow',
         short: 'Slides left + Speaker PiP right',
-        hint: 'Slides: 1216×684 @ 48,148 • Cam: 576×324 @ 1296,148',
+        hint: 'Slides: 1216×684 @ (48,148) • PiP: 576×324 @ (1296,148)',
         cutouts: [
           { x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'SLIDESHOW / LYRICS (1216×684)' },
-          { x: 1296, y: 148, w: 576, h: 324, r: 14, label: 'SPEAKER CAM (576×324)' }
+          { x: 1296, y: 148, w: 576, h: 324, r: 14, label: 'SPEAKER PiP (576×324)' }
         ]
       },
       {
-        id: 'cam-pip',
-        name: 'Camera PiP Corner',
-        short: 'Wide camera with corner inset',
-        hint: 'Wide: 1600×900 @ 24,24 • PiP: 384×216 @ 1512,840',
-        cutouts: [
-          { x: 24, y: 24, w: 1600, h: 900, r: 16, label: 'WIDE CAMERA' },
-          { x: 1512, y: 840, w: 384, h: 216, r: 12, label: 'INSET PiP' }
-        ]
+        id: 'pastor-info',
+        name: 'Pastor & Sermon',
+        short: 'Camera + Pastor profile card',
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'PASTOR CAMERA (1216×684)' }]
       },
       {
         id: 'worship',
@@ -89,8 +88,18 @@ module.exports = `
         id: 'prayer',
         name: 'Prayer Session',
         short: 'Camera + Prayer petition card',
-        hint: 'Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'SANCTUARY CAMERA (1152×648)' }]
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'SANCTUARY CAMERA (1216×684)' }]
+      },
+      {
+        id: 'cam-pip',
+        name: 'Camera PiP Corner',
+        short: 'Wide camera with corner inset',
+        hint: 'Wide: 1600×900 @ 24,24 • PiP: 384×216 @ 1512,840',
+        cutouts: [
+          { x: 24, y: 24, w: 1600, h: 900, r: 16, label: 'WIDE CAMERA' },
+          { x: 1512, y: 840, w: 384, h: 216, r: 12, label: 'INSET PiP' }
+        ]
       },
       {
         id: 'interview',
@@ -101,13 +110,6 @@ module.exports = `
           { x: 48, y: 148, w: 912, h: 684, r: 14, label: 'CAMERA 1 (HOST)' },
           { x: 960, y: 148, w: 912, h: 684, r: 14, label: 'CAMERA 2 (GUEST)' }
         ]
-      },
-      {
-        id: 'welcome-cam',
-        name: 'Starting Soon & Cam',
-        short: 'Sanctuary Cam + Countdown',
-        hint: 'Sanctuary Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'SANCTUARY CAMERA (1152×648)' }]
       },
       {
         id: 'event-announce',
@@ -143,15 +145,15 @@ module.exports = `
 
     const FRAME_SPECIFIC_DEFAULTS = {
       'main-cam':          { cornerRadius: 16, headerBadge: 'LIVE',                 panelTitle: '' },
-      'pastor-info':       { cornerRadius: 14, headerBadge: 'SUNDAY MESSAGE',       panelTitle: 'SENIOR PASTOR' },
       'cam-bible':         { cornerRadius: 14, headerBadge: 'SCRIPTURE READING',    panelTitle: 'HOLY BIBLE' },
       'cam-announce':      { cornerRadius: 14, headerBadge: 'CHURCH ANNOUNCEMENTS', panelTitle: 'Church News' },
+      'welcome-cam':       { cornerRadius: 14, headerBadge: 'STARTING SOON',        panelTitle: 'SERVICE BEGINS IN' },
       'cam-slides':        { cornerRadius: 14, headerBadge: 'SERMON SLIDES',        panelTitle: 'LIVE SPEAKER' },
-      'cam-pip':           { cornerRadius: 16, headerBadge: 'LIVE BROADCAST',       panelTitle: 'SANCTUARY' },
+      'pastor-info':       { cornerRadius: 14, headerBadge: 'SUNDAY MESSAGE',       panelTitle: 'SENIOR PASTOR' },
       'worship':           { cornerRadius: 14, headerBadge: 'WORSHIP & PRAISE',     panelTitle: 'SONG TITLE' },
       'prayer':            { cornerRadius: 14, headerBadge: 'INTERCESSORY PRAYER',  panelTitle: 'PRAYER REQUESTS' },
+      'cam-pip':           { cornerRadius: 16, headerBadge: 'LIVE BROADCAST',       panelTitle: 'SANCTUARY' },
       'interview':         { cornerRadius: 14, headerBadge: 'CONVERSATION & DIALOGUE', panelTitle: 'INTERVIEW' },
-      'welcome-cam':       { cornerRadius: 14, headerBadge: 'STARTING SOON',        panelTitle: 'SERVICE BEGINS IN' },
       'event-announce':    { cornerRadius: 14, headerBadge: 'UPCOMING EVENTS',      panelTitle: 'CHURCH CALENDAR' },
       'countdown-closing': { cornerRadius: 14, headerBadge: 'CLOSING BENEDICTION',  panelTitle: 'GO IN PEACE' }
     };
@@ -206,12 +208,16 @@ module.exports = `
       frameVerseRef: 'John 14:6',
       frameVerseVer: 'NIV',
       frameVerseText: 'Jesus answered, “I am the way and the truth and the life. No one comes to the Father except through me.”',
-      frameAnnouncements: [
-        'Sunday Worship Service | Every Sunday at 10:00 AM • Sanctuary & Online',
-        'Wednesday Prayer & Bible Study | Every Wednesday at 7:00 PM • Fellowship Hall',
-        'Youth & Young Adults Fellowship | Fridays at 6:30 PM • Welcome Center',
-        'Online Tithes & Offerings | Transfer via PromptPay or visit bcc.church/give'
-      ].join('\\n'),
+      
+      // Structured Announcements List (two fields per line: title & details)
+      frameAnnouncementsList: [
+        { title: 'Sunday Worship Service', details: 'Every Sunday at 10:00 AM • Sanctuary & Online' },
+        { title: 'Wednesday Prayer & Bible Study', details: 'Every Wednesday at 7:00 PM • Fellowship Hall' },
+        { title: 'Youth & Young Adults Fellowship', details: 'Fridays at 6:30 PM • Welcome Center' },
+        { title: 'Online Tithes & Offerings', details: 'Transfer via PromptPay or visit bcc.church/give' }
+      ],
+      frameAnnouncements: '', // legacy mirror string
+
       frameSlideTag: 'SERMON SLIDES',
       frameWelcomeTitle: 'Sunday Worship Service',
       frameWelcomeSub: 'We are glad you are worshiping with us today • Bangkok Christ Church',

@@ -91,6 +91,7 @@ module.exports = `
       config.theme = themeId;
       highlightActiveThemeButton();
       populateFrameCustomizer();
+      renderFrameContextEditor(activeFrameId);
       renderLowerThirdCanvas();
       renderActiveFrame();
       broadcastState('SYNC', isOnAir);
@@ -307,6 +308,105 @@ module.exports = `
       closeCueModal();
       broadcastState('SYNC', isOnAir);
       if (andShow) fireCue(idx);
+    }
+
+    
+    /* =========================================================================
+       STRUCTURED ANNOUNCEMENTS (Two Fields per Row: Title & Details)
+       ========================================================================= */
+    function renderAnnouncementRows() {
+      const container = document.getElementById('announcements-rows-container');
+      if (!container) return;
+      if (!Array.isArray(config.frameAnnouncementsList)) {
+        config.frameAnnouncementsList = [];
+      }
+      if (config.frameAnnouncementsList.length === 0) {
+        container.innerHTML = '<div class="text-xs text-zinc-500 text-center py-3 bg-zinc-950/40 rounded-lg">No announcements. Click "+ Add Announcement Row" below.</div>';
+        return;
+      }
+      container.innerHTML = config.frameAnnouncementsList.map((item, idx) => \`
+        <div class="announce-row mb-2 flex flex-col sm:flex-row gap-2 bg-zinc-950/70 p-2.5 rounded-lg border border-zinc-800">
+          <div class="flex-1 min-w-0">
+            <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Title</label>
+            <input type="text" value="\${esc(item.title || '')}" oninput="updateAnnouncementRow(\${idx}, 'title', this.value)" placeholder="e.g. Sunday Worship Service" class="w-full px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs text-white placeholder-zinc-500 focus:border-red-500 outline-none" />
+          </div>
+          <div class="flex-[1.5] min-w-0">
+            <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Description / Details</label>
+            <input type="text" value="\${esc(item.details || '')}" oninput="updateAnnouncementRow(\${idx}, 'details', this.value)" placeholder="e.g. Every Sunday at 10:00 AM • Sanctuary & Online" class="w-full px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs text-zinc-300 placeholder-zinc-500 focus:border-red-500 outline-none" />
+          </div>
+          <div class="flex items-end pb-0.5">
+            <button type="button" onclick="deleteAnnouncementRow(\${idx})" class="p-1.5 rounded bg-zinc-900 hover:bg-red-950 border border-zinc-800 hover:border-red-700 text-red-400 text-xs transition" title="Delete Row">
+              ✕
+            </button>
+          </div>
+        </div>
+      \`).join('');
+    }
+
+    function addAnnouncementRow() {
+      if (!Array.isArray(config.frameAnnouncementsList)) {
+        config.frameAnnouncementsList = [];
+      }
+      config.frameAnnouncementsList.push({ title: '', details: '' });
+      renderAnnouncementRows();
+      syncAnnouncementsLegacy();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function deleteAnnouncementRow(idx) {
+      if (!Array.isArray(config.frameAnnouncementsList)) return;
+      config.frameAnnouncementsList.splice(idx, 1);
+      renderAnnouncementRows();
+      syncAnnouncementsLegacy();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function updateAnnouncementRow(idx, field, val) {
+      if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList[idx]) return;
+      config.frameAnnouncementsList[idx][field] = val;
+      syncAnnouncementsLegacy();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function syncAnnouncementsLegacy() {
+      if (!Array.isArray(config.frameAnnouncementsList)) return;
+      config.frameAnnouncements = config.frameAnnouncementsList
+        .map(item => \`\${item.title || ''}\${item.details ? ' | ' + item.details : ''}\`)
+        .join('\\n');
+      const legacyEl = document.getElementById('in-fr-announcements');
+      if (legacyEl) legacyEl.value = config.frameAnnouncements;
+    }
+
+    /* =========================================================================
+       CONTEXT-SENSITIVE FRAME CONTENT CONTROLS
+       ========================================================================= */
+    function renderFrameContextEditor(frameId) {
+      const container = document.getElementById('frame-active-content-editor');
+      if (!container) return;
+
+      const panels = container.querySelectorAll('[data-frame-panel]');
+      let matched = false;
+      panels.forEach(p => {
+        const targets = (p.getAttribute('data-frame-panel') || '').split(',').map(s => s.trim());
+        if (targets.includes(frameId)) {
+          p.classList.remove('hidden');
+          matched = true;
+        } else {
+          p.classList.add('hidden');
+        }
+      });
+
+      const genericPanel = document.getElementById('panel-generic-frame');
+      if (genericPanel) {
+        genericPanel.classList.toggle('hidden', matched);
+      }
+
+      if (frameId === 'cam-announce') {
+        renderAnnouncementRows();
+      }
     }
 
     /* Marquee Presets Management */

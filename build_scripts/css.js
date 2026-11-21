@@ -19,7 +19,7 @@ module.exports = `
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Transparent background for OBS Browser Sources (?view=overlay or ?view=frame) */
+    /* Pure transparent mode for OBS Browser Sources (?view=overlay or ?view=frame) */
     html.obs-overlay-mode,
     html.obs-overlay-mode body {
       background: transparent !important;
@@ -340,9 +340,7 @@ module.exports = `
       letter-spacing: 0.04em;
     }
 
-    /* --- ANIMATION STYLES --- */
-
-    /* Style 1: Modern Slide (Default) */
+    /* Style 1: Modern Slide */
     .cg-lt.style-modern-slide.is-active .cg-spine     { transform: scaleY(1); transition: transform 320ms var(--ease-out-expo) 0ms; }
     .cg-lt.style-modern-slide.is-active .cg-surface   { transform: translate3d(0,0,0); opacity: 1; transition: transform 460ms var(--ease-out-expo) 80ms, opacity 340ms ease-out 80ms; }
     .cg-lt.style-modern-slide.is-active .cg-logo-slot { transform: translate3d(0,0,0); opacity: 1; transition: transform 400ms var(--ease-out-expo) 180ms, opacity 340ms ease-out 180ms; }
@@ -365,11 +363,10 @@ module.exports = `
     .cg-lt.style-minimal-fade.is-active .cg-meta,
     .cg-lt.style-minimal-fade.is-active .cg-primary,
     .cg-lt.style-minimal-fade.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 300ms ease-out 100ms; }
-
     .cg-lt.style-minimal-fade.is-exiting .cg-surface,
     .cg-lt.style-minimal-fade.is-exiting .cg-spine { opacity: 0; transform: translate3d(0, 8px, 0); transition: opacity 260ms ease-in, transform 260ms ease-in; }
 
-    /* Style 3: Elegant Reveal (Curtain drop) */
+    /* Style 3: Elegant Reveal */
     .cg-lt.style-elegant-reveal .cg-surface { transform: translate3d(0, -100%, 0); }
     .cg-lt.style-elegant-reveal.is-active .cg-spine { transform: scaleY(1); transition: transform 300ms ease-out; }
     .cg-lt.style-elegant-reveal.is-active .cg-surface { transform: translate3d(0,0,0); opacity: 1; transition: transform 420ms var(--ease-out-expo) 60ms, opacity 300ms ease 60ms; }
@@ -377,11 +374,10 @@ module.exports = `
     .cg-lt.style-elegant-reveal.is-active .cg-meta,
     .cg-lt.style-elegant-reveal.is-active .cg-primary,
     .cg-lt.style-elegant-reveal.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 350ms ease 150ms, transform 350ms ease 150ms; }
-
     .cg-lt.style-elegant-reveal.is-exiting .cg-surface { transform: translate3d(0, -100%, 0); opacity: 0; transition: transform 280ms ease-in, opacity 250ms ease-in; }
     .cg-lt.style-elegant-reveal.is-exiting .cg-spine { transform: scaleY(0); transition: transform 220ms ease-in 100ms; }
 
-    /* Style 4: Classic Bar (Immediate clean expand) */
+    /* Style 4: Classic Bar */
     .cg-lt.style-classic-bar .cg-surface { transform: scaleX(0.01); transform-origin: left center; }
     .cg-lt.style-classic-bar.is-active .cg-spine { transform: scaleY(1); transition: transform 200ms ease-out; }
     .cg-lt.style-classic-bar.is-active .cg-surface { transform: scaleX(1); opacity: 1; transition: transform 320ms ease-out 60ms, opacity 250ms ease 60ms; }
@@ -389,7 +385,6 @@ module.exports = `
     .cg-lt.style-classic-bar.is-active .cg-meta,
     .cg-lt.style-classic-bar.is-active .cg-primary,
     .cg-lt.style-classic-bar.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 280ms ease 160ms; }
-
     .cg-lt.style-classic-bar.is-exiting .cg-surface { transform: scaleX(0.01); opacity: 0; transition: transform 240ms ease-in, opacity 200ms ease-in; }
     .cg-lt.style-classic-bar.is-exiting .cg-spine { transform: scaleY(0); transition: transform 180ms ease-in 120ms; }
 
@@ -613,6 +608,111 @@ module.exports = `
       line-height: 1;
     }
 
+    /* =========================================================================
+       7. DUAL STUDIO MONITORS (PREVIEW & PROGRAM)
+       ========================================================================= */
+    .dual-monitor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+      width: 100%;
+    }
+    @media (max-width: 1100px) {
+      .dual-monitor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .monitor-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #09090b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 10px;
+      position: relative;
+    }
+    .monitor-box.is-preview-box {
+      border-color: rgba(59, 130, 246, 0.45);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .monitor-box.is-program-box {
+      border-color: rgba(239, 68, 68, 0.45);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .monitor-screen-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 280px;
+      background: #000000;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .stage-shell {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      flex-shrink: 0;
+      overflow: hidden;
+      transform-origin: center center;
+    }
+
+    /* Take Live Broadcast Button */
+    .btn-take-live {
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 0 16px rgba(220, 38, 38, 0.45);
+      transition: all 0.15s ease-in-out;
+    }
+    .btn-take-live:hover {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      box-shadow: 0 0 22px rgba(239, 68, 68, 0.65);
+      transform: translateY(-1px);
+    }
+    .btn-take-live:active {
+      transform: translateY(1px);
+    }
+
+    /* Structured Announcements Rows */
+    .announce-row {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr auto;
+      gap: 8px;
+      align-items: center;
+      background: rgba(24, 24, 27, 0.6);
+      border: 1px solid rgba(63, 63, 70, 0.5);
+      border-radius: 8px;
+      padding: 8px 10px;
+      transition: all 0.15s;
+    }
+    .announce-row:focus-within {
+      border-color: rgba(220, 38, 38, 0.6);
+      background: rgba(24, 24, 27, 0.9);
+    }
+
+    /* Cue Cards */
+    .cue-card {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cue-card.is-on-air {
+      background: rgba(127, 29, 29, 0.25) !important;
+      border-color: rgba(239, 68, 68, 0.85) !important;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+    }
+
     /* Preview Stage Backdrops */
     .bg-stage {
       background:
@@ -635,7 +735,7 @@ module.exports = `
     }
 
     /* =========================================================================
-       7. STREAM DECK & OBS DECK VIEW (?view=deck)
+       8. STREAM DECK & OBS DECK VIEW (?view=deck)
        ========================================================================= */
     .deck-container {
       width: 100vw;
@@ -722,7 +822,7 @@ module.exports = `
     }
 
     /* =========================================================================
-       8. CUE FEED DOCK VIEW (?view=feed)
+       9. CUE FEED DOCK VIEW (?view=feed)
        ========================================================================= */
     .feed-container {
       width: 100vw;

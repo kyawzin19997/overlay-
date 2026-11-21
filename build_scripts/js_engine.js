@@ -3,14 +3,28 @@ module.exports = `
        2. RUNTIME STATE & BROADCAST SYNCHRONIZATION
        ========================================================================= */
     let config = { ...DEFAULT_CONFIG, frameSettings: {} };
+    // Ensure structured announcement list exists
+    if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList.length) {
+      config.frameAnnouncementsList = [
+        { title: 'Sunday Worship Service', details: 'Every Sunday at 10:00 AM • Sanctuary & Online' },
+        { title: 'Wednesday Prayer & Bible Study', details: 'Every Wednesday at 7:00 PM • Fellowship Hall' },
+        { title: 'Youth & Young Adults Fellowship', details: 'Fridays at 6:30 PM • Welcome Center' },
+        { title: 'Online Tithes & Offerings', details: 'Transfer via PromptPay or visit bcc.church/give' }
+      ];
+    }
+
     let cues = DEFAULT_CUES.map(c => ({ ...c }));
     let marqueePresets = DEFAULT_MARQUEE_PRESETS.map(m => ({ ...m }));
     
+    // Staged Preview State (for Studio Mode)
+    let stagedCueId = null;
+    let stagedConfig = { ...config };
+    let stagedFrameId = 'cam-announce';
+
     // Animation State Machine: 'IDLE' | 'ENTERING' | 'ACTIVE' | 'EXITING'
     let animState = 'IDLE';
     let isOnAir = false;
     let activeCueId = null;
-    let previewCueId = null;
     let activeMarqueeId = 'mq1';
     let isOverlayOnly = false;
     let overlayTarget = 'overlay'; // 'overlay' | 'frame'
@@ -86,6 +100,10 @@ module.exports = `
             ...parsed.config,
             frameSettings: parsed.config.frameSettings ? { ...parsed.config.frameSettings } : {}
           };
+          if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList.length) {
+            config.frameAnnouncementsList = DEFAULT_CONFIG.frameAnnouncementsList;
+          }
+          stagedConfig = { ...config };
         }
         if (Array.isArray(parsed.cues) && parsed.cues.length) cues = parsed.cues;
         if (Array.isArray(parsed.marqueePresets) && parsed.marqueePresets.length) marqueePresets = parsed.marqueePresets;
@@ -109,8 +127,9 @@ module.exports = `
         marqueePresets,
         onAir: (typeof onAirState === 'boolean') ? onAirState : isOnAir,
         activeCueId,
-        previewCueId,
+        stagedCueId,
         activeFrameId,
+        stagedFrameId,
         activeMarqueeId,
         ts: Date.now()
       };
@@ -148,7 +167,7 @@ module.exports = `
                   marqueePresets,
                   onAir: isOnAir,
                   activeCueId,
-                  previewCueId,
+                  stagedCueId,
                   activeFrameId
                 });
               }
@@ -194,12 +213,15 @@ module.exports = `
           ...msg.config,
           frameSettings: msg.config.frameSettings ? { ...msg.config.frameSettings } : {}
         };
+        if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList.length) {
+          config.frameAnnouncementsList = DEFAULT_CONFIG.frameAnnouncementsList;
+        }
       }
       if (Array.isArray(msg.cues)) cues = msg.cues;
       if (Array.isArray(msg.marqueePresets)) marqueePresets = msg.marqueePresets;
       if (msg.activeFrameId) activeFrameId = msg.activeFrameId;
       if (msg.activeCueId !== undefined) activeCueId = msg.activeCueId;
-      if (msg.previewCueId !== undefined) previewCueId = msg.previewCueId;
+      if (msg.stagedCueId !== undefined) stagedCueId = msg.stagedCueId;
 
       const cmd = msg.cmd || 'SYNC';
 
@@ -208,13 +230,13 @@ module.exports = `
       } else if (cmd === 'SWAP') {
         playCrossSwap();
       } else if (cmd === 'SHOW') {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         playIntro();
       } else if (cmd === 'HIDE') {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         playOutro();
       } else {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         if (msg.onAir && !isOnAir) playIntro();
         else if (msg.onAir === false && isOnAir) playOutro();
       }
@@ -229,6 +251,7 @@ module.exports = `
         updateSelectedFrameUrlBox();
         renderDeckView();
         renderFeedView();
+        renderAnnouncementRows();
       }
     }
 
@@ -245,19 +268,17 @@ module.exports = `
 
     function playIntro(customDuration) {
       clearLowerThirdTimers();
-      const lt = document.getElementById('cg-lt');
-      if (!lt) return;
+      const lts = document.querySelectorAll('.cg-lt-program');
+      lts.forEach(lt => {
+        lt.classList.remove('is-exiting');
+        void lt.offsetWidth;
+        lt.classList.add('is-active');
+      });
 
-      animState = 'ENTERING';
-      lt.classList.remove('is-exiting');
-      void lt.offsetWidth; // Force reflow
-      lt.classList.add('is-active');
-
-      isOnAir = true;
       animState = 'ACTIVE';
+      isOnAir = true;
       updateTallyUI();
 
-      // Duration auto-hide handling
       const dur = customDuration !== undefined ? customDuration : (config.autoHide ? config.durationSec : 0);
       if (dur > 0) {
         startDurationCountdown(dur);
@@ -266,18 +287,21 @@ module.exports = `
 
     function playOutro() {
       clearLowerThirdTimers();
-      const lt = document.getElementById('cg-lt');
-      if (lt && lt.classList.contains('is-active')) {
-        animState = 'EXITING';
-        lt.classList.remove('is-active');
-        lt.classList.add('is-exiting');
-        setTimeout(() => {
-          lt.classList.remove('is-exiting');
+      const lts = document.querySelectorAll('.cg-lt-program');
+      lts.forEach(lt => {
+        if (lt.classList.contains('is-active')) {
+          animState = 'EXITING';
+          lt.classList.remove('is-active');
+          lt.classList.add('is-exiting');
+          setTimeout(() => {
+            lt.classList.remove('is-exiting');
+            animState = 'IDLE';
+          }, 360);
+        } else {
           animState = 'IDLE';
-        }, 360);
-      } else {
-        animState = 'IDLE';
-      }
+        }
+      });
+
       isOnAir = false;
       activeCueId = null;
       updateTallyUI();
@@ -285,19 +309,21 @@ module.exports = `
 
     function playCrossSwap(customDuration) {
       clearLowerThirdTimers();
-      const lt = document.getElementById('cg-lt');
-      if (!lt) return;
-
+      const lts = document.querySelectorAll('.cg-lt-program');
       if (isOnAir) {
         animState = 'EXITING';
-        lt.classList.remove('is-active');
-        lt.classList.add('is-exiting');
+        lts.forEach(lt => {
+          lt.classList.remove('is-active');
+          lt.classList.add('is-exiting');
+        });
         swapTimer = setTimeout(() => {
           swapTimer = null;
-          renderLowerThirdCanvas();
-          lt.classList.remove('is-exiting');
-          void lt.offsetWidth;
-          lt.classList.add('is-active');
+          renderAllCanvases();
+          lts.forEach(lt => {
+            lt.classList.remove('is-exiting');
+            void lt.offsetWidth;
+            lt.classList.add('is-active');
+          });
           animState = 'ACTIVE';
           isOnAir = true;
           updateTallyUI();
@@ -305,7 +331,7 @@ module.exports = `
           if (dur > 0) startDurationCountdown(dur);
         }, 340);
       } else {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         playIntro(customDuration);
       }
     }
@@ -326,7 +352,7 @@ module.exports = `
     }
 
     function triggerShow(duration) {
-      renderLowerThirdCanvas();
+      renderAllCanvases();
       playIntro(duration);
       broadcastState('SHOW', true);
     }
@@ -350,11 +376,10 @@ module.exports = `
     function executeClearAllGraphics() {
       playOutro();
       config.showTicker = false;
-      const bar = document.getElementById('cg-marquee');
-      if (bar) bar.classList.remove('is-visible');
+      document.querySelectorAll('.cg-marquee').forEach(bar => bar.classList.remove('is-visible'));
       const tickerBox = document.getElementById('ctrl-show-ticker');
       if (tickerBox) tickerBox.checked = false;
-      renderLowerThirdCanvas();
+      renderAllCanvases();
       updateTallyUI();
     }
 
@@ -379,8 +404,8 @@ module.exports = `
         if (timer) timer.textContent = '';
       }
 
-      // Update Deck and Feed views
       if (!isOverlayOnly) {
+        renderCues();
         renderDeckView();
         renderFeedView();
       }
@@ -406,89 +431,124 @@ module.exports = `
       \`;
     }
 
-    function renderLowerThirdCanvas() {
-      const canvas = document.getElementById('cg-canvas');
-      const lt = document.getElementById('cg-lt');
+    function renderAllCanvases() {
+      // 1. Program Canvas (Live On Air)
+      renderCanvasInstance({
+        prefix: 'program',
+        cfg: config,
+        isLive: true
+      });
+
+      // 2. Preview Canvas (Staged / Testing)
+      renderCanvasInstance({
+        prefix: 'preview',
+        cfg: stagedConfig,
+        isLive: false
+      });
+    }
+
+    function renderCanvasInstance({ prefix, cfg, isLive }) {
+      const canvas = document.getElementById(\`\${prefix}-cg-canvas\`) || document.getElementById('cg-canvas');
+      const lt = document.getElementById(\`\${prefix}-cg-lt\`) || document.getElementById('cg-lt');
       if (!canvas || !lt) return;
 
-      canvas.dataset.theme = config.theme;
-      canvas.style.setProperty('--bg-opacity', config.bgOpacity);
-      canvas.style.setProperty('--lt-scale', config.scale);
-      canvas.classList.toggle('has-marquee', !!config.showTicker);
+      canvas.dataset.theme = cfg.theme;
+      canvas.style.setProperty('--bg-opacity', cfg.bgOpacity);
+      canvas.style.setProperty('--lt-scale', cfg.scale);
+      canvas.classList.toggle('has-marquee', !!cfg.showTicker);
 
-      // Animation Style class
+      // Classify as program or preview for animations
+      lt.classList.toggle('cg-lt-program', isLive);
+      lt.classList.toggle('cg-lt-preview', !isLive);
+
+      // In Preview stage, show content immediately for testing
+      if (!isLive) {
+        lt.classList.add('is-active');
+        lt.classList.remove('is-exiting');
+      }
+
+      // Animation style & mode
       lt.classList.remove('style-modern-slide', 'style-minimal-fade', 'style-elegant-reveal', 'style-classic-bar');
-      lt.classList.add(\`style-\${config.animStyle || 'modern-slide'}\`);
+      lt.classList.add(\`style-\${cfg.animStyle || 'modern-slide'}\`);
 
-      // Mode class
       lt.classList.remove('mode-speaker', 'mode-sermon', 'mode-scripture', 'mode-announcement');
-      lt.classList.add(\`mode-\${config.mode}\`);
+      lt.classList.add(\`mode-\${cfg.mode}\`);
 
-      document.getElementById('cg-cat').textContent = config.category || 'LIVE';
-      document.getElementById('cg-primary').textContent = config.primary || '';
-      document.getElementById('cg-secondary').textContent = config.secondary || '';
+      const catEl = canvas.querySelector('.cg-cat');
+      if (catEl) catEl.textContent = cfg.category || 'LIVE';
+      const priEl = canvas.querySelector('.cg-primary');
+      if (priEl) priEl.textContent = cfg.primary || '';
+      const secEl = canvas.querySelector('.cg-secondary');
+      if (secEl) secEl.textContent = cfg.secondary || '';
 
-      const churchEl = document.getElementById('cg-church');
-      const lineEl = document.getElementById('cg-meta-line');
-      const liveChurch = document.getElementById('cg-live-church');
-      if (config.churchName) {
-        churchEl.textContent = config.churchName;
-        churchEl.style.display = 'inline';
-        lineEl.style.display = 'inline-block';
-        if (liveChurch) liveChurch.textContent = config.churchName;
+      const churchEl = canvas.querySelector('.cg-church');
+      const lineEl = canvas.querySelector('.cg-meta-line');
+      const liveChurch = canvas.querySelector('.cg-live-church');
+      if (cfg.churchName) {
+        if (churchEl) { churchEl.textContent = cfg.churchName; churchEl.style.display = 'inline'; }
+        if (lineEl) lineEl.style.display = 'inline-block';
+        if (liveChurch) liveChurch.textContent = cfg.churchName;
       } else {
-        churchEl.style.display = 'none';
-        lineEl.style.display = 'none';
+        if (churchEl) churchEl.style.display = 'none';
+        if (lineEl) lineEl.style.display = 'none';
         if (liveChurch) liveChurch.textContent = 'LIVE';
       }
 
-      const badgeEl = document.getElementById('cg-badge');
-      if (config.badge) {
-        badgeEl.textContent = config.badge;
-        badgeEl.classList.add('has-badge');
-      } else {
-        badgeEl.classList.remove('has-badge');
+      const badgeEl = canvas.querySelector('.cg-badge');
+      if (badgeEl) {
+        if (cfg.badge) {
+          badgeEl.textContent = cfg.badge;
+          badgeEl.classList.add('has-badge');
+        } else {
+          badgeEl.classList.remove('has-badge');
+        }
       }
 
       // Logo handling
-      const logoSlot = document.getElementById('cg-logo-slot');
-      const logoImg = document.getElementById('cg-logo-img');
-      const defLogo = document.getElementById('cg-default-logo');
-      logoSlot.classList.toggle('hidden-slot', !config.showLogo);
-      if (config.customLogo) {
-        if (logoImg.getAttribute('src') !== config.customLogo) logoImg.src = config.customLogo;
-        logoImg.classList.remove('hidden');
-        defLogo.classList.add('hidden');
-      } else {
-        logoImg.classList.add('hidden');
-        defLogo.classList.remove('hidden');
+      const logoSlot = canvas.querySelector('.cg-logo-slot');
+      const logoImg = canvas.querySelector('.cg-logo-img');
+      const defLogo = canvas.querySelector('.cg-default-logo');
+      if (logoSlot) logoSlot.classList.toggle('hidden-slot', !cfg.showLogo);
+      if (logoImg && defLogo) {
+        if (cfg.customLogo) {
+          if (logoImg.getAttribute('src') !== cfg.customLogo) logoImg.src = cfg.customLogo;
+          logoImg.classList.remove('hidden');
+          defLogo.classList.add('hidden');
+        } else {
+          logoImg.classList.add('hidden');
+          defLogo.classList.remove('hidden');
+        }
       }
 
       // Live Bug
-      const liveBug = document.getElementById('cg-live-bug');
-      if (liveBug) liveBug.classList.toggle('is-visible', !!config.showLive);
+      const liveBug = canvas.querySelector('.cg-live-bug');
+      if (liveBug) liveBug.classList.toggle('is-visible', !!cfg.showLive);
 
       // Render Marquee with diffing
-      renderMarquee();
+      renderMarqueeInstance(canvas, cfg);
+    }
+
+    function renderLowerThirdCanvas() {
+      renderAllCanvases();
     }
 
     /* =========================================================================
        5. SCROLLING MARQUEE RENDERER (Zero-Glitch Diffed)
        ========================================================================= */
-    function renderMarquee() {
-      const bar = document.getElementById('cg-marquee');
-      const tagEl = document.getElementById('cg-marquee-tag');
-      const track = document.getElementById('cg-marquee-track');
-      if (!bar || !tagEl || !track) return;
+    function renderMarqueeInstance(canvas, cfg) {
+      const bar = canvas.querySelector('.cg-marquee');
+      const tagEl = canvas.querySelector('.cg-marquee-tag-text') || canvas.querySelector('.cg-marquee-tag span:last-child');
+      const track = canvas.querySelector('.cg-marquee-track');
+      if (!bar || !track) return;
 
-      bar.classList.toggle('is-visible', !!config.showTicker);
-      bar.classList.toggle('is-paused', !!config.tickerPaused);
-      bar.style.setProperty('--marquee-duration', \`\${config.marqueeSpeed || 32}s\`);
-      tagEl.textContent = config.marqueeTag || 'CHURCH NEWS';
+      bar.classList.toggle('is-visible', !!cfg.showTicker);
+      bar.classList.toggle('is-paused', !!cfg.tickerPaused);
+      bar.style.setProperty('--marquee-duration', \`\${cfg.marqueeSpeed || 32}s\`);
+      if (tagEl) tagEl.textContent = cfg.marqueeTag || 'CHURCH NEWS';
 
-      const key = String(config.marqueeText || '').trim();
-      if (key === lastMarqueeKey && track.innerHTML) return;
-      lastMarqueeKey = key;
+      const key = String(cfg.marqueeText || '').trim();
+      if (key === track.dataset.lastKey && track.innerHTML) return;
+      track.dataset.lastKey = key;
 
       const items = key.split('|').map(s => s.trim()).filter(Boolean);
       if (!items.length) items.push('Welcome to Bangkok Christ Church • John 14:6');
@@ -504,10 +564,16 @@ module.exports = `
       track.innerHTML = halfHtml + halfHtml;
     }
 
+    function renderMarquee() {
+      const canvases = document.querySelectorAll('.broadcast-stage');
+      canvases.forEach(c => renderMarqueeInstance(c, config));
+    }
+
     function toggleTickerPause() {
       config.tickerPaused = !config.tickerPaused;
-      const bar = document.getElementById('cg-marquee');
-      if (bar) bar.classList.toggle('is-paused', !!config.tickerPaused);
+      document.querySelectorAll('.cg-marquee').forEach(bar => {
+        bar.classList.toggle('is-paused', !!config.tickerPaused);
+      });
       broadcastState('SYNC', isOnAir);
       showToast(config.tickerPaused ? 'Marquee Paused' : 'Marquee Resumed');
     }
@@ -546,20 +612,23 @@ module.exports = `
     }
 
     function parseAnnouncements() {
+      if (Array.isArray(config.frameAnnouncementsList) && config.frameAnnouncementsList.length) {
+        return config.frameAnnouncementsList.filter(a => a.title || a.details).slice(0, 5);
+      }
       const lines = String(config.frameAnnouncements || '')
         .split('\\n')
         .map(l => l.trim())
         .filter(Boolean)
         .slice(0, 5);
       if (!lines.length) {
-        return [{ title: 'Sunday Worship Service', detail: 'Every Sunday at 10:00 AM • Bangkok Christ Church' }];
+        return [{ title: 'Sunday Worship Service', details: 'Every Sunday at 10:00 AM • Sanctuary & Online' }];
       }
       return lines.map(line => {
         const idx = line.indexOf('|');
-        if (idx === -1) return { title: line, detail: '' };
+        if (idx === -1) return { title: line, details: '' };
         return {
           title: line.slice(0, idx).trim(),
-          detail: line.slice(idx + 1).trim()
+          details: line.slice(idx + 1).trim()
         };
       });
     }
@@ -583,9 +652,9 @@ module.exports = `
       return \`Cutout: \${c.w}×\${c.h} @ (\${c.x},\${c.y})\`;
     }
 
-    function buildSvgMatteMask(cutouts, palette, fs) {
-      const maskId = \`cut-mask-\${activeFrameId}\`;
-      const gradId = \`matte-grad-\${activeFrameId}\`;
+    function buildSvgMatteMask(cutouts, palette, fs, frameId) {
+      const maskId = \`cut-mask-\${frameId || activeFrameId}\`;
+      const gradId = \`matte-grad-\${frameId || activeFrameId}\`;
       const bw = Math.max(0, Number(fs.borderWidth ?? 3));
       const matteOp = Math.min(1, Math.max(0.4, Number(fs.matteOpacity ?? 1)));
 
@@ -652,10 +721,22 @@ module.exports = `
     }
 
     function renderActiveFrame() {
-      const container = document.getElementById('frame-canvas');
-      if (!container) return;
+      // 1. Program Frame
+      const progFrame = document.getElementById('program-frame-canvas') || document.getElementById('frame-canvas');
+      if (progFrame) {
+        renderFrameOnCanvas(progFrame, activeFrameId);
+      }
 
-      const def = getFrameDef(activeFrameId);
+      // 2. Preview Frame
+      const prevFrame = document.getElementById('preview-frame-canvas');
+      if (prevFrame) {
+        renderFrameOnCanvas(prevFrame, stagedFrameId || activeFrameId);
+      }
+    }
+
+    function renderFrameOnCanvas(container, frameId) {
+      if (!container) return;
+      const def = getFrameDef(frameId);
       const fs = getFrameSettings(def.id);
       const effectiveTheme = fs.theme === 'inherit' ? config.theme : fs.theme;
       const basePalette = THEME_PALETTES[effectiveTheme] || THEME_PALETTES['bcc-crimson'];
@@ -678,25 +759,7 @@ module.exports = `
         container.style.removeProperty('--accent-rgb');
       }
 
-      // Studio Mock Guide
-      const mockLayer = document.getElementById('preview-mock-layer');
-      if (mockLayer) {
-        if (!isOverlayOnly && previewTarget === 'frame' && cutouts.length) {
-          mockLayer.classList.remove('hidden');
-          mockLayer.innerHTML = cutouts.map(c => \`
-            <div style="position:absolute;left:\${c.x}px;top:\${c.y}px;width:\${c.w}px;height:\${c.h}px;border-radius:\${c.r}px;display:flex;align-items:center;justify-content:center;">
-              <div style="padding:12px 24px;border-radius:10px;background:rgba(0,0,0,0.5);border:2px dashed rgba(255,255,255,0.35);color:rgba(255,255,255,0.85);font-family:'Montserrat',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">
-                \${esc(c.label)}
-              </div>
-            </div>
-          \`).join('');
-        } else {
-          mockLayer.classList.add('hidden');
-          mockLayer.innerHTML = '';
-        }
-      }
-
-      let innerHtml = buildSvgMatteMask(cutouts, palette, fs);
+      let innerHtml = buildSvgMatteMask(cutouts, palette, fs, frameId);
 
       // Frame 1: main-cam
       if (def.id === 'main-cam') {
@@ -732,61 +795,16 @@ module.exports = `
         \`;
       }
 
-      // Frame 2: pastor-info
-      else if (def.id === 'pastor-info') {
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
-        innerHtml += buildFrameHeader(fs.headerBadge || 'SUNDAY MESSAGE', fs);
-        innerHtml += \`
-          \${fs.showInfoBar ? \`
-            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:834px;width:1152px;height:190px;\${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
-              <div>
-                <div class="fr-section-tag" style="font-size:\${sz(13)}px;">\${esc(config.category || "TODAY'S MESSAGE")}</div>
-                <div class="fr-title-lg" style="font-size:\${sz(32)}px;margin-top:6px;">\${esc(config.primary)}</div>
-                <div class="fr-sub-md" style="font-size:\${sz(19)}px;margin-top:4px;">\${esc(config.secondary)}</div>
-              </div>
-            </div>
-          \` : ''}
-
-          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:156px;width:636px;height:868px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
-            <div class="fr-card-top-bar"></div>
-            <div style="padding:42px 36px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;flex:1;justify-content:center;">
-              \${getLogoMarkup(96, fs.showLogo)}
-              <div>
-                <div class="fr-section-tag">\${esc(fs.panelTitle || 'SENIOR PASTOR')}</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(32)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">
-                  \${esc(config.primary || 'Pastor John Smith')}
-                </div>
-                <div style="font-size:\${sz(18)}px;color:rgb(var(--muted-rgb));margin-top:4px;">
-                  \${esc(config.secondary || 'Bangkok Christ Church')}
-                </div>
-              </div>
-              <div style="width:64px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
-              <div style="padding:14px 20px;border-radius:10px;background:rgba(var(--primary-rgb),0.5);border:1px solid rgba(var(--text-rgb),0.1);width:100%;">
-                <div class="fr-section-tag" style="font-size:\${sz(11)}px;">KEY SCRIPTURE</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(20)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">
-                  \${esc(config.frameVerseRef || 'John 14:6')}
-                </div>
-              </div>
-            </div>
-            <div style="padding:18px 32px;background:rgba(var(--primary-rgb),0.5);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgb(var(--muted-rgb));">\${esc(config.churchName)}</span>
-              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">\${esc(config.badge || 'JOHN 14:6')}</span>
-            </div>
-          </div>
-        \`;
-      }
-
-      // Frame 3: cam-bible
+      // Frame 2: cam-bible (Exact matching 1216x684 window)
       else if (def.id === 'cam-bible') {
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
         const cleanVerse = config.frameVerseText.replace(/^[“"]|[”"]$/g, '');
-        const baseVersePx = cleanVerse.length > 180 ? 25 : cleanVerse.length > 110 ? 29 : 34;
+        const baseVersePx = cleanVerse.length > 180 ? 24 : cleanVerse.length > 110 ? 28 : 32;
         innerHtml += buildFrameHeader(fs.headerBadge || 'SCRIPTURE READING', fs);
         innerHtml += \`
           \${fs.showInfoBar ? \`
-            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:834px;width:1152px;height:190px;\${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:862px;width:1216px;height:168px;\${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
               <div>
                 <div class="fr-section-tag" style="font-size:\${sz(13)}px;">\${esc(config.category || 'SPEAKER')}</div>
                 <div class="fr-title-lg" style="font-size:\${sz(32)}px;margin-top:6px;">\${esc(config.primary)}</div>
@@ -795,12 +813,12 @@ module.exports = `
             </div>
           \` : ''}
 
-          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:156px;width:636px;height:868px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:148px;width:576px;height:882px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
             <div class="fr-card-top-bar"></div>
-            <div style="padding:34px 40px 20px;border-bottom:1px solid rgba(var(--text-rgb),0.10);display:flex;align-items:center;justify-content:space-between;">
+            <div style="padding:32px 36px 18px;border-bottom:1px solid rgba(var(--text-rgb),0.10);display:flex;align-items:center;justify-content:space-between;">
               <div>
                 <div class="fr-section-tag" style="font-size:\${sz(12)}px;">\${esc(fs.panelTitle || 'HOLY BIBLE')}</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(30)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">\${esc(config.frameVerseRef || 'John 14:6')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(28)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">\${esc(config.frameVerseRef || 'John 14:6')}</div>
               </div>
               \${config.frameVerseVer ? \`
                 <div style="padding:6px 12px;border-radius:6px;background:rgba(var(--accent-rgb),0.22);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:\${sz(14)}px;font-weight:800;letter-spacing:0.12em;color:rgb(var(--text-rgb));">
@@ -808,13 +826,13 @@ module.exports = `
                 </div>
               \` : ''}
             </div>
-            <div style="padding:40px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;">
-              <div style="font-family:Georgia,serif;font-size:78px;line-height:0.5;color:rgba(var(--accent-rgb),0.55);">“</div>
+            <div style="padding:36px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;">
+              <div style="font-family:Georgia,serif;font-size:72px;line-height:0.5;color:rgba(var(--accent-rgb),0.55);">“</div>
               <div class="fr-verse-text" style="font-size:\${sz(baseVersePx)}px;">
                 \${esc(cleanVerse)}
               </div>
             </div>
-            <div style="padding:20px 40px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+            <div style="padding:20px 36px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--muted-rgb));">\${esc(config.churchName)}</span>
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">SCRIPTURE</span>
             </div>
@@ -822,7 +840,7 @@ module.exports = `
         \`;
       }
 
-      // Frame 4: cam-announce
+      // Frame 3: cam-announce (Exact matching 1216x684 window)
       else if (def.id === 'cam-announce') {
         const items = parseAnnouncements();
         const camLeft = posX(48, 1216);
@@ -849,7 +867,7 @@ module.exports = `
               \${items.map(it => \`
                 <div class="fr-announce-item">
                   <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(18)}px;font-weight:700;color:rgb(var(--text-rgb));line-height:1.3;">\${esc(it.title)}</div>
-                  \${it.detail ? \`<div style="font-size:\${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:4px;line-height:1.4;">\${esc(it.detail)}</div>\` : ''}
+                  \${it.details ? \`<div style="font-size:\${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:4px;line-height:1.4;">\${esc(it.details)}</div>\` : ''}
                 </div>
               \`).join('')}
             </div>
@@ -857,7 +875,52 @@ module.exports = `
         \`;
       }
 
-      // Frame 5: cam-slides
+      // Frame 4: welcome-cam (Exact matching 1216x684 window)
+      else if (def.id === 'welcome-cam') {
+        const formatted = formatRemainingCountdown();
+        lastCountdownFormatted = formatted;
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
+        const digitsSize = formatted.length > 5 ? sz(68) : sz(90);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'STARTING SOON', fs);
+        innerHtml += \`
+          \${fs.showInfoBar ? \`
+            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:862px;width:1216px;height:168px;\${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag">WELCOME TO WORSHIP</div>
+                <div class="fr-title-lg" style="font-size:\${sz(32)}px;margin-top:6px;">\${esc(config.frameWelcomeTitle)}</div>
+                <div class="fr-sub-md" style="font-size:\${sz(19)}px;margin-top:4px;">\${esc(config.frameWelcomeSub)}</div>
+              </div>
+            </div>
+          \` : ''}
+
+          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:148px;width:576px;height:882px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;text-align:center;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:40px 32px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;">
+              \${getLogoMarkup(92, fs.showLogo)}
+              <div>
+                <div class="fr-section-tag" style="margin-bottom:6px;">WELCOME TO</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(26)}px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                  \${esc(config.churchName)}
+                </div>
+              </div>
+              <div style="width:56px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
+              <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(14)}px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgb(var(--muted-rgb));">
+                \${esc(fs.panelTitle || 'SERVICE BEGINS IN')}
+              </div>
+              <div id="frame-countdown-display" class="fr-countdown-digits" data-base-scale="\${ts}" style="font-size:\${digitsSize}px;">\${formatted}</div>
+              <div style="padding:8px 20px;border-radius:999px;background:rgba(var(--accent-rgb),0.2);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:\${sz(13)}px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                \${esc(config.badge || 'JOHN 14:6')}
+              </div>
+            </div>
+            <div style="padding:16px 24px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);font-size:14px;color:rgb(var(--muted-rgb));">
+              Please invite your friends and family to join online!
+            </div>
+          </div>
+        \`;
+      }
+
+      // Frame 5: cam-slides (Exact matching 1216x684 window)
       else if (def.id === 'cam-slides') {
         const slidesLeft = posX(48, 1216);
         const sideLeft = posX(1296, 576);
@@ -908,16 +971,47 @@ module.exports = `
         \`;
       }
 
-      // Frame 6: cam-pip
-      else if (def.id === 'cam-pip') {
+      // Frame 6: pastor-info (Exact matching 1216x684 window)
+      else if (def.id === 'pastor-info') {
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'SUNDAY MESSAGE', fs);
         innerHtml += \`
-          <div class="fr-window-tag" style="left:48px;top:48px;">
-            <span class="cg-live-dot" style="width:7px;height:7px;"></span>
-            <span>\${esc(fs.headerBadge || 'LIVE')}</span>
-            <span style="color:rgb(var(--muted-rgb));margin-left:6px;">\${esc(config.churchName)}</span>
-          </div>
-          <div class="fr-window-tag" style="left:1530px;top:856px;">
-            <span>\${esc(fs.panelTitle || 'SANCTUARY')}</span>
+          \${fs.showInfoBar ? \`
+            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:862px;width:1216px;height:168px;\${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:\${sz(13)}px;">\${esc(config.category || "TODAY'S MESSAGE")}</div>
+                <div class="fr-title-lg" style="font-size:\${sz(32)}px;margin-top:6px;">\${esc(config.primary)}</div>
+                <div class="fr-sub-md" style="font-size:\${sz(19)}px;margin-top:4px;">\${esc(config.secondary)}</div>
+              </div>
+            </div>
+          \` : ''}
+
+          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:148px;width:576px;height:882px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:40px 32px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;flex:1;justify-content:center;">
+              \${getLogoMarkup(92, fs.showLogo)}
+              <div>
+                <div class="fr-section-tag">\${esc(fs.panelTitle || 'SENIOR PASTOR')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(30)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">
+                  \${esc(config.primary || 'Pastor John Smith')}
+                </div>
+                <div style="font-size:\${sz(17)}px;color:rgb(var(--muted-rgb));margin-top:4px;">
+                  \${esc(config.secondary || 'Bangkok Christ Church')}
+                </div>
+              </div>
+              <div style="width:60px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
+              <div style="padding:14px 20px;border-radius:10px;background:rgba(var(--primary-rgb),0.5);border:1px solid rgba(var(--text-rgb),0.1);width:100%;">
+                <div class="fr-section-tag" style="font-size:\${sz(11)}px;">KEY SCRIPTURE</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(19)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">
+                  \${esc(config.frameVerseRef || 'John 14:6')}
+                </div>
+              </div>
+            </div>
+            <div style="padding:18px 30px;background:rgba(var(--primary-rgb),0.5);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgb(var(--muted-rgb));">\${esc(config.churchName)}</span>
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">\${esc(config.badge || 'JOHN 14:6')}</span>
+            </div>
           </div>
         \`;
       }
@@ -948,14 +1042,14 @@ module.exports = `
         \`;
       }
 
-      // Frame 8: prayer
+      // Frame 8: prayer (Exact matching 1216x684 window)
       else if (def.id === 'prayer') {
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
         innerHtml += buildFrameHeader(fs.headerBadge || 'INTERCESSORY PRAYER', fs);
         innerHtml += \`
           \${fs.showInfoBar ? \`
-            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:834px;width:1152px;height:190px;\${radiusStyle}display:flex;align-items:center;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:862px;width:1216px;height:168px;\${radiusStyle}display:flex;align-items:center;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
               <div>
                 <div class="fr-section-tag" style="font-size:\${sz(13)}px;">LET US PRAY TOGETHER</div>
                 <div class="fr-title-lg" style="font-size:\${sz(30)}px;margin-top:6px;">\${esc(config.primary || 'Prayer for Healing and Hope')}</div>
@@ -964,18 +1058,18 @@ module.exports = `
             </div>
           \` : ''}
 
-          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:156px;width:636px;height:868px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:148px;width:576px;height:882px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
             <div class="fr-card-top-bar"></div>
-            <div style="padding:36px;display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+            <div style="padding:34px;display:flex;flex-direction:column;gap:18px;flex:1;justify-content:center;">
               <div class="fr-section-tag">\${esc(fs.panelTitle || 'PRAYER PETITIONS')}</div>
-              <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(28)}px;font-weight:800;color:rgb(var(--text-rgb));line-height:1.3;">
+              <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(26)}px;font-weight:800;color:rgb(var(--text-rgb));line-height:1.3;">
                 \${esc(config.framePrayerTitle || 'Prayer for Our Church and City')}
               </div>
-              <div class="fr-verse-text" style="font-size:\${sz(22)}px;color:rgb(var(--muted-rgb));">
+              <div class="fr-verse-text" style="font-size:\${sz(20)}px;color:rgb(var(--muted-rgb));">
                 \${esc(config.framePrayerDetails || 'Heavenly Father, we lift up all individuals and families in need of your peace, healing, and guidance.')}
               </div>
             </div>
-            <div style="padding:20px 36px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+            <div style="padding:18px 34px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:rgb(var(--muted-rgb));">\${esc(config.churchName)}</span>
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">AMEN</span>
             </div>
@@ -983,7 +1077,21 @@ module.exports = `
         \`;
       }
 
-      // Frame 9: interview
+      // Frame 9: cam-pip
+      else if (def.id === 'cam-pip') {
+        innerHtml += \`
+          <div class="fr-window-tag" style="left:48px;top:48px;">
+            <span class="cg-live-dot" style="width:7px;height:7px;"></span>
+            <span>\${esc(fs.headerBadge || 'LIVE')}</span>
+            <span style="color:rgb(var(--muted-rgb));margin-left:6px;">\${esc(config.churchName)}</span>
+          </div>
+          <div class="fr-window-tag" style="left:1530px;top:856px;">
+            <span>\${esc(fs.panelTitle || 'SANCTUARY')}</span>
+          </div>
+        \`;
+      }
+
+      // Frame 10: interview
       else if (def.id === 'interview') {
         const hostInfo = (config.frameInterviewHost || 'Pastor John Smith | Host').split('|');
         const guestInfo = (config.frameInterviewGuest || 'Dr. David Lee | Visiting Missionary').split('|');
@@ -1007,51 +1115,6 @@ module.exports = `
         \`;
       }
 
-      // Frame 10: welcome-cam
-      else if (def.id === 'welcome-cam') {
-        const formatted = formatRemainingCountdown();
-        lastCountdownFormatted = formatted;
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
-        const digitsSize = formatted.length > 5 ? sz(70) : sz(94);
-        innerHtml += buildFrameHeader(fs.headerBadge || 'STARTING SOON', fs);
-        innerHtml += \`
-          \${fs.showInfoBar ? \`
-            <div class="fr-card" style="position:absolute;left:\${camLeft}px;top:834px;width:1152px;height:190px;\${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
-              <div>
-                <div class="fr-section-tag">WELCOME TO WORSHIP</div>
-                <div class="fr-title-lg" style="font-size:\${sz(32)}px;margin-top:6px;">\${esc(config.frameWelcomeTitle)}</div>
-                <div class="fr-sub-md" style="font-size:\${sz(19)}px;margin-top:4px;">\${esc(config.frameWelcomeSub)}</div>
-              </div>
-            </div>
-          \` : ''}
-
-          <div class="fr-card" style="position:absolute;left:\${cardLeft}px;top:156px;width:636px;height:868px;\${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;text-align:center;">
-            <div class="fr-card-top-bar"></div>
-            <div style="padding:48px 40px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
-              \${getLogoMarkup(100, fs.showLogo)}
-              <div>
-                <div class="fr-section-tag" style="margin-bottom:6px;">WELCOME TO</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(28)}px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:rgb(var(--text-rgb));">
-                  \${esc(config.churchName)}
-                </div>
-              </div>
-              <div style="width:64px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
-              <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(15)}px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:rgb(var(--muted-rgb));">
-                \${esc(fs.panelTitle || 'SERVICE BEGINS IN')}
-              </div>
-              <div id="frame-countdown-display" class="fr-countdown-digits" data-base-scale="\${ts}" style="font-size:\${digitsSize}px;">\${formatted}</div>
-              <div style="padding:8px 20px;border-radius:999px;background:rgba(var(--accent-rgb),0.2);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:\${sz(13)}px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--text-rgb));">
-                \${esc(config.badge || 'JOHN 14:6')}
-              </div>
-            </div>
-            <div style="padding:18px 30px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);font-size:14px;color:rgb(var(--muted-rgb));">
-              Please invite your friends and family to join online!
-            </div>
-          </div>
-        \`;
-      }
-
       // Frame 11: event-announce
       else if (def.id === 'event-announce') {
         const items = parseAnnouncements().slice(0, 3);
@@ -1065,9 +1128,9 @@ module.exports = `
                   <div style="font-family:'Montserrat',sans-serif;font-size:\${sz(22)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:8px;line-height:1.25;">
                     \${esc(it.title)}
                   </div>
-                  \${it.detail ? \`
+                  \${it.details ? \`
                     <div style="font-size:\${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:10px;line-height:1.4;">
-                      \${esc(it.detail)}
+                      \${esc(it.details)}
                     </div>
                   \` : ''}
                 </div>
@@ -1117,12 +1180,12 @@ module.exports = `
         if (formatted === lastCountdownFormatted) return;
         lastCountdownFormatted = formatted;
 
-        const disp = document.getElementById('frame-countdown-display');
-        if (disp) {
+        document.querySelectorAll('.fr-countdown-digits').forEach(disp => {
           disp.textContent = formatted;
           const baseScale = parseFloat(disp.dataset.baseScale) || 1;
-          disp.style.fontSize = \`\${Math.round((formatted.length > 5 ? 70 : 94) * baseScale)}px\`;
-        }
+          disp.style.fontSize = \`\${Math.round((formatted.length > 5 ? 68 : 90) * baseScale)}px\`;
+        });
+
         const ctrlReadout = document.getElementById('ctrl-cd-readout');
         if (ctrlReadout) ctrlReadout.textContent = formatted;
 

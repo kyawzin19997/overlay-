@@ -49,7 +49,9 @@ const requiredIds = [
   'in-marquee-tag', 'in-marquee-speed', 'lbl-speed', 'in-marquee-text',
   'btn-reset-all', 'cue-modal', 'edit-mode', 'edit-category', 'edit-primary',
   'edit-secondary', 'edit-badge', 'edit-duration', 'toast', 'exit-overlay-btn',
-  'deck-grid-cues', 'deck-grid-marquee', 'deck-grid-frames', 'feed-cue-list'
+  'deck-grid-cues', 'deck-grid-marquee', 'deck-grid-frames', 'feed-cue-list',
+  'preview-stage-wrap', 'preview-stage-shell', 'preview-cg-canvas',
+  'btn-take-live', 'announcements-rows-container', 'frame-active-content-editor'
 ];
 
 let missing = [];

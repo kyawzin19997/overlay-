@@ -35,7 +35,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Transparent background for OBS Browser Sources (?view=overlay or ?view=frame) */
+    /* Pure transparent mode for OBS Browser Sources (?view=overlay or ?view=frame) */
     html.obs-overlay-mode,
     html.obs-overlay-mode body {
       background: transparent !important;
@@ -356,9 +356,7 @@
       letter-spacing: 0.04em;
     }
 
-    /* --- ANIMATION STYLES --- */
-
-    /* Style 1: Modern Slide (Default) */
+    /* Style 1: Modern Slide */
     .cg-lt.style-modern-slide.is-active .cg-spine     { transform: scaleY(1); transition: transform 320ms var(--ease-out-expo) 0ms; }
     .cg-lt.style-modern-slide.is-active .cg-surface   { transform: translate3d(0,0,0); opacity: 1; transition: transform 460ms var(--ease-out-expo) 80ms, opacity 340ms ease-out 80ms; }
     .cg-lt.style-modern-slide.is-active .cg-logo-slot { transform: translate3d(0,0,0); opacity: 1; transition: transform 400ms var(--ease-out-expo) 180ms, opacity 340ms ease-out 180ms; }
@@ -381,11 +379,10 @@
     .cg-lt.style-minimal-fade.is-active .cg-meta,
     .cg-lt.style-minimal-fade.is-active .cg-primary,
     .cg-lt.style-minimal-fade.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 300ms ease-out 100ms; }
-
     .cg-lt.style-minimal-fade.is-exiting .cg-surface,
     .cg-lt.style-minimal-fade.is-exiting .cg-spine { opacity: 0; transform: translate3d(0, 8px, 0); transition: opacity 260ms ease-in, transform 260ms ease-in; }
 
-    /* Style 3: Elegant Reveal (Curtain drop) */
+    /* Style 3: Elegant Reveal */
     .cg-lt.style-elegant-reveal .cg-surface { transform: translate3d(0, -100%, 0); }
     .cg-lt.style-elegant-reveal.is-active .cg-spine { transform: scaleY(1); transition: transform 300ms ease-out; }
     .cg-lt.style-elegant-reveal.is-active .cg-surface { transform: translate3d(0,0,0); opacity: 1; transition: transform 420ms var(--ease-out-expo) 60ms, opacity 300ms ease 60ms; }
@@ -393,11 +390,10 @@
     .cg-lt.style-elegant-reveal.is-active .cg-meta,
     .cg-lt.style-elegant-reveal.is-active .cg-primary,
     .cg-lt.style-elegant-reveal.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 350ms ease 150ms, transform 350ms ease 150ms; }
-
     .cg-lt.style-elegant-reveal.is-exiting .cg-surface { transform: translate3d(0, -100%, 0); opacity: 0; transition: transform 280ms ease-in, opacity 250ms ease-in; }
     .cg-lt.style-elegant-reveal.is-exiting .cg-spine { transform: scaleY(0); transition: transform 220ms ease-in 100ms; }
 
-    /* Style 4: Classic Bar (Immediate clean expand) */
+    /* Style 4: Classic Bar */
     .cg-lt.style-classic-bar .cg-surface { transform: scaleX(0.01); transform-origin: left center; }
     .cg-lt.style-classic-bar.is-active .cg-spine { transform: scaleY(1); transition: transform 200ms ease-out; }
     .cg-lt.style-classic-bar.is-active .cg-surface { transform: scaleX(1); opacity: 1; transition: transform 320ms ease-out 60ms, opacity 250ms ease 60ms; }
@@ -405,7 +401,6 @@
     .cg-lt.style-classic-bar.is-active .cg-meta,
     .cg-lt.style-classic-bar.is-active .cg-primary,
     .cg-lt.style-classic-bar.is-active .cg-sub-row { transform: translate3d(0,0,0); opacity: 1; transition: opacity 280ms ease 160ms; }
-
     .cg-lt.style-classic-bar.is-exiting .cg-surface { transform: scaleX(0.01); opacity: 0; transition: transform 240ms ease-in, opacity 200ms ease-in; }
     .cg-lt.style-classic-bar.is-exiting .cg-spine { transform: scaleY(0); transition: transform 180ms ease-in 120ms; }
 
@@ -629,6 +624,111 @@
       line-height: 1;
     }
 
+    /* =========================================================================
+       7. DUAL STUDIO MONITORS (PREVIEW & PROGRAM)
+       ========================================================================= */
+    .dual-monitor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+      width: 100%;
+    }
+    @media (max-width: 1100px) {
+      .dual-monitor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .monitor-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #09090b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 10px;
+      position: relative;
+    }
+    .monitor-box.is-preview-box {
+      border-color: rgba(59, 130, 246, 0.45);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .monitor-box.is-program-box {
+      border-color: rgba(239, 68, 68, 0.45);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .monitor-screen-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 280px;
+      background: #000000;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .stage-shell {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      flex-shrink: 0;
+      overflow: hidden;
+      transform-origin: center center;
+    }
+
+    /* Take Live Broadcast Button */
+    .btn-take-live {
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 0 16px rgba(220, 38, 38, 0.45);
+      transition: all 0.15s ease-in-out;
+    }
+    .btn-take-live:hover {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      box-shadow: 0 0 22px rgba(239, 68, 68, 0.65);
+      transform: translateY(-1px);
+    }
+    .btn-take-live:active {
+      transform: translateY(1px);
+    }
+
+    /* Structured Announcements Rows */
+    .announce-row {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr auto;
+      gap: 8px;
+      align-items: center;
+      background: rgba(24, 24, 27, 0.6);
+      border: 1px solid rgba(63, 63, 70, 0.5);
+      border-radius: 8px;
+      padding: 8px 10px;
+      transition: all 0.15s;
+    }
+    .announce-row:focus-within {
+      border-color: rgba(220, 38, 38, 0.6);
+      background: rgba(24, 24, 27, 0.9);
+    }
+
+    /* Cue Cards */
+    .cue-card {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cue-card.is-on-air {
+      background: rgba(127, 29, 29, 0.25) !important;
+      border-color: rgba(239, 68, 68, 0.85) !important;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+    }
+
     /* Preview Stage Backdrops */
     .bg-stage {
       background:
@@ -651,7 +751,7 @@
     }
 
     /* =========================================================================
-       7. STREAM DECK & OBS DECK VIEW (?view=deck)
+       8. STREAM DECK & OBS DECK VIEW (?view=deck)
        ========================================================================= */
     .deck-container {
       width: 100vw;
@@ -738,7 +838,7 @@
     }
 
     /* =========================================================================
-       8. CUE FEED DOCK VIEW (?view=feed)
+       9. CUE FEED DOCK VIEW (?view=feed)
        ========================================================================= */
     .feed-container {
       width: 100vw;
@@ -883,7 +983,7 @@
           <div class="font-bold text-xs sm:text-sm tracking-wide uppercase font-['Montserrat']">
             Bangkok Christ Church <span class="text-amber-400 font-semibold">Broadcast CG</span>
           </div>
-          <div class="text-[11px] text-zinc-400">Production Lower-Thirds, Tickers, 12 Frames &amp; Stream Deck</div>
+          <div class="text-[11px] text-zinc-400">One-Click Lower-Thirds, Tickers, 12 Standard Frames &amp; Studio Mode</div>
         </div>
       </div>
 
@@ -905,13 +1005,15 @@
     </header>
 
     <!-- Main Workspace -->
-    <main id="workspace" class="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_460px] min-h-0">
+    <main id="workspace" class="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_470px] min-h-0">
 
-      <!-- Left / Top: Live 16:9 Program Preview -->
-      <section id="monitor-col" class="bg-black/80 p-3 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col gap-2.5">
+      <!-- Left: Dual Studio Monitors (PREVIEW & PROGRAM LIVE) -->
+      <section id="monitor-col" class="bg-black/90 p-3 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col gap-2.5">
+        
+        <!-- Top Controls: Mode Switch & Backdrops -->
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-2 flex-wrap">
-            <span id="monitor-title" class="text-[11px] font-bold tracking-widest uppercase text-red-400">Preview: Lower Third Overlay</span>
+            <span id="monitor-title" class="text-[11px] font-bold tracking-widest uppercase text-red-400">Broadcast Studio Mode</span>
             <button id="btn-switch-preview" onclick="togglePreviewTarget()" class="px-2 py-0.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-[10.5px] font-semibold text-amber-300 transition">
               Switch to OBS Frames
             </button>
@@ -924,104 +1026,198 @@
           </div>
         </div>
 
-        <!-- 16:9 Auto-Scaled Monitor Shell -->
-        <div id="stage-wrap" class="w-full aspect-video max-h-[460px] bg-black border border-zinc-800 rounded-xl overflow-hidden flex items-center justify-center relative">
-          <div id="stage-shell" class="relative w-[1920px] h-[1080px] shrink-0 overflow-hidden bg-stage" style="transform-origin: center center;">
+        <!-- Dual Monitor Grid: Preview (Left) & Program Live (Right) -->
+        <div class="dual-monitor-grid">
+          
+          <!-- MONITOR 1: PREVIEW (STAGED / TEST SCREEN) -->
+          <div class="monitor-box is-preview-box">
+            <div class="flex items-center justify-between px-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-950/90 border border-blue-600/70 text-[10.5px] font-bold text-blue-300 uppercase tracking-wider">
+                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <span>PREVIEW (STAGED)</span>
+              </span>
+              <span class="text-[10px] font-mono text-zinc-400">1920×1080</span>
+            </div>
 
-            <!-- Preview-Only Mock Cutout Guides -->
-            <div id="preview-mock-layer" class="hidden absolute inset-0 pointer-events-none"></div>
+            <!-- Preview 16:9 Screen Shell -->
+            <div id="preview-stage-wrap" class="monitor-screen-wrap">
+              <div id="preview-stage-shell" class="stage-shell bg-stage">
+                <!-- Mock Cutouts Layer -->
+                <div id="preview-mock-layer" class="hidden absolute inset-0 pointer-events-none"></div>
 
-            <!-- Broadcast Safe Guide -->
-            <div id="safe-guide" class="hidden absolute inset-[6.5%] border-2 border-dashed border-amber-400/50 pointer-events-none z-40"></div>
+                <!-- Preview CG Lower Third Canvas -->
+                <div id="preview-cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
+                  <div class="cg-live-bug is-visible">
+                    <span class="cg-live-dot" style="background:#3b82f6;"></span>
+                    <span class="cg-live-label" style="background:#1d4ed8;">PREVIEW</span>
+                    <span class="cg-live-church">BANGKOK CHRIST CHURCH</span>
+                  </div>
 
-            <!-- SOURCE A: LOWER-THIRD & TICKER OVERLAY (?view=overlay) -->
-            <div id="cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
-              <!-- Top-Left LIVE Indicator -->
-              <div id="cg-live-bug" class="cg-live-bug is-visible">
-                <span class="cg-live-dot"></span>
-                <span class="cg-live-label">LIVE</span>
-                <span id="cg-live-church" class="cg-live-church">BANGKOK CHRIST CHURCH</span>
-              </div>
-
-              <!-- Lower Third Graphic -->
-              <div class="cg-lt-anchor">
-                <div id="cg-lt" class="cg-lt mode-speaker style-modern-slide">
-                  <div class="cg-spine"></div>
-                  <div class="cg-mask">
-                    <div class="cg-surface">
-                      <!-- Church Logo Slot -->
-                      <div id="cg-logo-slot" class="cg-logo-slot">
-                        <img id="cg-logo-img" class="cg-logo-img hidden" src="" alt="Church Logo" />
-                        <div id="cg-default-logo" class="cg-default-logo">
-                          <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
-                            <defs>
-                              <path id="bcc-arch" d="M 28,96 A 74,74 0 0,1 172,96" />
-                            </defs>
-                            <text fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="800" letter-spacing="1.1">
-                              <textPath href="#bcc-arch" startOffset="50%" text-anchor="middle">BANGKOK CHRIST CHURCH</textPath>
-                            </text>
-                            <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
-                            <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
-                            <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
-                            <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
-                            <path d="M74 80 C81 72, 89 74, 92 84 C95 66, 108 55, 117 52 C112 65, 114 74, 124 63 C119 77, 116 88, 109 95 C115 99, 116 105, 112 109 C101 102, 87 98, 82 87 L74 80 Z" fill="#fff" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
-                            <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
-                          </svg>
-                        </div>
-                      </div>
-
-                      <!-- Text Stack -->
-                      <div class="cg-stack">
-                        <div class="cg-meta">
-                          <span id="cg-cat" class="cg-cat">SPEAKER</span>
-                          <span id="cg-meta-line" class="cg-meta-line"></span>
-                          <span id="cg-church" class="cg-church">BANGKOK CHRIST CHURCH</span>
-                        </div>
-                        <h1 id="cg-primary" class="cg-primary">Pastor John Smith</h1>
-                        <div class="cg-sub-row">
-                          <p id="cg-secondary" class="cg-secondary">Senior Pastor</p>
-                          <span id="cg-badge" class="cg-badge has-badge">JOHN 14:6</span>
+                  <div class="cg-lt-anchor">
+                    <div id="preview-cg-lt" class="cg-lt mode-speaker style-modern-slide is-active">
+                      <div class="cg-spine"></div>
+                      <div class="cg-mask">
+                        <div class="cg-surface">
+                          <div class="cg-logo-slot">
+                            <div class="cg-default-logo">
+                              <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
+                                <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                                <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                                <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
+                                <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
+                                <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
+                              </svg>
+                            </div>
+                          </div>
+                          <div class="cg-stack">
+                            <div class="cg-meta">
+                              <span class="cg-cat">SPEAKER</span>
+                              <span class="cg-meta-line"></span>
+                              <span class="cg-church">BANGKOK CHRIST CHURCH</span>
+                            </div>
+                            <h1 class="cg-primary">Pastor John Smith</h1>
+                            <div class="cg-sub-row">
+                              <p class="cg-secondary">Senior Pastor</p>
+                              <span class="cg-badge has-badge">JOHN 14:6</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <!-- Bottom Scrolling News Ticker -->
-              <div id="cg-marquee" class="cg-marquee">
-                <div class="cg-marquee-tag">
-                  <span class="cg-marquee-tag-dot"></span>
-                  <span id="cg-marquee-tag">CHURCH NEWS</span>
+                  <div class="cg-marquee">
+                    <div class="cg-marquee-tag">
+                      <span class="cg-marquee-tag-dot"></span>
+                      <span>PREVIEW TICKER</span>
+                    </div>
+                    <div class="cg-marquee-viewport">
+                      <div class="cg-marquee-track"></div>
+                    </div>
+                  </div>
                 </div>
-                <div class="cg-marquee-viewport">
-                  <div id="cg-marquee-track" class="cg-marquee-track"></div>
-                </div>
+
+                <!-- Preview Frame Canvas -->
+                <div id="preview-frame-canvas" class="broadcast-stage hidden" data-theme="bcc-crimson"></div>
               </div>
             </div>
+          </div>
 
-            <!-- SOURCE B: READY-MADE OBS FRAMES (?view=frame&frame=...) -->
-            <div id="frame-canvas" class="broadcast-stage hidden" data-theme="bcc-crimson"></div>
+          <!-- MONITOR 2: PROGRAM (LIVE / ON AIR OBS OUTPUT) -->
+          <div class="monitor-box is-program-box">
+            <div class="flex items-center justify-between px-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-950/90 border border-red-600/70 text-[10.5px] font-bold text-red-300 uppercase tracking-wider">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span>PROGRAM (ON AIR)</span>
+              </span>
+              <span class="text-[10px] font-mono text-zinc-400">1920×1080</span>
+            </div>
 
+            <!-- Program 16:9 Screen Shell (also stage-wrap / stage-shell for backward compat) -->
+            <div id="stage-wrap" class="monitor-screen-wrap">
+              <div id="stage-shell" class="stage-shell bg-stage">
+                <!-- Broadcast Safe Guide -->
+                <div id="safe-guide" class="hidden absolute inset-[6.5%] border-2 border-dashed border-amber-400/50 pointer-events-none z-40"></div>
+
+                <!-- SOURCE A: LOWER-THIRD & TICKER OVERLAY (?view=overlay) -->
+                <div id="cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
+                  <!-- Top-Left LIVE Indicator -->
+                  <div id="cg-live-bug" class="cg-live-bug is-visible">
+                    <span class="cg-live-dot"></span>
+                    <span class="cg-live-label">LIVE</span>
+                    <span id="cg-live-church" class="cg-live-church">BANGKOK CHRIST CHURCH</span>
+                  </div>
+
+                  <!-- Lower Third Graphic -->
+                  <div class="cg-lt-anchor">
+                    <div id="cg-lt" class="cg-lt mode-speaker style-modern-slide">
+                      <div class="cg-spine"></div>
+                      <div class="cg-mask">
+                        <div class="cg-surface">
+                          <!-- Church Logo Slot -->
+                          <div id="cg-logo-slot" class="cg-logo-slot">
+                            <img id="cg-logo-img" class="cg-logo-img hidden" src="" alt="Church Logo" />
+                            <div id="cg-default-logo" class="cg-default-logo">
+                              <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
+                                <defs><path id="bcc-arch" d="M 28,96 A 74,74 0 0,1 172,96" /></defs>
+                                <text fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="800" letter-spacing="1.1">
+                                  <textPath href="#bcc-arch" startOffset="50%" text-anchor="middle">BANGKOK CHRIST CHURCH</textPath>
+                                </text>
+                                <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                                <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                                <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
+                                <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
+                                <path d="M74 80 C81 72, 89 74, 92 84 C95 66, 108 55, 117 52 C112 65, 114 74, 124 63 C119 77, 116 88, 109 95 C115 99, 116 105, 112 109 C101 102, 87 98, 82 87 L74 80 Z" fill="#fff" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
+                                <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
+                              </svg>
+                            </div>
+                          </div>
+
+                          <!-- Text Stack -->
+                          <div class="cg-stack">
+                            <div class="cg-meta">
+                              <span id="cg-cat" class="cg-cat">SPEAKER</span>
+                              <span id="cg-meta-line" class="cg-meta-line"></span>
+                              <span id="cg-church" class="cg-church">BANGKOK CHRIST CHURCH</span>
+                            </div>
+                            <h1 id="cg-primary" class="cg-primary">Pastor John Smith</h1>
+                            <div class="cg-sub-row">
+                              <p id="cg-secondary" class="cg-secondary">Senior Pastor</p>
+                              <span id="cg-badge" class="cg-badge has-badge">JOHN 14:6</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Bottom Scrolling News Ticker -->
+                  <div id="cg-marquee" class="cg-marquee">
+                    <div class="cg-marquee-tag">
+                      <span class="cg-marquee-tag-dot"></span>
+                      <span id="cg-marquee-tag">CHURCH NEWS</span>
+                    </div>
+                    <div class="cg-marquee-viewport">
+                      <div id="cg-marquee-track" class="cg-marquee-track"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SOURCE B: READY-MADE OBS FRAMES (?view=frame&frame=...) -->
+                <div id="frame-canvas" class="broadcast-stage hidden" data-theme="bcc-crimson"></div>
+
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Shortcuts & Sync Status -->
-        <div class="flex items-center justify-between flex-wrap gap-2 text-[11px] text-zinc-400">
-          <div class="flex items-center gap-1.5 flex-wrap">
+        <!-- Studio Transition Action Bar -->
+        <div class="flex items-center justify-between gap-2 p-2 bg-zinc-950/80 rounded-xl border border-zinc-800">
+          <div class="flex items-center gap-2">
+            <button id="btn-take-live" onclick="takePreviewToLive()" class="btn-take-live px-5 py-2 rounded-lg text-xs font-bold tracking-wider flex items-center gap-2 shadow-lg">
+              <span>TAKE LIVE</span>
+              <span>➔</span>
+            </button>
+            <button onclick="triggerSwapLive()" class="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-amber-300 transition">
+              AUTO CUT
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 text-[11px] text-zinc-400">
             <span>Hotkeys:</span>
             <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">Space</kbd> Show/Hide
             <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">Esc</kbd> Hide
-            <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">1–4</kbd> Mode
           </div>
-          <div id="sync-status" class="font-mono text-emerald-400 flex items-center gap-1.5">
+
+          <div id="sync-status" class="font-mono text-emerald-400 text-xs flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             <span id="sync-status-text">Ready</span>
           </div>
         </div>
+
       </section>
 
-      <!-- Right / Bottom: Operator Control Panel -->
+      <!-- Right: Operator Control Panel Tabs -->
       <aside class="bg-zinc-900 flex flex-col overflow-y-auto">
 
         <!-- Sticky Master Transport -->
@@ -1127,10 +1323,13 @@
             </div>
           </div>
 
-          <!-- One-Click Lower Third Cues -->
+          <!-- One-Click Lower Third Cues (One click Show, another click Hide!) -->
           <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">One-Click Lower Thirds</span>
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">One-Click Lower Thirds</span>
+                <div class="text-[10px] text-zinc-400">Click to Show / Hide instantly</div>
+              </div>
               <button onclick="saveCurrentCue()" class="px-2.5 py-1 rounded-lg bg-red-700 hover:bg-red-600 text-white text-[11px] font-semibold transition">
                 + Save Current
               </button>
@@ -1170,7 +1369,7 @@
           <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
             <div class="flex items-center justify-between gap-2">
               <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">12 Ready-Made OBS Frames (1920×1080)</span>
-              <span class="text-[10px] text-zinc-400">Click to preview</span>
+              <span class="text-[10px] text-zinc-400">Click to select frame</span>
             </div>
 
             <div id="frame-selector-grid" class="grid grid-cols-2 gap-2"></div>
@@ -1190,201 +1389,227 @@
             </div>
           </div>
 
-          <!-- Per-Frame Visual Customizer -->
-          <div class="p-3 rounded-xl bg-zinc-800/60 border border-amber-500/30 space-y-3">
-            <div class="flex items-center justify-between gap-2">
-              <span id="customizer-frame-title" class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Customize Frame</span>
-              <button onclick="resetSelectedFrameSettings()" class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-medium text-zinc-300">
-                Reset Frame
-              </button>
-            </div>
-
-            <!-- Theme & Custom Accent Override -->
-            <div class="grid grid-cols-2 gap-2">
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Frame Theme</span>
-                <select id="in-fc-theme" onchange="handleFrameCustomizeChange()" class="w-full px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none">
-                  <option value="inherit">Use Global Theme</option>
-                  <option value="bcc-crimson">BCC Dark</option>
-                  <option value="bcc-light">Light</option>
-                  <option value="classic-gold">Gold</option>
-                  <option value="navy">Navy</option>
-                </select>
-              </label>
-              <div class="space-y-1">
-                <span class="text-[11px] text-zinc-400 block">Accent Override</span>
-                <div class="flex items-center gap-1.5">
-                  <input type="color" id="in-fc-accent" oninput="handleFrameAccentPick()" class="h-[30px] w-10 rounded bg-zinc-950 border border-zinc-700 cursor-pointer p-0.5" />
-                  <button id="btn-fc-accent-auto" onclick="clearFrameCustomAccent()" class="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10.5px] font-medium text-zinc-300 truncate">
-                    Theme Auto
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Header Badge & Panel Title -->
-            <div class="grid grid-cols-2 gap-2">
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Header Badge</span>
-                <input type="text" id="in-fc-header-badge" oninput="handleFrameCustomizeChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Panel Heading</span>
-                <input type="text" id="in-fc-panel-title" oninput="handleFrameCustomizeChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-            </div>
-
-            <!-- Geometry Sliders -->
-            <div class="grid grid-cols-2 gap-x-3 gap-y-2">
-              <label class="block space-y-0.5">
-                <span class="text-[10.5px] text-zinc-400">Corner Radius: <strong id="lbl-fc-radius" class="text-zinc-200">14px</strong></span>
-                <input type="range" id="in-fc-radius" min="0" max="32" step="2" value="14" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
-              </label>
-              <label class="block space-y-0.5">
-                <span class="text-[10.5px] text-zinc-400">Cutout Border: <strong id="lbl-fc-border" class="text-zinc-200">3px</strong></span>
-                <input type="range" id="in-fc-border" min="0" max="8" step="1" value="3" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
-              </label>
-              <label class="block space-y-0.5">
-                <span class="text-[10.5px] text-zinc-400">Text Size: <strong id="lbl-fc-text-scale" class="text-zinc-200">100%</strong></span>
-                <input type="range" id="in-fc-text-scale" min="0.85" max="1.25" step="0.05" value="1" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
-              </label>
-              <label class="block space-y-0.5">
-                <span class="text-[10.5px] text-zinc-400">Matte Opacity: <strong id="lbl-fc-opacity" class="text-zinc-200">100%</strong></span>
-                <input type="range" id="in-fc-opacity" min="0.5" max="1" step="0.05" value="1" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
-              </label>
-            </div>
-
-            <!-- Toggles -->
-            <div class="flex flex-wrap items-center gap-x-3.5 gap-y-2 pt-2 border-t border-zinc-700/60 text-[11px] text-zinc-200">
-              <label class="inline-flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="in-fc-mirror" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
-                <span>Flip Left/Right</span>
-              </label>
-              <label class="inline-flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="in-fc-header" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
-                <span>Header</span>
-              </label>
-              <label class="inline-flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="in-fc-infobar" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
-                <span>Info Bar</span>
-              </label>
-              <label class="inline-flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="in-fc-live" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
-                <span>LIVE</span>
-              </label>
-              <label class="inline-flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="in-fc-logo" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
-                <span>Logo</span>
-              </label>
-            </div>
+          <!-- Active Frame Context Header -->
+          <div class="flex items-center justify-between px-1">
+            <span id="customizer-frame-title" class="text-xs font-bold uppercase tracking-wider text-amber-400">Customize Frame</span>
+            <button onclick="resetSelectedFrameSettings()" class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-medium text-zinc-300">
+              Reset Frame
+            </button>
           </div>
 
-          <!-- Scripture Content Editor -->
-          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Scripture Frame Content</span>
-              <button onclick="pullLowerThirdToBible()" class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-medium text-zinc-200">
-                Use Active LT Text
-              </button>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Reference</span>
-                <input type="text" id="in-fr-verse-ref" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Translation</span>
-                <input type="text" id="in-fr-verse-ver" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-            </div>
-            <label class="block space-y-1">
-              <span class="text-[11px] text-zinc-400">Verse Text</span>
-              <textarea id="in-fr-verse-text" rows="3" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none"></textarea>
-            </label>
-          </div>
-
-          <!-- Announcements Content Editor -->
-          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
-            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Announcements Frame Content</div>
-            <label class="block space-y-1">
-              <span class="text-[11px] text-zinc-400">One per line: <code class="text-amber-300">Title | Details</code></span>
-              <textarea id="in-fr-announcements" rows="3" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none"></textarea>
-            </label>
-          </div>
-
-          <!-- Worship & Prayer Extra Fields -->
-          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
-            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Worship / Praise Frame Content</div>
-            <div class="grid grid-cols-2 gap-2">
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Song / Hymn Title</span>
-                <input type="text" id="in-fr-song-title" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Key / Worship Team</span>
-                <input type="text" id="in-fr-song-details" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-            </div>
-          </div>
-
-          <!-- Welcome & Countdown Controls -->
-          <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
-            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Starting Soon &amp; Countdown Timer</div>
-            <div class="grid grid-cols-2 gap-2">
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Welcome Title</span>
-                <input type="text" id="in-fr-welcome-title" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-              <label class="block space-y-1">
-                <span class="text-[11px] text-zinc-400">Slideshow Window Tag</span>
-                <input type="text" id="in-fr-slide-tag" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-              </label>
-            </div>
-
-            <label class="block space-y-1">
-              <span class="text-[11px] text-zinc-400">Welcome Subtitle</span>
-              <input type="text" id="in-fr-welcome-sub" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-            </label>
-
-            <!-- Countdown Timer Synced -->
-            <div class="pt-2 border-t border-zinc-700/60 space-y-2">
+          <!-- Dynamic Context Content Editor: Only shows content fields for the selected frame! -->
+          <div id="frame-active-content-editor" class="space-y-3">
+            
+            <!-- Context 1: Announcements Frame (cam-announce) with Two Fields per Row -->
+            <div data-frame-panel="cam-announce" class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
               <div class="flex items-center justify-between gap-2">
-                <div class="inline-flex rounded-lg bg-zinc-950 p-0.5 border border-zinc-800">
-                  <button id="btn-cd-mode-duration" onclick="setCountdownMode('duration')" class="px-2.5 py-1 rounded-md text-[10.5px] font-semibold bg-red-700 text-white">Duration</button>
-                  <button id="btn-cd-mode-target" onclick="setCountdownMode('target')" class="px-2.5 py-1 rounded-md text-[10.5px] font-semibold text-zinc-400">Start Time</button>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <span id="ctrl-cd-status" class="text-[10px] text-zinc-400"></span>
-                  <strong id="ctrl-cd-readout" class="font-mono text-xs text-amber-300">05:00</strong>
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Announcements Frame Content</span>
+                  <p class="text-[10px] text-zinc-400">Two fields per item: Title and Description. Automatically formatted on air.</p>
                 </div>
               </div>
+              <div id="announcements-rows-container" class="space-y-2"></div>
+              <button type="button" onclick="addAnnouncementRow()" class="w-full py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold text-amber-300 flex items-center justify-center gap-1.5 transition">
+                <span>+ Add Announcement Row</span>
+              </button>
+              <!-- Hidden compatibility input for verify and legacy scripts -->
+              <textarea id="in-fr-announcements" class="hidden" oninput="handleFrameContentEdit()"></textarea>
+            </div>
 
-              <div id="cd-duration-controls" class="flex flex-wrap items-center justify-between gap-2">
-                <div class="flex items-center gap-1.5 text-xs">
-                  <span class="text-zinc-400">Length:</span>
-                  <input type="number" id="in-cd-mins" value="5" min="1" max="90" onchange="resetCountdown()" class="w-12 px-1.5 py-1 text-center rounded bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
-                  <span class="text-zinc-400">min</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <button id="btn-cd-toggle" onclick="toggleCountdown()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold">Start</button>
-                  <button onclick="resetCountdown()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-[11px]">Reset</button>
-                </div>
+            <!-- Context 2: Scripture Frame (cam-bible) -->
+            <div data-frame-panel="cam-bible" class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Scripture Frame Content</span>
+                <button type="button" onclick="pullLowerThirdToBible()" class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-medium text-zinc-200">
+                  Use Active LT Text
+                </button>
               </div>
-
-              <div id="cd-target-controls" class="hidden flex flex-wrap items-center justify-between gap-2">
-                <label class="flex items-center gap-2 text-xs">
-                  <span class="text-zinc-400">Starts At:</span>
-                  <input type="time" id="in-cd-target-time" value="10:00" oninput="handleTargetTimeChange()" class="px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Reference</span>
+                  <input type="text" id="in-fr-verse-ref" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
                 </label>
-                <span class="text-[10.5px] text-emerald-400 font-medium">Clock-synced</span>
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Translation</span>
+                  <input type="text" id="in-fr-verse-ver" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+              </div>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Verse Text</span>
+                <textarea id="in-fr-verse-text" rows="3" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none"></textarea>
+              </label>
+            </div>
+
+            <!-- Context 3: Starting Soon & Countdown (welcome-cam, countdown-closing) -->
+            <div data-frame-panel="welcome-cam,countdown-closing" class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Starting Soon &amp; Countdown Timer</div>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Welcome Title</span>
+                  <input type="text" id="in-fr-welcome-title" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Subtitle</span>
+                  <input type="text" id="in-fr-welcome-sub" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+              </div>
+              <div class="pt-2 border-t border-zinc-700/60 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="inline-flex rounded-lg bg-zinc-950 p-0.5 border border-zinc-800">
+                    <button type="button" id="btn-cd-mode-duration" onclick="setCountdownMode('duration')" class="px-2.5 py-1 rounded-md text-[10.5px] font-semibold bg-red-700 text-white">Duration</button>
+                    <button type="button" id="btn-cd-mode-target" onclick="setCountdownMode('target')" class="px-2.5 py-1 rounded-md text-[10.5px] font-semibold text-zinc-400">Start Time</button>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span id="ctrl-cd-status" class="text-[10px] text-zinc-400"></span>
+                    <strong id="ctrl-cd-readout" class="font-mono text-xs text-amber-300">05:00</strong>
+                  </div>
+                </div>
+                <div id="cd-duration-controls" class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <span class="text-zinc-400">Length:</span>
+                    <input type="number" id="in-cd-mins" value="5" min="1" max="90" onchange="resetCountdown()" class="w-12 px-1.5 py-1 text-center rounded bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                    <span class="text-zinc-400">min</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <button type="button" id="btn-cd-toggle" onclick="toggleCountdown()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold">Start</button>
+                    <button type="button" onclick="resetCountdown()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-[11px]">Reset</button>
+                  </div>
+                </div>
+                <div id="cd-target-controls" class="hidden flex flex-wrap items-center justify-between gap-2">
+                  <label class="flex items-center gap-2 text-xs">
+                    <span class="text-zinc-400">Starts At:</span>
+                    <input type="time" id="in-cd-target-time" value="10:00" oninput="handleTargetTimeChange()" class="px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                  </label>
+                  <span class="text-[10.5px] text-emerald-400 font-medium">Clock-synced</span>
+                </div>
               </div>
             </div>
+
+            <!-- Context 4: Slideshow Window (cam-slides) -->
+            <div data-frame-panel="cam-slides" class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Sermon Slides &amp; Speaker PiP</div>
+              <label class="block space-y-1">
+                <span class="text-[11px] text-zinc-400">Slides Window Label</span>
+                <input type="text" id="in-fr-slide-tag" value="SERMON SLIDES" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+              </label>
+            </div>
+
+            <!-- Context 5: Worship Service (worship) -->
+            <div data-frame-panel="worship" class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Worship / Praise Frame Content</div>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Song / Hymn Title</span>
+                  <input type="text" id="in-fr-song-title" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Key / Worship Team</span>
+                  <input type="text" id="in-fr-song-details" oninput="handleFrameContentEdit()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+              </div>
+            </div>
+
+            <!-- Context 6: Camera Only Layouts (main-cam, cam-pip, interview, prayer, pastor-info) -->
+            <div id="panel-generic-frame" class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 text-xs text-zinc-300">
+              <div class="font-semibold text-amber-400 mb-1">Standard 16:9 Camera Layout</div>
+              <p class="text-zinc-400">Uses your live camera feed inside the transparent cutout with global lower thirds and branding.</p>
+            </div>
+
           </div>
+
+          <!-- Collapsed Advanced Frame Appearance & Styling -->
+          <details class="p-3 rounded-xl bg-zinc-800/40 border border-zinc-700/60 group">
+            <summary class="cursor-pointer text-xs font-bold uppercase tracking-wider text-amber-400 hover:text-white flex items-center justify-between select-none">
+              <span>⚙️ Advanced Frame Appearance &amp; Styling</span>
+              <span class="text-zinc-400 group-open:rotate-180 transition">▼</span>
+            </summary>
+            <div class="mt-3 space-y-3 pt-3 border-t border-zinc-700/60">
+              <!-- Theme & Custom Accent Override -->
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Frame Theme</span>
+                  <select id="in-fc-theme" onchange="handleFrameCustomizeChange()" class="w-full px-2 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none">
+                    <option value="inherit">Use Global Theme</option>
+                    <option value="bcc-crimson">BCC Dark</option>
+                    <option value="bcc-light">Light</option>
+                    <option value="classic-gold">Gold</option>
+                    <option value="navy">Navy</option>
+                  </select>
+                </label>
+                <div class="space-y-1">
+                  <span class="text-[11px] text-zinc-400 block">Accent Override</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="color" id="in-fc-accent" oninput="handleFrameAccentPick()" class="h-[30px] w-10 rounded bg-zinc-950 border border-zinc-700 cursor-pointer p-0.5" />
+                    <button id="btn-fc-accent-auto" onclick="clearFrameCustomAccent()" class="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-zinc-700 border border-zinc-700 text-[10.5px] font-medium text-zinc-300 truncate">
+                      Theme Auto
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Header Badge & Panel Title -->
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Header Badge</span>
+                  <input type="text" id="in-fc-header-badge" oninput="handleFrameCustomizeChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+                <label class="block space-y-1">
+                  <span class="text-[11px] text-zinc-400">Panel Heading</span>
+                  <input type="text" id="in-fc-panel-title" oninput="handleFrameCustomizeChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none" />
+                </label>
+              </div>
+
+              <!-- Geometry Sliders -->
+              <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+                <label class="block space-y-0.5">
+                  <span class="text-[10.5px] text-zinc-400">Corner Radius: <strong id="lbl-fc-radius" class="text-zinc-200">14px</strong></span>
+                  <input type="range" id="in-fc-radius" min="0" max="32" step="2" value="14" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+                </label>
+                <label class="block space-y-0.5">
+                  <span class="text-[10.5px] text-zinc-400">Cutout Border: <strong id="lbl-fc-border" class="text-zinc-200">3px</strong></span>
+                  <input type="range" id="in-fc-border" min="0" max="8" step="1" value="3" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+                </label>
+                <label class="block space-y-0.5">
+                  <span class="text-[10.5px] text-zinc-400">Text Size: <strong id="lbl-fc-text-scale" class="text-zinc-200">100%</strong></span>
+                  <input type="range" id="in-fc-text-scale" min="0.85" max="1.25" step="0.05" value="1" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+                </label>
+                <label class="block space-y-0.5">
+                  <span class="text-[10.5px] text-zinc-400">Matte Opacity: <strong id="lbl-fc-opacity" class="text-zinc-200">100%</strong></span>
+                  <input type="range" id="in-fc-opacity" min="0.5" max="1" step="0.05" value="1" oninput="handleFrameCustomizeChange()" class="w-full accent-red-600" />
+                </label>
+              </div>
+
+              <!-- Toggles -->
+              <div class="flex flex-wrap items-center gap-x-3.5 gap-y-2 pt-2 border-t border-zinc-700/60 text-[11px] text-zinc-200">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="in-fc-mirror" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                  <span>Flip Left/Right</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="in-fc-header" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                  <span>Header</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="in-fc-infobar" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                  <span>Info Bar</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="in-fc-live" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                  <span>LIVE</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="in-fc-logo" onchange="handleFrameCustomizeChange()" class="accent-red-600 rounded" />
+                  <span>Logo</span>
+                </label>
+              </div>
+            </div>
+          </details>
+
         </div>
 
         <!-- TAB 4: SETTINGS & OBS SETUP -->
         <div id="tab-settings" class="hidden p-3 space-y-3">
-          <!-- Core OBS Studio URLs -->
+          <!-- Card 1: Core OBS Studio URLs -->
           <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
             <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">OBS Studio &amp; Deck URLs</div>
 
@@ -1421,7 +1646,7 @@
             </label>
           </div>
 
-          <!-- Global Theme, Logo & Geometry -->
+          <!-- Card 2: Global Theme, Logo & Geometry -->
           <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-3">
             <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Global Theme &amp; Logo</div>
 
@@ -1460,7 +1685,7 @@
             </div>
           </div>
 
-          <!-- Global Marquee Settings -->
+          <!-- Card 3: Global Ticker Settings -->
           <div class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 space-y-2.5">
             <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Global Ticker Settings</div>
             <div class="grid grid-cols-2 gap-2">
@@ -1479,7 +1704,7 @@
             </label>
           </div>
 
-          <!-- Beginner-Friendly OBS & Stream Deck Setup Guide -->
+          <!-- Card 4: Beginner-Friendly OBS & Stream Deck Guide -->
           <details class="p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 group">
             <summary class="text-xs font-bold uppercase tracking-wider text-amber-400 cursor-pointer flex items-center justify-between">
               <span>📖 Beginner OBS &amp; Stream Deck Setup Guide</span>
@@ -1605,6 +1830,8 @@
     };
 
     // 12 Professional OBS Frame Definitions (1920x1080 transparent cutouts)
+    // Note: Frames with sidebars (cam-bible, cam-announce, welcome-cam, cam-slides, pastor-info, prayer)
+    // all share the EXACT same primary window: 1216x684 @ (48, 148) with radius 14!
     const FRAME_DEFS = [
       {
         id: 'main-cam',
@@ -1614,45 +1841,42 @@
         cutouts: [{ x: 24, y: 24, w: 1872, h: 1032, r: 16, label: 'MAIN CAMERA (16:9)' }]
       },
       {
-        id: 'pastor-info',
-        name: 'Pastor & Sermon',
-        short: 'Camera + Pastor profile card',
-        hint: 'Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'PASTOR CAMERA (1152×648)' }]
-      },
-      {
         id: 'cam-bible',
         name: 'Camera + Bible Verse',
         short: '16:9 Cam + Scripture card',
-        hint: 'Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'MAIN CAMERA (1152×648)' }]
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'MAIN CAMERA (1216×684)' }]
       },
       {
         id: 'cam-announce',
         name: 'Camera + Announcements',
         short: '16:9 Cam + News panel right',
-        hint: 'Cam: 1216×684 @ (48,148)',
+        hint: 'Primary: 1216×684 @ (48,148)',
         cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'MAIN CAMERA (1216×684)' }]
+      },
+      {
+        id: 'welcome-cam',
+        name: 'Starting Soon & Cam',
+        short: 'Sanctuary Cam + Countdown',
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'SANCTUARY CAMERA (1216×684)' }]
       },
       {
         id: 'cam-slides',
         name: 'Camera + Slideshow',
         short: 'Slides left + Speaker PiP right',
-        hint: 'Slides: 1216×684 @ 48,148 • Cam: 576×324 @ 1296,148',
+        hint: 'Slides: 1216×684 @ (48,148) • PiP: 576×324 @ (1296,148)',
         cutouts: [
           { x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'SLIDESHOW / LYRICS (1216×684)' },
-          { x: 1296, y: 148, w: 576, h: 324, r: 14, label: 'SPEAKER CAM (576×324)' }
+          { x: 1296, y: 148, w: 576, h: 324, r: 14, label: 'SPEAKER PiP (576×324)' }
         ]
       },
       {
-        id: 'cam-pip',
-        name: 'Camera PiP Corner',
-        short: 'Wide camera with corner inset',
-        hint: 'Wide: 1600×900 @ 24,24 • PiP: 384×216 @ 1512,840',
-        cutouts: [
-          { x: 24, y: 24, w: 1600, h: 900, r: 16, label: 'WIDE CAMERA' },
-          { x: 1512, y: 840, w: 384, h: 216, r: 12, label: 'INSET PiP' }
-        ]
+        id: 'pastor-info',
+        name: 'Pastor & Sermon',
+        short: 'Camera + Pastor profile card',
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'PASTOR CAMERA (1216×684)' }]
       },
       {
         id: 'worship',
@@ -1665,8 +1889,18 @@
         id: 'prayer',
         name: 'Prayer Session',
         short: 'Camera + Prayer petition card',
-        hint: 'Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'SANCTUARY CAMERA (1152×648)' }]
+        hint: 'Primary: 1216×684 @ (48,148)',
+        cutouts: [{ x: 48, y: 148, w: 1216, h: 684, r: 14, label: 'SANCTUARY CAMERA (1216×684)' }]
+      },
+      {
+        id: 'cam-pip',
+        name: 'Camera PiP Corner',
+        short: 'Wide camera with corner inset',
+        hint: 'Wide: 1600×900 @ 24,24 • PiP: 384×216 @ 1512,840',
+        cutouts: [
+          { x: 24, y: 24, w: 1600, h: 900, r: 16, label: 'WIDE CAMERA' },
+          { x: 1512, y: 840, w: 384, h: 216, r: 12, label: 'INSET PiP' }
+        ]
       },
       {
         id: 'interview',
@@ -1677,13 +1911,6 @@
           { x: 48, y: 148, w: 912, h: 684, r: 14, label: 'CAMERA 1 (HOST)' },
           { x: 960, y: 148, w: 912, h: 684, r: 14, label: 'CAMERA 2 (GUEST)' }
         ]
-      },
-      {
-        id: 'welcome-cam',
-        name: 'Starting Soon & Cam',
-        short: 'Sanctuary Cam + Countdown',
-        hint: 'Sanctuary Cam: 1152×648 @ (48,156)',
-        cutouts: [{ x: 48, y: 156, w: 1152, h: 648, r: 14, label: 'SANCTUARY CAMERA (1152×648)' }]
       },
       {
         id: 'event-announce',
@@ -1719,15 +1946,15 @@
 
     const FRAME_SPECIFIC_DEFAULTS = {
       'main-cam':          { cornerRadius: 16, headerBadge: 'LIVE',                 panelTitle: '' },
-      'pastor-info':       { cornerRadius: 14, headerBadge: 'SUNDAY MESSAGE',       panelTitle: 'SENIOR PASTOR' },
       'cam-bible':         { cornerRadius: 14, headerBadge: 'SCRIPTURE READING',    panelTitle: 'HOLY BIBLE' },
       'cam-announce':      { cornerRadius: 14, headerBadge: 'CHURCH ANNOUNCEMENTS', panelTitle: 'Church News' },
+      'welcome-cam':       { cornerRadius: 14, headerBadge: 'STARTING SOON',        panelTitle: 'SERVICE BEGINS IN' },
       'cam-slides':        { cornerRadius: 14, headerBadge: 'SERMON SLIDES',        panelTitle: 'LIVE SPEAKER' },
-      'cam-pip':           { cornerRadius: 16, headerBadge: 'LIVE BROADCAST',       panelTitle: 'SANCTUARY' },
+      'pastor-info':       { cornerRadius: 14, headerBadge: 'SUNDAY MESSAGE',       panelTitle: 'SENIOR PASTOR' },
       'worship':           { cornerRadius: 14, headerBadge: 'WORSHIP & PRAISE',     panelTitle: 'SONG TITLE' },
       'prayer':            { cornerRadius: 14, headerBadge: 'INTERCESSORY PRAYER',  panelTitle: 'PRAYER REQUESTS' },
+      'cam-pip':           { cornerRadius: 16, headerBadge: 'LIVE BROADCAST',       panelTitle: 'SANCTUARY' },
       'interview':         { cornerRadius: 14, headerBadge: 'CONVERSATION & DIALOGUE', panelTitle: 'INTERVIEW' },
-      'welcome-cam':       { cornerRadius: 14, headerBadge: 'STARTING SOON',        panelTitle: 'SERVICE BEGINS IN' },
       'event-announce':    { cornerRadius: 14, headerBadge: 'UPCOMING EVENTS',      panelTitle: 'CHURCH CALENDAR' },
       'countdown-closing': { cornerRadius: 14, headerBadge: 'CLOSING BENEDICTION',  panelTitle: 'GO IN PEACE' }
     };
@@ -1782,12 +2009,16 @@
       frameVerseRef: 'John 14:6',
       frameVerseVer: 'NIV',
       frameVerseText: 'Jesus answered, “I am the way and the truth and the life. No one comes to the Father except through me.”',
-      frameAnnouncements: [
-        'Sunday Worship Service | Every Sunday at 10:00 AM • Sanctuary & Online',
-        'Wednesday Prayer & Bible Study | Every Wednesday at 7:00 PM • Fellowship Hall',
-        'Youth & Young Adults Fellowship | Fridays at 6:30 PM • Welcome Center',
-        'Online Tithes & Offerings | Transfer via PromptPay or visit bcc.church/give'
-      ].join('\n'),
+      
+      // Structured Announcements List (two fields per line: title & details)
+      frameAnnouncementsList: [
+        { title: 'Sunday Worship Service', details: 'Every Sunday at 10:00 AM • Sanctuary & Online' },
+        { title: 'Wednesday Prayer & Bible Study', details: 'Every Wednesday at 7:00 PM • Fellowship Hall' },
+        { title: 'Youth & Young Adults Fellowship', details: 'Fridays at 6:30 PM • Welcome Center' },
+        { title: 'Online Tithes & Offerings', details: 'Transfer via PromptPay or visit bcc.church/give' }
+      ],
+      frameAnnouncements: '', // legacy mirror string
+
       frameSlideTag: 'SERMON SLIDES',
       frameWelcomeTitle: 'Sunday Worship Service',
       frameWelcomeSub: 'We are glad you are worshiping with us today • Bangkok Christ Church',
@@ -1855,14 +2086,28 @@
        2. RUNTIME STATE & BROADCAST SYNCHRONIZATION
        ========================================================================= */
     let config = { ...DEFAULT_CONFIG, frameSettings: {} };
+    // Ensure structured announcement list exists
+    if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList.length) {
+      config.frameAnnouncementsList = [
+        { title: 'Sunday Worship Service', details: 'Every Sunday at 10:00 AM • Sanctuary & Online' },
+        { title: 'Wednesday Prayer & Bible Study', details: 'Every Wednesday at 7:00 PM • Fellowship Hall' },
+        { title: 'Youth & Young Adults Fellowship', details: 'Fridays at 6:30 PM • Welcome Center' },
+        { title: 'Online Tithes & Offerings', details: 'Transfer via PromptPay or visit bcc.church/give' }
+      ];
+    }
+
     let cues = DEFAULT_CUES.map(c => ({ ...c }));
     let marqueePresets = DEFAULT_MARQUEE_PRESETS.map(m => ({ ...m }));
     
+    // Staged Preview State (for Studio Mode)
+    let stagedCueId = null;
+    let stagedConfig = { ...config };
+    let stagedFrameId = 'cam-announce';
+
     // Animation State Machine: 'IDLE' | 'ENTERING' | 'ACTIVE' | 'EXITING'
     let animState = 'IDLE';
     let isOnAir = false;
     let activeCueId = null;
-    let previewCueId = null;
     let activeMarqueeId = 'mq1';
     let isOverlayOnly = false;
     let overlayTarget = 'overlay'; // 'overlay' | 'frame'
@@ -1938,6 +2183,10 @@
             ...parsed.config,
             frameSettings: parsed.config.frameSettings ? { ...parsed.config.frameSettings } : {}
           };
+          if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList.length) {
+            config.frameAnnouncementsList = DEFAULT_CONFIG.frameAnnouncementsList;
+          }
+          stagedConfig = { ...config };
         }
         if (Array.isArray(parsed.cues) && parsed.cues.length) cues = parsed.cues;
         if (Array.isArray(parsed.marqueePresets) && parsed.marqueePresets.length) marqueePresets = parsed.marqueePresets;
@@ -1961,8 +2210,9 @@
         marqueePresets,
         onAir: (typeof onAirState === 'boolean') ? onAirState : isOnAir,
         activeCueId,
-        previewCueId,
+        stagedCueId,
         activeFrameId,
+        stagedFrameId,
         activeMarqueeId,
         ts: Date.now()
       };
@@ -2000,7 +2250,7 @@
                   marqueePresets,
                   onAir: isOnAir,
                   activeCueId,
-                  previewCueId,
+                  stagedCueId,
                   activeFrameId
                 });
               }
@@ -2046,12 +2296,15 @@
           ...msg.config,
           frameSettings: msg.config.frameSettings ? { ...msg.config.frameSettings } : {}
         };
+        if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList.length) {
+          config.frameAnnouncementsList = DEFAULT_CONFIG.frameAnnouncementsList;
+        }
       }
       if (Array.isArray(msg.cues)) cues = msg.cues;
       if (Array.isArray(msg.marqueePresets)) marqueePresets = msg.marqueePresets;
       if (msg.activeFrameId) activeFrameId = msg.activeFrameId;
       if (msg.activeCueId !== undefined) activeCueId = msg.activeCueId;
-      if (msg.previewCueId !== undefined) previewCueId = msg.previewCueId;
+      if (msg.stagedCueId !== undefined) stagedCueId = msg.stagedCueId;
 
       const cmd = msg.cmd || 'SYNC';
 
@@ -2060,13 +2313,13 @@
       } else if (cmd === 'SWAP') {
         playCrossSwap();
       } else if (cmd === 'SHOW') {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         playIntro();
       } else if (cmd === 'HIDE') {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         playOutro();
       } else {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         if (msg.onAir && !isOnAir) playIntro();
         else if (msg.onAir === false && isOnAir) playOutro();
       }
@@ -2081,6 +2334,7 @@
         updateSelectedFrameUrlBox();
         renderDeckView();
         renderFeedView();
+        renderAnnouncementRows();
       }
     }
 
@@ -2097,19 +2351,17 @@
 
     function playIntro(customDuration) {
       clearLowerThirdTimers();
-      const lt = document.getElementById('cg-lt');
-      if (!lt) return;
+      const lts = document.querySelectorAll('.cg-lt-program');
+      lts.forEach(lt => {
+        lt.classList.remove('is-exiting');
+        void lt.offsetWidth;
+        lt.classList.add('is-active');
+      });
 
-      animState = 'ENTERING';
-      lt.classList.remove('is-exiting');
-      void lt.offsetWidth; // Force reflow
-      lt.classList.add('is-active');
-
-      isOnAir = true;
       animState = 'ACTIVE';
+      isOnAir = true;
       updateTallyUI();
 
-      // Duration auto-hide handling
       const dur = customDuration !== undefined ? customDuration : (config.autoHide ? config.durationSec : 0);
       if (dur > 0) {
         startDurationCountdown(dur);
@@ -2118,18 +2370,21 @@
 
     function playOutro() {
       clearLowerThirdTimers();
-      const lt = document.getElementById('cg-lt');
-      if (lt && lt.classList.contains('is-active')) {
-        animState = 'EXITING';
-        lt.classList.remove('is-active');
-        lt.classList.add('is-exiting');
-        setTimeout(() => {
-          lt.classList.remove('is-exiting');
+      const lts = document.querySelectorAll('.cg-lt-program');
+      lts.forEach(lt => {
+        if (lt.classList.contains('is-active')) {
+          animState = 'EXITING';
+          lt.classList.remove('is-active');
+          lt.classList.add('is-exiting');
+          setTimeout(() => {
+            lt.classList.remove('is-exiting');
+            animState = 'IDLE';
+          }, 360);
+        } else {
           animState = 'IDLE';
-        }, 360);
-      } else {
-        animState = 'IDLE';
-      }
+        }
+      });
+
       isOnAir = false;
       activeCueId = null;
       updateTallyUI();
@@ -2137,19 +2392,21 @@
 
     function playCrossSwap(customDuration) {
       clearLowerThirdTimers();
-      const lt = document.getElementById('cg-lt');
-      if (!lt) return;
-
+      const lts = document.querySelectorAll('.cg-lt-program');
       if (isOnAir) {
         animState = 'EXITING';
-        lt.classList.remove('is-active');
-        lt.classList.add('is-exiting');
+        lts.forEach(lt => {
+          lt.classList.remove('is-active');
+          lt.classList.add('is-exiting');
+        });
         swapTimer = setTimeout(() => {
           swapTimer = null;
-          renderLowerThirdCanvas();
-          lt.classList.remove('is-exiting');
-          void lt.offsetWidth;
-          lt.classList.add('is-active');
+          renderAllCanvases();
+          lts.forEach(lt => {
+            lt.classList.remove('is-exiting');
+            void lt.offsetWidth;
+            lt.classList.add('is-active');
+          });
           animState = 'ACTIVE';
           isOnAir = true;
           updateTallyUI();
@@ -2157,7 +2414,7 @@
           if (dur > 0) startDurationCountdown(dur);
         }, 340);
       } else {
-        renderLowerThirdCanvas();
+        renderAllCanvases();
         playIntro(customDuration);
       }
     }
@@ -2178,7 +2435,7 @@
     }
 
     function triggerShow(duration) {
-      renderLowerThirdCanvas();
+      renderAllCanvases();
       playIntro(duration);
       broadcastState('SHOW', true);
     }
@@ -2202,11 +2459,10 @@
     function executeClearAllGraphics() {
       playOutro();
       config.showTicker = false;
-      const bar = document.getElementById('cg-marquee');
-      if (bar) bar.classList.remove('is-visible');
+      document.querySelectorAll('.cg-marquee').forEach(bar => bar.classList.remove('is-visible'));
       const tickerBox = document.getElementById('ctrl-show-ticker');
       if (tickerBox) tickerBox.checked = false;
-      renderLowerThirdCanvas();
+      renderAllCanvases();
       updateTallyUI();
     }
 
@@ -2231,8 +2487,8 @@
         if (timer) timer.textContent = '';
       }
 
-      // Update Deck and Feed views
       if (!isOverlayOnly) {
+        renderCues();
         renderDeckView();
         renderFeedView();
       }
@@ -2258,89 +2514,124 @@
       `;
     }
 
-    function renderLowerThirdCanvas() {
-      const canvas = document.getElementById('cg-canvas');
-      const lt = document.getElementById('cg-lt');
+    function renderAllCanvases() {
+      // 1. Program Canvas (Live On Air)
+      renderCanvasInstance({
+        prefix: 'program',
+        cfg: config,
+        isLive: true
+      });
+
+      // 2. Preview Canvas (Staged / Testing)
+      renderCanvasInstance({
+        prefix: 'preview',
+        cfg: stagedConfig,
+        isLive: false
+      });
+    }
+
+    function renderCanvasInstance({ prefix, cfg, isLive }) {
+      const canvas = document.getElementById(`${prefix}-cg-canvas`) || document.getElementById('cg-canvas');
+      const lt = document.getElementById(`${prefix}-cg-lt`) || document.getElementById('cg-lt');
       if (!canvas || !lt) return;
 
-      canvas.dataset.theme = config.theme;
-      canvas.style.setProperty('--bg-opacity', config.bgOpacity);
-      canvas.style.setProperty('--lt-scale', config.scale);
-      canvas.classList.toggle('has-marquee', !!config.showTicker);
+      canvas.dataset.theme = cfg.theme;
+      canvas.style.setProperty('--bg-opacity', cfg.bgOpacity);
+      canvas.style.setProperty('--lt-scale', cfg.scale);
+      canvas.classList.toggle('has-marquee', !!cfg.showTicker);
 
-      // Animation Style class
+      // Classify as program or preview for animations
+      lt.classList.toggle('cg-lt-program', isLive);
+      lt.classList.toggle('cg-lt-preview', !isLive);
+
+      // In Preview stage, show content immediately for testing
+      if (!isLive) {
+        lt.classList.add('is-active');
+        lt.classList.remove('is-exiting');
+      }
+
+      // Animation style & mode
       lt.classList.remove('style-modern-slide', 'style-minimal-fade', 'style-elegant-reveal', 'style-classic-bar');
-      lt.classList.add(`style-${config.animStyle || 'modern-slide'}`);
+      lt.classList.add(`style-${cfg.animStyle || 'modern-slide'}`);
 
-      // Mode class
       lt.classList.remove('mode-speaker', 'mode-sermon', 'mode-scripture', 'mode-announcement');
-      lt.classList.add(`mode-${config.mode}`);
+      lt.classList.add(`mode-${cfg.mode}`);
 
-      document.getElementById('cg-cat').textContent = config.category || 'LIVE';
-      document.getElementById('cg-primary').textContent = config.primary || '';
-      document.getElementById('cg-secondary').textContent = config.secondary || '';
+      const catEl = canvas.querySelector('.cg-cat');
+      if (catEl) catEl.textContent = cfg.category || 'LIVE';
+      const priEl = canvas.querySelector('.cg-primary');
+      if (priEl) priEl.textContent = cfg.primary || '';
+      const secEl = canvas.querySelector('.cg-secondary');
+      if (secEl) secEl.textContent = cfg.secondary || '';
 
-      const churchEl = document.getElementById('cg-church');
-      const lineEl = document.getElementById('cg-meta-line');
-      const liveChurch = document.getElementById('cg-live-church');
-      if (config.churchName) {
-        churchEl.textContent = config.churchName;
-        churchEl.style.display = 'inline';
-        lineEl.style.display = 'inline-block';
-        if (liveChurch) liveChurch.textContent = config.churchName;
+      const churchEl = canvas.querySelector('.cg-church');
+      const lineEl = canvas.querySelector('.cg-meta-line');
+      const liveChurch = canvas.querySelector('.cg-live-church');
+      if (cfg.churchName) {
+        if (churchEl) { churchEl.textContent = cfg.churchName; churchEl.style.display = 'inline'; }
+        if (lineEl) lineEl.style.display = 'inline-block';
+        if (liveChurch) liveChurch.textContent = cfg.churchName;
       } else {
-        churchEl.style.display = 'none';
-        lineEl.style.display = 'none';
+        if (churchEl) churchEl.style.display = 'none';
+        if (lineEl) lineEl.style.display = 'none';
         if (liveChurch) liveChurch.textContent = 'LIVE';
       }
 
-      const badgeEl = document.getElementById('cg-badge');
-      if (config.badge) {
-        badgeEl.textContent = config.badge;
-        badgeEl.classList.add('has-badge');
-      } else {
-        badgeEl.classList.remove('has-badge');
+      const badgeEl = canvas.querySelector('.cg-badge');
+      if (badgeEl) {
+        if (cfg.badge) {
+          badgeEl.textContent = cfg.badge;
+          badgeEl.classList.add('has-badge');
+        } else {
+          badgeEl.classList.remove('has-badge');
+        }
       }
 
       // Logo handling
-      const logoSlot = document.getElementById('cg-logo-slot');
-      const logoImg = document.getElementById('cg-logo-img');
-      const defLogo = document.getElementById('cg-default-logo');
-      logoSlot.classList.toggle('hidden-slot', !config.showLogo);
-      if (config.customLogo) {
-        if (logoImg.getAttribute('src') !== config.customLogo) logoImg.src = config.customLogo;
-        logoImg.classList.remove('hidden');
-        defLogo.classList.add('hidden');
-      } else {
-        logoImg.classList.add('hidden');
-        defLogo.classList.remove('hidden');
+      const logoSlot = canvas.querySelector('.cg-logo-slot');
+      const logoImg = canvas.querySelector('.cg-logo-img');
+      const defLogo = canvas.querySelector('.cg-default-logo');
+      if (logoSlot) logoSlot.classList.toggle('hidden-slot', !cfg.showLogo);
+      if (logoImg && defLogo) {
+        if (cfg.customLogo) {
+          if (logoImg.getAttribute('src') !== cfg.customLogo) logoImg.src = cfg.customLogo;
+          logoImg.classList.remove('hidden');
+          defLogo.classList.add('hidden');
+        } else {
+          logoImg.classList.add('hidden');
+          defLogo.classList.remove('hidden');
+        }
       }
 
       // Live Bug
-      const liveBug = document.getElementById('cg-live-bug');
-      if (liveBug) liveBug.classList.toggle('is-visible', !!config.showLive);
+      const liveBug = canvas.querySelector('.cg-live-bug');
+      if (liveBug) liveBug.classList.toggle('is-visible', !!cfg.showLive);
 
       // Render Marquee with diffing
-      renderMarquee();
+      renderMarqueeInstance(canvas, cfg);
+    }
+
+    function renderLowerThirdCanvas() {
+      renderAllCanvases();
     }
 
     /* =========================================================================
        5. SCROLLING MARQUEE RENDERER (Zero-Glitch Diffed)
        ========================================================================= */
-    function renderMarquee() {
-      const bar = document.getElementById('cg-marquee');
-      const tagEl = document.getElementById('cg-marquee-tag');
-      const track = document.getElementById('cg-marquee-track');
-      if (!bar || !tagEl || !track) return;
+    function renderMarqueeInstance(canvas, cfg) {
+      const bar = canvas.querySelector('.cg-marquee');
+      const tagEl = canvas.querySelector('.cg-marquee-tag-text') || canvas.querySelector('.cg-marquee-tag span:last-child');
+      const track = canvas.querySelector('.cg-marquee-track');
+      if (!bar || !track) return;
 
-      bar.classList.toggle('is-visible', !!config.showTicker);
-      bar.classList.toggle('is-paused', !!config.tickerPaused);
-      bar.style.setProperty('--marquee-duration', `${config.marqueeSpeed || 32}s`);
-      tagEl.textContent = config.marqueeTag || 'CHURCH NEWS';
+      bar.classList.toggle('is-visible', !!cfg.showTicker);
+      bar.classList.toggle('is-paused', !!cfg.tickerPaused);
+      bar.style.setProperty('--marquee-duration', `${cfg.marqueeSpeed || 32}s`);
+      if (tagEl) tagEl.textContent = cfg.marqueeTag || 'CHURCH NEWS';
 
-      const key = String(config.marqueeText || '').trim();
-      if (key === lastMarqueeKey && track.innerHTML) return;
-      lastMarqueeKey = key;
+      const key = String(cfg.marqueeText || '').trim();
+      if (key === track.dataset.lastKey && track.innerHTML) return;
+      track.dataset.lastKey = key;
 
       const items = key.split('|').map(s => s.trim()).filter(Boolean);
       if (!items.length) items.push('Welcome to Bangkok Christ Church • John 14:6');
@@ -2356,10 +2647,16 @@
       track.innerHTML = halfHtml + halfHtml;
     }
 
+    function renderMarquee() {
+      const canvases = document.querySelectorAll('.broadcast-stage');
+      canvases.forEach(c => renderMarqueeInstance(c, config));
+    }
+
     function toggleTickerPause() {
       config.tickerPaused = !config.tickerPaused;
-      const bar = document.getElementById('cg-marquee');
-      if (bar) bar.classList.toggle('is-paused', !!config.tickerPaused);
+      document.querySelectorAll('.cg-marquee').forEach(bar => {
+        bar.classList.toggle('is-paused', !!config.tickerPaused);
+      });
       broadcastState('SYNC', isOnAir);
       showToast(config.tickerPaused ? 'Marquee Paused' : 'Marquee Resumed');
     }
@@ -2398,20 +2695,23 @@
     }
 
     function parseAnnouncements() {
+      if (Array.isArray(config.frameAnnouncementsList) && config.frameAnnouncementsList.length) {
+        return config.frameAnnouncementsList.filter(a => a.title || a.details).slice(0, 5);
+      }
       const lines = String(config.frameAnnouncements || '')
         .split('\n')
         .map(l => l.trim())
         .filter(Boolean)
         .slice(0, 5);
       if (!lines.length) {
-        return [{ title: 'Sunday Worship Service', detail: 'Every Sunday at 10:00 AM • Bangkok Christ Church' }];
+        return [{ title: 'Sunday Worship Service', details: 'Every Sunday at 10:00 AM • Sanctuary & Online' }];
       }
       return lines.map(line => {
         const idx = line.indexOf('|');
-        if (idx === -1) return { title: line, detail: '' };
+        if (idx === -1) return { title: line, details: '' };
         return {
           title: line.slice(0, idx).trim(),
-          detail: line.slice(idx + 1).trim()
+          details: line.slice(idx + 1).trim()
         };
       });
     }
@@ -2435,9 +2735,9 @@
       return `Cutout: ${c.w}×${c.h} @ (${c.x},${c.y})`;
     }
 
-    function buildSvgMatteMask(cutouts, palette, fs) {
-      const maskId = `cut-mask-${activeFrameId}`;
-      const gradId = `matte-grad-${activeFrameId}`;
+    function buildSvgMatteMask(cutouts, palette, fs, frameId) {
+      const maskId = `cut-mask-${frameId || activeFrameId}`;
+      const gradId = `matte-grad-${frameId || activeFrameId}`;
       const bw = Math.max(0, Number(fs.borderWidth ?? 3));
       const matteOp = Math.min(1, Math.max(0.4, Number(fs.matteOpacity ?? 1)));
 
@@ -2504,10 +2804,22 @@
     }
 
     function renderActiveFrame() {
-      const container = document.getElementById('frame-canvas');
-      if (!container) return;
+      // 1. Program Frame
+      const progFrame = document.getElementById('program-frame-canvas') || document.getElementById('frame-canvas');
+      if (progFrame) {
+        renderFrameOnCanvas(progFrame, activeFrameId);
+      }
 
-      const def = getFrameDef(activeFrameId);
+      // 2. Preview Frame
+      const prevFrame = document.getElementById('preview-frame-canvas');
+      if (prevFrame) {
+        renderFrameOnCanvas(prevFrame, stagedFrameId || activeFrameId);
+      }
+    }
+
+    function renderFrameOnCanvas(container, frameId) {
+      if (!container) return;
+      const def = getFrameDef(frameId);
       const fs = getFrameSettings(def.id);
       const effectiveTheme = fs.theme === 'inherit' ? config.theme : fs.theme;
       const basePalette = THEME_PALETTES[effectiveTheme] || THEME_PALETTES['bcc-crimson'];
@@ -2530,25 +2842,7 @@
         container.style.removeProperty('--accent-rgb');
       }
 
-      // Studio Mock Guide
-      const mockLayer = document.getElementById('preview-mock-layer');
-      if (mockLayer) {
-        if (!isOverlayOnly && previewTarget === 'frame' && cutouts.length) {
-          mockLayer.classList.remove('hidden');
-          mockLayer.innerHTML = cutouts.map(c => `
-            <div style="position:absolute;left:${c.x}px;top:${c.y}px;width:${c.w}px;height:${c.h}px;border-radius:${c.r}px;display:flex;align-items:center;justify-content:center;">
-              <div style="padding:12px 24px;border-radius:10px;background:rgba(0,0,0,0.5);border:2px dashed rgba(255,255,255,0.35);color:rgba(255,255,255,0.85);font-family:'Montserrat',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">
-                ${esc(c.label)}
-              </div>
-            </div>
-          `).join('');
-        } else {
-          mockLayer.classList.add('hidden');
-          mockLayer.innerHTML = '';
-        }
-      }
-
-      let innerHtml = buildSvgMatteMask(cutouts, palette, fs);
+      let innerHtml = buildSvgMatteMask(cutouts, palette, fs, frameId);
 
       // Frame 1: main-cam
       if (def.id === 'main-cam') {
@@ -2584,61 +2878,16 @@
         `;
       }
 
-      // Frame 2: pastor-info
-      else if (def.id === 'pastor-info') {
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
-        innerHtml += buildFrameHeader(fs.headerBadge || 'SUNDAY MESSAGE', fs);
-        innerHtml += `
-          ${fs.showInfoBar ? `
-            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
-              <div>
-                <div class="fr-section-tag" style="font-size:${sz(13)}px;">${esc(config.category || "TODAY'S MESSAGE")}</div>
-                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.primary)}</div>
-                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.secondary)}</div>
-              </div>
-            </div>
-          ` : ''}
-
-          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
-            <div class="fr-card-top-bar"></div>
-            <div style="padding:42px 36px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;flex:1;justify-content:center;">
-              ${getLogoMarkup(96, fs.showLogo)}
-              <div>
-                <div class="fr-section-tag">${esc(fs.panelTitle || 'SENIOR PASTOR')}</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(32)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">
-                  ${esc(config.primary || 'Pastor John Smith')}
-                </div>
-                <div style="font-size:${sz(18)}px;color:rgb(var(--muted-rgb));margin-top:4px;">
-                  ${esc(config.secondary || 'Bangkok Christ Church')}
-                </div>
-              </div>
-              <div style="width:64px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
-              <div style="padding:14px 20px;border-radius:10px;background:rgba(var(--primary-rgb),0.5);border:1px solid rgba(var(--text-rgb),0.1);width:100%;">
-                <div class="fr-section-tag" style="font-size:${sz(11)}px;">KEY SCRIPTURE</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(20)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">
-                  ${esc(config.frameVerseRef || 'John 14:6')}
-                </div>
-              </div>
-            </div>
-            <div style="padding:18px 32px;background:rgba(var(--primary-rgb),0.5);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
-              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">${esc(config.badge || 'JOHN 14:6')}</span>
-            </div>
-          </div>
-        `;
-      }
-
-      // Frame 3: cam-bible
+      // Frame 2: cam-bible (Exact matching 1216x684 window)
       else if (def.id === 'cam-bible') {
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
         const cleanVerse = config.frameVerseText.replace(/^[“"]|[”"]$/g, '');
-        const baseVersePx = cleanVerse.length > 180 ? 25 : cleanVerse.length > 110 ? 29 : 34;
+        const baseVersePx = cleanVerse.length > 180 ? 24 : cleanVerse.length > 110 ? 28 : 32;
         innerHtml += buildFrameHeader(fs.headerBadge || 'SCRIPTURE READING', fs);
         innerHtml += `
           ${fs.showInfoBar ? `
-            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:862px;width:1216px;height:168px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
               <div>
                 <div class="fr-section-tag" style="font-size:${sz(13)}px;">${esc(config.category || 'SPEAKER')}</div>
                 <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.primary)}</div>
@@ -2647,12 +2896,12 @@
             </div>
           ` : ''}
 
-          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:148px;width:576px;height:882px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
             <div class="fr-card-top-bar"></div>
-            <div style="padding:34px 40px 20px;border-bottom:1px solid rgba(var(--text-rgb),0.10);display:flex;align-items:center;justify-content:space-between;">
+            <div style="padding:32px 36px 18px;border-bottom:1px solid rgba(var(--text-rgb),0.10);display:flex;align-items:center;justify-content:space-between;">
               <div>
                 <div class="fr-section-tag" style="font-size:${sz(12)}px;">${esc(fs.panelTitle || 'HOLY BIBLE')}</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(30)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">${esc(config.frameVerseRef || 'John 14:6')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(28)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">${esc(config.frameVerseRef || 'John 14:6')}</div>
               </div>
               ${config.frameVerseVer ? `
                 <div style="padding:6px 12px;border-radius:6px;background:rgba(var(--accent-rgb),0.22);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:${sz(14)}px;font-weight:800;letter-spacing:0.12em;color:rgb(var(--text-rgb));">
@@ -2660,13 +2909,13 @@
                 </div>
               ` : ''}
             </div>
-            <div style="padding:40px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;">
-              <div style="font-family:Georgia,serif;font-size:78px;line-height:0.5;color:rgba(var(--accent-rgb),0.55);">“</div>
+            <div style="padding:36px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;">
+              <div style="font-family:Georgia,serif;font-size:72px;line-height:0.5;color:rgba(var(--accent-rgb),0.55);">“</div>
               <div class="fr-verse-text" style="font-size:${sz(baseVersePx)}px;">
                 ${esc(cleanVerse)}
               </div>
             </div>
-            <div style="padding:20px 40px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+            <div style="padding:20px 36px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">SCRIPTURE</span>
             </div>
@@ -2674,7 +2923,7 @@
         `;
       }
 
-      // Frame 4: cam-announce
+      // Frame 3: cam-announce (Exact matching 1216x684 window)
       else if (def.id === 'cam-announce') {
         const items = parseAnnouncements();
         const camLeft = posX(48, 1216);
@@ -2701,7 +2950,7 @@
               ${items.map(it => `
                 <div class="fr-announce-item">
                   <div style="font-family:'Montserrat',sans-serif;font-size:${sz(18)}px;font-weight:700;color:rgb(var(--text-rgb));line-height:1.3;">${esc(it.title)}</div>
-                  ${it.detail ? `<div style="font-size:${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:4px;line-height:1.4;">${esc(it.detail)}</div>` : ''}
+                  ${it.details ? `<div style="font-size:${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:4px;line-height:1.4;">${esc(it.details)}</div>` : ''}
                 </div>
               `).join('')}
             </div>
@@ -2709,7 +2958,52 @@
         `;
       }
 
-      // Frame 5: cam-slides
+      // Frame 4: welcome-cam (Exact matching 1216x684 window)
+      else if (def.id === 'welcome-cam') {
+        const formatted = formatRemainingCountdown();
+        lastCountdownFormatted = formatted;
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
+        const digitsSize = formatted.length > 5 ? sz(68) : sz(90);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'STARTING SOON', fs);
+        innerHtml += `
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:862px;width:1216px;height:168px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag">WELCOME TO WORSHIP</div>
+                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.frameWelcomeTitle)}</div>
+                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.frameWelcomeSub)}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:148px;width:576px;height:882px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;text-align:center;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:40px 32px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;">
+              ${getLogoMarkup(92, fs.showLogo)}
+              <div>
+                <div class="fr-section-tag" style="margin-bottom:6px;">WELCOME TO</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(26)}px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                  ${esc(config.churchName)}
+                </div>
+              </div>
+              <div style="width:56px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
+              <div style="font-family:'Montserrat',sans-serif;font-size:${sz(14)}px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgb(var(--muted-rgb));">
+                ${esc(fs.panelTitle || 'SERVICE BEGINS IN')}
+              </div>
+              <div id="frame-countdown-display" class="fr-countdown-digits" data-base-scale="${ts}" style="font-size:${digitsSize}px;">${formatted}</div>
+              <div style="padding:8px 20px;border-radius:999px;background:rgba(var(--accent-rgb),0.2);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:${sz(13)}px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--text-rgb));">
+                ${esc(config.badge || 'JOHN 14:6')}
+              </div>
+            </div>
+            <div style="padding:16px 24px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);font-size:14px;color:rgb(var(--muted-rgb));">
+              Please invite your friends and family to join online!
+            </div>
+          </div>
+        `;
+      }
+
+      // Frame 5: cam-slides (Exact matching 1216x684 window)
       else if (def.id === 'cam-slides') {
         const slidesLeft = posX(48, 1216);
         const sideLeft = posX(1296, 576);
@@ -2760,16 +3054,47 @@
         `;
       }
 
-      // Frame 6: cam-pip
-      else if (def.id === 'cam-pip') {
+      // Frame 6: pastor-info (Exact matching 1216x684 window)
+      else if (def.id === 'pastor-info') {
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
+        innerHtml += buildFrameHeader(fs.headerBadge || 'SUNDAY MESSAGE', fs);
         innerHtml += `
-          <div class="fr-window-tag" style="left:48px;top:48px;">
-            <span class="cg-live-dot" style="width:7px;height:7px;"></span>
-            <span>${esc(fs.headerBadge || 'LIVE')}</span>
-            <span style="color:rgb(var(--muted-rgb));margin-left:6px;">${esc(config.churchName)}</span>
-          </div>
-          <div class="fr-window-tag" style="left:1530px;top:856px;">
-            <span>${esc(fs.panelTitle || 'SANCTUARY')}</span>
+          ${fs.showInfoBar ? `
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:862px;width:1216px;height:168px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+              <div>
+                <div class="fr-section-tag" style="font-size:${sz(13)}px;">${esc(config.category || "TODAY'S MESSAGE")}</div>
+                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.primary)}</div>
+                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.secondary)}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:148px;width:576px;height:882px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="fr-card-top-bar"></div>
+            <div style="padding:40px 32px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;flex:1;justify-content:center;">
+              ${getLogoMarkup(92, fs.showLogo)}
+              <div>
+                <div class="fr-section-tag">${esc(fs.panelTitle || 'SENIOR PASTOR')}</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(30)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:6px;">
+                  ${esc(config.primary || 'Pastor John Smith')}
+                </div>
+                <div style="font-size:${sz(17)}px;color:rgb(var(--muted-rgb));margin-top:4px;">
+                  ${esc(config.secondary || 'Bangkok Christ Church')}
+                </div>
+              </div>
+              <div style="width:60px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
+              <div style="padding:14px 20px;border-radius:10px;background:rgba(var(--primary-rgb),0.5);border:1px solid rgba(var(--text-rgb),0.1);width:100%;">
+                <div class="fr-section-tag" style="font-size:${sz(11)}px;">KEY SCRIPTURE</div>
+                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(19)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:4px;">
+                  ${esc(config.frameVerseRef || 'John 14:6')}
+                </div>
+              </div>
+            </div>
+            <div style="padding:18px 30px;background:rgba(var(--primary-rgb),0.5);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
+              <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">${esc(config.badge || 'JOHN 14:6')}</span>
+            </div>
           </div>
         `;
       }
@@ -2800,14 +3125,14 @@
         `;
       }
 
-      // Frame 8: prayer
+      // Frame 8: prayer (Exact matching 1216x684 window)
       else if (def.id === 'prayer') {
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
+        const camLeft = posX(48, 1216);
+        const cardLeft = posX(1296, 576);
         innerHtml += buildFrameHeader(fs.headerBadge || 'INTERCESSORY PRAYER', fs);
         innerHtml += `
           ${fs.showInfoBar ? `
-            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
+            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:862px;width:1216px;height:168px;${radiusStyle}display:flex;align-items:center;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
               <div>
                 <div class="fr-section-tag" style="font-size:${sz(13)}px;">LET US PRAY TOGETHER</div>
                 <div class="fr-title-lg" style="font-size:${sz(30)}px;margin-top:6px;">${esc(config.primary || 'Prayer for Healing and Hope')}</div>
@@ -2816,18 +3141,18 @@
             </div>
           ` : ''}
 
-          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
+          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:148px;width:576px;height:882px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;">
             <div class="fr-card-top-bar"></div>
-            <div style="padding:36px;display:flex;flex-direction:column;gap:20px;flex:1;justify-content:center;">
+            <div style="padding:34px;display:flex;flex-direction:column;gap:18px;flex:1;justify-content:center;">
               <div class="fr-section-tag">${esc(fs.panelTitle || 'PRAYER PETITIONS')}</div>
-              <div style="font-family:'Montserrat',sans-serif;font-size:${sz(28)}px;font-weight:800;color:rgb(var(--text-rgb));line-height:1.3;">
+              <div style="font-family:'Montserrat',sans-serif;font-size:${sz(26)}px;font-weight:800;color:rgb(var(--text-rgb));line-height:1.3;">
                 ${esc(config.framePrayerTitle || 'Prayer for Our Church and City')}
               </div>
-              <div class="fr-verse-text" style="font-size:${sz(22)}px;color:rgb(var(--muted-rgb));">
+              <div class="fr-verse-text" style="font-size:${sz(20)}px;color:rgb(var(--muted-rgb));">
                 ${esc(config.framePrayerDetails || 'Heavenly Father, we lift up all individuals and families in need of your peace, healing, and guidance.')}
               </div>
             </div>
-            <div style="padding:20px 36px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
+            <div style="padding:18px 34px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);display:flex;align-items:center;justify-content:space-between;">
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:rgb(var(--muted-rgb));">${esc(config.churchName)}</span>
               <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:rgb(var(--accent-rgb));">AMEN</span>
             </div>
@@ -2835,7 +3160,21 @@
         `;
       }
 
-      // Frame 9: interview
+      // Frame 9: cam-pip
+      else if (def.id === 'cam-pip') {
+        innerHtml += `
+          <div class="fr-window-tag" style="left:48px;top:48px;">
+            <span class="cg-live-dot" style="width:7px;height:7px;"></span>
+            <span>${esc(fs.headerBadge || 'LIVE')}</span>
+            <span style="color:rgb(var(--muted-rgb));margin-left:6px;">${esc(config.churchName)}</span>
+          </div>
+          <div class="fr-window-tag" style="left:1530px;top:856px;">
+            <span>${esc(fs.panelTitle || 'SANCTUARY')}</span>
+          </div>
+        `;
+      }
+
+      // Frame 10: interview
       else if (def.id === 'interview') {
         const hostInfo = (config.frameInterviewHost || 'Pastor John Smith | Host').split('|');
         const guestInfo = (config.frameInterviewGuest || 'Dr. David Lee | Visiting Missionary').split('|');
@@ -2859,51 +3198,6 @@
         `;
       }
 
-      // Frame 10: welcome-cam
-      else if (def.id === 'welcome-cam') {
-        const formatted = formatRemainingCountdown();
-        lastCountdownFormatted = formatted;
-        const camLeft = posX(48, 1152);
-        const cardLeft = posX(1236, 636);
-        const digitsSize = formatted.length > 5 ? sz(70) : sz(94);
-        innerHtml += buildFrameHeader(fs.headerBadge || 'STARTING SOON', fs);
-        innerHtml += `
-          ${fs.showInfoBar ? `
-            <div class="fr-card" style="position:absolute;left:${camLeft}px;top:834px;width:1152px;height:190px;${radiusStyle}display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-left:6px solid rgb(var(--accent-rgb));">
-              <div>
-                <div class="fr-section-tag">WELCOME TO WORSHIP</div>
-                <div class="fr-title-lg" style="font-size:${sz(32)}px;margin-top:6px;">${esc(config.frameWelcomeTitle)}</div>
-                <div class="fr-sub-md" style="font-size:${sz(19)}px;margin-top:4px;">${esc(config.frameWelcomeSub)}</div>
-              </div>
-            </div>
-          ` : ''}
-
-          <div class="fr-card" style="position:absolute;left:${cardLeft}px;top:156px;width:636px;height:868px;${radiusStyle}display:flex;flex-direction:column;justify-content:space-between;text-align:center;">
-            <div class="fr-card-top-bar"></div>
-            <div style="padding:48px 40px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
-              ${getLogoMarkup(100, fs.showLogo)}
-              <div>
-                <div class="fr-section-tag" style="margin-bottom:6px;">WELCOME TO</div>
-                <div style="font-family:'Montserrat',sans-serif;font-size:${sz(28)}px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:rgb(var(--text-rgb));">
-                  ${esc(config.churchName)}
-                </div>
-              </div>
-              <div style="width:64px;height:3px;background:rgb(var(--accent-rgb));border-radius:2px;"></div>
-              <div style="font-family:'Montserrat',sans-serif;font-size:${sz(15)}px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:rgb(var(--muted-rgb));">
-                ${esc(fs.panelTitle || 'SERVICE BEGINS IN')}
-              </div>
-              <div id="frame-countdown-display" class="fr-countdown-digits" data-base-scale="${ts}" style="font-size:${digitsSize}px;">${formatted}</div>
-              <div style="padding:8px 20px;border-radius:999px;background:rgba(var(--accent-rgb),0.2);border:1px solid rgba(var(--accent-rgb),0.5);font-family:'Montserrat',sans-serif;font-size:${sz(13)}px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgb(var(--text-rgb));">
-                ${esc(config.badge || 'JOHN 14:6')}
-              </div>
-            </div>
-            <div style="padding:18px 30px;background:rgba(var(--primary-rgb),0.55);border-top:1px solid rgba(var(--text-rgb),0.08);font-size:14px;color:rgb(var(--muted-rgb));">
-              Please invite your friends and family to join online!
-            </div>
-          </div>
-        `;
-      }
-
       // Frame 11: event-announce
       else if (def.id === 'event-announce') {
         const items = parseAnnouncements().slice(0, 3);
@@ -2917,9 +3211,9 @@
                   <div style="font-family:'Montserrat',sans-serif;font-size:${sz(22)}px;font-weight:800;color:rgb(var(--text-rgb));margin-top:8px;line-height:1.25;">
                     ${esc(it.title)}
                   </div>
-                  ${it.detail ? `
+                  ${it.details ? `
                     <div style="font-size:${sz(15)}px;color:rgb(var(--muted-rgb));margin-top:10px;line-height:1.4;">
-                      ${esc(it.detail)}
+                      ${esc(it.details)}
                     </div>
                   ` : ''}
                 </div>
@@ -2969,12 +3263,12 @@
         if (formatted === lastCountdownFormatted) return;
         lastCountdownFormatted = formatted;
 
-        const disp = document.getElementById('frame-countdown-display');
-        if (disp) {
+        document.querySelectorAll('.fr-countdown-digits').forEach(disp => {
           disp.textContent = formatted;
           const baseScale = parseFloat(disp.dataset.baseScale) || 1;
-          disp.style.fontSize = `${Math.round((formatted.length > 5 ? 70 : 94) * baseScale)}px`;
-        }
+          disp.style.fontSize = `${Math.round((formatted.length > 5 ? 68 : 90) * baseScale)}px`;
+        });
+
         const ctrlReadout = document.getElementById('ctrl-cd-readout');
         if (ctrlReadout) ctrlReadout.textContent = formatted;
 
@@ -3175,6 +3469,7 @@
       config.theme = themeId;
       highlightActiveThemeButton();
       populateFrameCustomizer();
+      renderFrameContextEditor(activeFrameId);
       renderLowerThirdCanvas();
       renderActiveFrame();
       broadcastState('SYNC', isOnAir);
@@ -3391,6 +3686,105 @@
       closeCueModal();
       broadcastState('SYNC', isOnAir);
       if (andShow) fireCue(idx);
+    }
+
+    
+    /* =========================================================================
+       STRUCTURED ANNOUNCEMENTS (Two Fields per Row: Title & Details)
+       ========================================================================= */
+    function renderAnnouncementRows() {
+      const container = document.getElementById('announcements-rows-container');
+      if (!container) return;
+      if (!Array.isArray(config.frameAnnouncementsList)) {
+        config.frameAnnouncementsList = [];
+      }
+      if (config.frameAnnouncementsList.length === 0) {
+        container.innerHTML = '<div class="text-xs text-zinc-500 text-center py-3 bg-zinc-950/40 rounded-lg">No announcements. Click "+ Add Announcement Row" below.</div>';
+        return;
+      }
+      container.innerHTML = config.frameAnnouncementsList.map((item, idx) => `
+        <div class="announce-row mb-2 flex flex-col sm:flex-row gap-2 bg-zinc-950/70 p-2.5 rounded-lg border border-zinc-800">
+          <div class="flex-1 min-w-0">
+            <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Title</label>
+            <input type="text" value="${esc(item.title || '')}" oninput="updateAnnouncementRow(${idx}, 'title', this.value)" placeholder="e.g. Sunday Worship Service" class="w-full px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs text-white placeholder-zinc-500 focus:border-red-500 outline-none" />
+          </div>
+          <div class="flex-[1.5] min-w-0">
+            <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Description / Details</label>
+            <input type="text" value="${esc(item.details || '')}" oninput="updateAnnouncementRow(${idx}, 'details', this.value)" placeholder="e.g. Every Sunday at 10:00 AM • Sanctuary & Online" class="w-full px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs text-zinc-300 placeholder-zinc-500 focus:border-red-500 outline-none" />
+          </div>
+          <div class="flex items-end pb-0.5">
+            <button type="button" onclick="deleteAnnouncementRow(${idx})" class="p-1.5 rounded bg-zinc-900 hover:bg-red-950 border border-zinc-800 hover:border-red-700 text-red-400 text-xs transition" title="Delete Row">
+              ✕
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addAnnouncementRow() {
+      if (!Array.isArray(config.frameAnnouncementsList)) {
+        config.frameAnnouncementsList = [];
+      }
+      config.frameAnnouncementsList.push({ title: '', details: '' });
+      renderAnnouncementRows();
+      syncAnnouncementsLegacy();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function deleteAnnouncementRow(idx) {
+      if (!Array.isArray(config.frameAnnouncementsList)) return;
+      config.frameAnnouncementsList.splice(idx, 1);
+      renderAnnouncementRows();
+      syncAnnouncementsLegacy();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function updateAnnouncementRow(idx, field, val) {
+      if (!Array.isArray(config.frameAnnouncementsList) || !config.frameAnnouncementsList[idx]) return;
+      config.frameAnnouncementsList[idx][field] = val;
+      syncAnnouncementsLegacy();
+      renderActiveFrame();
+      broadcastState('SYNC', isOnAir);
+    }
+
+    function syncAnnouncementsLegacy() {
+      if (!Array.isArray(config.frameAnnouncementsList)) return;
+      config.frameAnnouncements = config.frameAnnouncementsList
+        .map(item => `${item.title || ''}${item.details ? ' | ' + item.details : ''}`)
+        .join('\n');
+      const legacyEl = document.getElementById('in-fr-announcements');
+      if (legacyEl) legacyEl.value = config.frameAnnouncements;
+    }
+
+    /* =========================================================================
+       CONTEXT-SENSITIVE FRAME CONTENT CONTROLS
+       ========================================================================= */
+    function renderFrameContextEditor(frameId) {
+      const container = document.getElementById('frame-active-content-editor');
+      if (!container) return;
+
+      const panels = container.querySelectorAll('[data-frame-panel]');
+      let matched = false;
+      panels.forEach(p => {
+        const targets = (p.getAttribute('data-frame-panel') || '').split(',').map(s => s.trim());
+        if (targets.includes(frameId)) {
+          p.classList.remove('hidden');
+          matched = true;
+        } else {
+          p.classList.add('hidden');
+        }
+      });
+
+      const genericPanel = document.getElementById('panel-generic-frame');
+      if (genericPanel) {
+        genericPanel.classList.toggle('hidden', matched);
+      }
+
+      if (frameId === 'cam-announce') {
+        renderAnnouncementRows();
+      }
     }
 
     /* Marquee Presets Management */
