@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCC Broadcast CG — OBS Ready-Made Frames (1920x1080)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Broadcast Styles -->
+  <link rel="stylesheet" href="css/broadcast.css" />
+
+  <style>
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- 1920x1080 Fullscreen Transparent Frame Stage with Camera Cutouts -->
+  <div id="frame-canvas" class="broadcast-stage" data-theme="bcc-crimson"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/frames.js"></script>
+  <script>
+    function fitSource() {
+      const el = document.getElementById('frame-canvas');
+      if (!el) return;
+      const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      el.style.transform = `scale(${scale})`;
+      el.style.transformOrigin = 'top left';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedState();
+      initSyncChannel();
+      startCountdownLoop();
+
+      const params = new URLSearchParams(window.location.search);
+      const frameParam = params.get('frame');
+      if (frameParam && FRAME_DEFS.some(f => f.id === frameParam)) {
+        activeFrameId = frameParam;
+      }
+
+      renderActiveFrame();
+      fitSource();
+      window.addEventListener('resize', fitSource);
+      if (bus) bus.postMessage({ type: 'HELLO_FROM_OBS' });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+/* =========================================================================
+   Bangkok Christ Church — Broadcast Graphics CSS
+   Theme Tokens, Lower Thirds, News Ticker & 12 OBS Frames
+   ========================================================================= */
+
+@charset "UTF-8";
+
+:root {
+  --primary-rgb: 24, 20, 22;
+  --surface-rgb: 31, 27, 29;
+  --accent-rgb: 185, 28, 28;
+  --accent-soft: rgba(185, 28, 28, 0.38);
+  --border-rgb: 255, 255, 255;
+  --text-rgb: 250, 250, 250;
+  --muted-rgb: 180, 180, 185;
+  --bg-opacity: 0.94;
+  --lt-scale: 1;
+}
+
+/* Theme Palettes */
+[data-theme="bcc-crimson"] {
+  --primary-rgb: 24, 20, 22;
+  --surface-rgb: 31, 27, 29;
+  --accent-rgb: 185, 28, 28;
+  --accent-soft: rgba(185, 28, 28, 0.38);
+  --border-rgb: 255, 255, 255;
+  --text-rgb: 250, 250, 250;
+  --muted-rgb: 190, 190, 195;
+}
+
+[data-theme="bcc-light"] {
+  --primary-rgb: 245, 243, 238;
+  --surface-rgb: 255, 255, 255;
+  --accent-rgb: 153, 27, 27;
+  --accent-soft: rgba(153, 27, 27, 0.35);
+  --border-rgb: 20, 20, 25;
+  --text-rgb: 17, 17, 19;
+  --muted-rgb: 85, 85, 95;
+}
+
+[data-theme="classic-gold"] {
+  --primary-rgb: 21, 21, 24;
+  --surface-rgb: 27, 26, 29;
+  --accent-rgb: 200, 169, 107;
+  --accent-soft: rgba(200, 169, 107, 0.42);
+  --border-rgb: 245, 241, 232;
+  --text-rgb: 245, 241, 232;
+  --muted-rgb: 185, 180, 170;
+}
+
+[data-theme="navy"] {
+  --primary-rgb: 14, 24, 40;
+  --surface-rgb: 19, 30, 48;
+  --accent-rgb: 217, 119, 6;
+  --accent-soft: rgba(217, 119, 6, 0.42);
+  --border-rgb: 248, 250, 252;
+  --text-rgb: 248, 250, 252;
+  --muted-rgb: 175, 185, 200;
+}
+
+/* Base Canvas & OBS Transparency */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: rgb(var(--text-rgb));
+  background: transparent !important;
+}
+
+.broadcast-stage {
+  position: absolute;
+  inset: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  pointer-events: none;
+  background: transparent;
+  user-select: none;
+}
+
+/* Top-Left Live Bug */
+.cg-live-bug {
+  position: absolute;
+  top: 48px;
+  left: 64px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: rgba(var(--primary-rgb), 0.90);
+  border: 1px solid rgba(var(--border-rgb), 0.14);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  z-index: 40;
+}
+
+.cg-live-bug.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cg-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgb(var(--accent-rgb));
+  box-shadow: 0 0 10px rgb(var(--accent-rgb));
+  animation: pulse-live 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.9); }
+}
+
+.cg-live-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: rgb(var(--text-rgb));
+  text-transform: uppercase;
+}
+
+.cg-live-church {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgb(var(--muted-rgb));
+  padding-left: 10px;
+  border-left: 1px solid rgba(var(--border-rgb), 0.20);
+  letter-spacing: 0.06em;
+}
+
+/* Lower-Third Container & Placement */
+.cg-lt-anchor {
+  position: absolute;
+  left: 64px;
+  bottom: 84px;
+  z-index: 45;
+  transform-origin: bottom left;
+  transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.has-marquee .cg-lt-anchor {
+  bottom: 124px;
+}
+
+.cg-lt {
+  display: flex;
+  align-items: stretch;
+  transform: scale(var(--lt-scale));
+  transform-origin: bottom left;
+  filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.55));
+}
+
+.cg-spine {
+  width: 7px;
+  border-radius: 4px 0 0 4px;
+  background: rgb(var(--accent-rgb));
+  box-shadow: 0 0 14px var(--accent-soft);
+  flex-shrink: 0;
+}
+
+.cg-mask {
+  overflow: hidden;
+  border-radius: 0 16px 16px 0;
+}
+
+.cg-surface {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 32px 18px 24px;
+  background: rgba(var(--primary-rgb), var(--bg-opacity));
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--border-rgb), 0.14);
+  border-left: none;
+  border-radius: 0 16px 16px 0;
+  position: relative;
+}
+
+/* Church Logo */
+.cg-logo-slot {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(var(--border-rgb), 0.12);
+  padding: 4px;
+  transition: opacity 0.2s;
+}
+
+.cg-logo-slot.hidden-slot {
+  display: none;
+}
+
+.cg-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cg-default-logo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Text Hierarchy */
+.cg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 260px;
+  max-width: 860px;
+}
+
+.cg-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cg-cat {
+  color: rgb(var(--accent-rgb));
+}
+
+.cg-meta-line {
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  background: rgba(var(--border-rgb), 0.25);
+  border-radius: 1px;
+}
+
+.cg-church {
+  color: rgb(var(--muted-rgb));
+}
+
+.cg-primary {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  color: rgb(var(--text-rgb));
+  margin: 0;
+}
+
+.cg-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cg-secondary {
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: rgb(var(--muted-rgb));
+  margin: 0;
+}
+
+.cg-badge {
+  display: none;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: rgba(var(--accent-rgb), 0.22);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--text-rgb));
+}
+
+.cg-badge.has-badge {
+  display: inline-block;
+}
+
+/* Mode Variations */
+.mode-sermon .cg-primary {
+  font-size: 28px;
+  color: #fff;
+}
+.mode-scripture .cg-primary {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+.mode-announcement .cg-primary {
+  font-size: 25px;
+}
+
+/* Animation Styles (Modern Slide, Minimal Fade, Elegant Reveal, Classic Bar) */
+.cg-lt-program {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.cg-lt-program.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* 1. Modern Slide */
+.style-modern-slide.cg-lt-program {
+  transform: translateX(-40px) scale(var(--lt-scale));
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, visibility 0.45s;
+}
+.style-modern-slide.cg-lt-program.is-active {
+  transform: translateX(0) scale(var(--lt-scale));
+}
+.style-modern-slide.cg-lt-program.is-exiting {
+  transform: translateX(-40px) scale(var(--lt-scale));
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.7, 0, 0.84, 0), opacity 0.3s ease;
+}
+
+/* 2. Minimal Fade */
+.style-minimal-fade.cg-lt-program {
+  transform: scale(var(--lt-scale));
+  transition: opacity 0.4s ease, visibility 0.4s;
+}
+.style-minimal-fade.cg-lt-program.is-active {
+  opacity: 1;
+}
+.style-minimal-fade.cg-lt-program.is-exiting {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* 3. Elegant Reveal */
+.style-elegant-reveal.cg-lt-program {
+  transform: translateY(28px) scale(var(--lt-scale));
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, visibility 0.5s;
+}
+.style-elegant-reveal.cg-lt-program.is-active {
+  transform: translateY(0) scale(var(--lt-scale));
+}
+.style-elegant-reveal.cg-lt-program.is-exiting {
+  transform: translateY(28px) scale(var(--lt-scale));
+  opacity: 0;
+}
+
+/* 4. Classic Bar */
+.style-classic-bar.cg-lt-program .cg-mask {
+  max-width: 0;
+  transition: max-width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.style-classic-bar.cg-lt-program.is-active .cg-mask {
+  max-width: 1200px;
+}
+.style-classic-bar.cg-lt-program.is-exiting .cg-mask {
+  max-width: 0;
+  transition: max-width 0.35s cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* Preview Canvas (Always Visible for Staging / Inspection) */
+.cg-lt-preview {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: scale(var(--lt-scale)) !important;
+}
+
+/* =========================================================================
+   SCROLLING NEWS TICKER / MARQUEE (With Smooth Show/Hide Animation)
+   ========================================================================= */
+.cg-marquee {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  background: rgba(14, 14, 18, 0.94);
+  border-top: 2px solid rgb(var(--accent-rgb));
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  z-index: 50;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+}
+
+.cg-marquee.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cg-marquee.is-exiting {
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.7, 0, 0.84, 0), opacity 0.3s ease;
+}
+
+.cg-marquee-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 100%;
+  background: rgb(var(--accent-rgb));
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  z-index: 2;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+}
+
+.cg-marquee-tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: pulse-live 1.8s infinite;
+}
+
+.cg-marquee-viewport {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+}
+
+.cg-marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: marquee-crawl var(--marquee-duration, 32s) linear infinite;
+  will-change: transform;
+}
+
+.cg-marquee.is-paused .cg-marquee-track {
+  animation-play-state: paused !important;
+}
+
+@keyframes marquee-crawl {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.cg-marquee-item {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  padding: 0 24px;
+}
+
+.cg-marquee-sep {
+  display: inline-block;
+  margin: 0 16px;
+  color: rgb(var(--accent-rgb));
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* =========================================================================
+   12 READY-MADE BROADCAST FRAMES (1920x1080 Transparent SVG Cutouts)
+   ========================================================================= */
+.fr-card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(22, 22, 26, 0.92) 0%, rgba(12, 12, 16, 0.97) 100%);
+  border: 1px solid rgba(var(--border-rgb), 0.12);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.70), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  overflow: hidden;
+}
+
+.fr-card-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgb(var(--accent-rgb)) 0%, transparent 100%);
+}
+
+.fr-header-bar {
+  position: absolute;
+  top: 36px;
+  left: 48px;
+  right: 48px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-radius: 12px;
+  background: rgba(var(--primary-rgb), 0.90);
+  border: 1px solid rgba(var(--border-rgb), 0.14);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+  z-index: 20;
+}
+
+.fr-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(var(--accent-rgb), 0.22);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.fr-section-tag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--accent-rgb));
+}
+
+.fr-title-lg {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+}
+
+.fr-sub-md {
+  color: rgb(var(--muted-rgb));
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.fr-verse-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  color: #ffffff;
+  line-height: 1.45;
+}
+
+.fr-announce-item {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 4px solid rgb(var(--accent-rgb));
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s;
+}
+
+.fr-countdown-digits {
+  font-family: 'Montserrat', monospace;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  text-shadow: 0 0 32px var(--accent-soft);
+}
+
+.fr-window-tag {
+  position: absolute;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: rgba(14, 14, 18, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff;
+}

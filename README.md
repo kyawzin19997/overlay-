@@ -1,124 +1,122 @@
 # Bangkok Christ Church — Broadcast CG & OBS Frames System
 
-Production-ready, ultra-stable, single-file church broadcast graphics system and ready-made OBS multi-layout frames. Designed for zero-lag one-click live operation, volunteer-friendly workflow, OBS Studio Custom Browser Docks, and Elgato Stream Deck / touch screen integration.
+Production-ready, ultra-stable church broadcast graphics system and ready-made OBS multi-layout frames. Designed for zero-lag one-click live operation, volunteer-friendly workflow, OBS Studio Custom Browser Docks, and Elgato Stream Deck / touch screen integration.
 
 ---
 
 ## 🌟 Key Features
 
-1. **One-Click Lower Thirds**
-   - Direct **Show** action on every lower third card in the OBS Control Dock.
-   - Individual preset display durations: **5s, 10s, 15s, 30s**, or **Manual** (stays on air until hidden).
-   - Clear live **ON AIR** badge and real-time countdown timer.
-   - 4 Broadcast Animation Styles:
-     - **Modern Slide**: Smooth left-to-right mask wipe with expanding accent spine.
-     - **Minimal Fade**: Subtle cinematic opacity rise.
-     - **Elegant Reveal**: Top-to-bottom curtain reveal with golden accent line.
-     - **Classic Bar**: Immediate geometric news bar expansion.
-   - **Bulletproof State Machine** (`IDLE` ➔ `ENTERING` ➔ `ACTIVE` ➔ `EXITING` ➔ `IDLE`) preventing race conditions, double triggers, flickering, or stuck overlays.
+1. **One-Click Lower Thirds (Show & Hide Toggle)**
+   - Every saved lower third card has its own **Show / Hide** toggle button directly in the OBS Control Dock and Master Console.
+   - Click once to **Show** (smooth entrance animation, turns red with **ON AIR** badge and countdown).
+   - Click again to **Hide** (smooth exit animation, returns to green **Show** state).
+   - Individual display durations: **5s, 10s, 15s, 30s**, or **Manual** (stays on air until toggled off).
+   - **4 Broadcast Animation Styles**: Modern Slide, Minimal Fade, Elegant Reveal, and Classic Bar.
+   - Bulletproof State Machine (`IDLE` ➔ `ENTERING` ➔ `ACTIVE` ➔ `EXITING` ➔ `IDLE`) preventing race conditions, double triggers, flickering, or stuck overlays.
 
-2. **Stream Deck & Touch-Friendly Deck URL**
-   - Dedicated touch/tablet interface via `?view=deck`.
-   - Large buttons (minimum 86px height) with high-contrast color coding.
-   - One-tap triggers for Saved Lower Thirds, Marquee Tickers, Frame Presets, and Emergency Clear All.
-   - Instant response with zero confirmation popups.
+2. **Top Dual Studio Monitors (Preview & Program Live)**
+   - Professional broadcast switcher layout with **PREVIEW** (staged graphics) on the left and **PROGRAM** (live on air) on the right.
+   - Constrained 16:9 monitor deck at the top of the interface eliminates vertical empty space on desktop screens.
+   - Big central **TAKE LIVE ➔** transition button transfers staged cues and frames from Preview directly to Live Program.
+   - Full-width operator settings deck positioned directly underneath the monitors.
 
 3. **12 Ready-Made Professional OBS Frames**
    100% transparent SVG camera cutouts at 1920×1080 resolution:
    - **Main Camera** (`main-cam`): Cinematic border, church crest, lower info strip.
-   - **Pastor & Sermon** (`pastor-info`): 1152×648 camera cutout + side card for pastor title, series, and key scripture.
-   - **Camera + Bible Verse** (`cam-bible`): 1152×648 camera cutout + elegant scripture card.
-   - **Camera + Announcements** (`cam-announce`): 1216×684 camera cutout + right-hand news bulletin board.
-   - **Camera + Slideshow** (`cam-slides`): 1216×684 presentation slides + 576×324 speaker PiP cutout.
+   - **Pastor & Sermon** (`pastor-info`): Standardized 1216×684 camera cutout + side card for pastor title, series, and key scripture.
+   - **Camera + Bible Verse** (`cam-bible`): Standardized 1216×684 camera cutout + elegant scripture card.
+   - **Camera + Announcements** (`cam-announce`): Standardized 1216×684 camera cutout + right-hand structured news bulletin board.
+   - **Camera + Slideshow** (`cam-slides`): Standardized 1216×684 presentation slides + speaker PiP cutout.
    - **Camera PiP Corner** (`cam-pip`): 1600×900 wide camera + 384×216 corner camera inset.
    - **Worship Service** (`worship`): 1824×788 camera cutout + bottom hymn/song title, key, and team card.
-   - **Prayer Session** (`prayer`): 1152×648 sanctuary camera + reverent prayer petition card.
+   - **Prayer Session** (`prayer`): Standardized 1216×684 sanctuary camera + reverent prayer petition card.
    - **Two-Camera Split** (`interview`): Two equal 912×684 side-by-side camera feeds with speaker tags.
-   - **Starting Soon & Cam** (`welcome-cam`): 1152×648 sanctuary camera + live countdown clock.
+   - **Starting Soon & Cam** (`welcome-cam`): Standardized 1216×684 sanctuary camera + live countdown clock.
    - **Church Event Cards** (`event-announce`): 1824×620 stage camera + 3 event bulletins below.
    - **Benediction & Closing** (`countdown-closing`): Full-stage closing screen with church service schedule.
+   *Note: Camera frames share the exact same `1216×684` @ `(48, 148)` camera cutout geometry for seamless live transitions.*
 
-4. **Visual Frame Customizer**
-   - Instant live preview in 16:9 monitor.
-   - Independent frame settings: Themes, custom accent color, corner radius (0–32px), border stroke (0–8px), text scale (85%–125%), matte opacity, and horizontal mirror (flip left/right).
-   - Visibility toggles for headers, info bars, LIVE bug, and church logo.
+4. **Simplified Context-Sensitive Frame Editor**
+   - Shows **only** the content fields relevant to the selected frame:
+     - **Announcements**: 2-field structured table per row (Title and Description) with "+ Add Announcement Row".
+     - **Scripture**: Scripture Reference (e.g. John 3:16), body text, and quick "Pull from active lower third" button.
+     - **Countdown**: Service start time, countdown mode, and live timer controls.
+   - Advanced frame appearance settings (themes, custom colors, borders) are neatly tucked in a collapsed section.
 
-5. **Smooth Scrolling News Ticker / Marquee**
-   - Multiple saved marquee presets (Sunday Service, Weekly Events, Giving & Tithes, Prayer Requests).
+5. **Smooth Scrolling News Ticker with Show/Hide Sliding Animation**
+   - Broadcast entrance and exit animation (`translateY(100%)` ➔ `translateY(0)` with smooth cubic-bezier easing).
+   - Saved marquee presets (Sunday Service, Weekly Events, Giving & Tithes, Prayer Requests).
    - Real-time pause/resume control.
    - Zero-glitch diffing: editing lower-third text or changing frames never restarts or stutters the ticker.
 
-6. **Dedicated OBS Rundown Feed Dock**
-   - Live broadcast cue list via `?view=feed`.
-   - Clear state badges: `READY`, `PREVIEW` (blue ring), `ON AIR` (red pulse + countdown).
-   - One-click **Preview**, **Take Live**, **Next**, and **Previous** navigation.
-
-7. **Synchronized State Architecture**
-   - Dual-channel communication via `BroadcastChannel` and `localStorage` with automated storage events and polling heartbeat.
-   - Seamless synchronization across OBS Browser Sources, Custom Docks, and external browser windows.
+6. **Modular Clean Architecture & Zero-Config Dedicated URLs**
+   - Refactored into clean modular files (`css/broadcast.css`, `css/studio.css`, `js/data.js`, `js/engine.js`, `js/frames.js`, `js/ui.js`).
+   - Dedicated zero-config HTML files so OBS operators do not have to fiddle with URL query parameters:
+     - `overlay.html`: 1920×1080 transparent Lower Thirds & Ticker Browser Source.
+     - `frame.html`: 1920×1080 transparent Ready-Made OBS Frames Browser Source.
+     - `dock.html`: Compact OBS Custom Browser Dock.
+     - `deck.html`: Stream Deck & touch tablet controller.
+     - `feed.html`: Live broadcast rundown feed dock.
+     - `index.html`: Master Studio Console.
 
 ---
 
 ## 🚀 OBS Studio Setup Guide
 
 ### 1. Add Lower-Third & Ticker Overlay
-1. In OBS Studio, go to the **Sources** dock of your live scene.
-2. Click **+** (Add) ➔ **Browser**.
-3. Name it `Church CG Overlay`.
-4. Enter the URL:
+1. In OBS Studio, in the **Sources** dock of your live scene, click **+** ➔ **Browser**.
+2. Name it `Church CG Overlay`.
+3. Set the URL:
    ```text
-   http://localhost:8000/index.html?view=overlay
+   http://localhost:8000/overlay.html
    ```
-   *(or your deployed GitHub Pages / hosted URL)*
-5. Set:
-   - **Width**: `1920`
-   - **Height**: `1080`
-6. Check **Shutdown source when not visible** and **Refresh browser when scene becomes active**.
-7. Position this source at the top of your scene stack.
+   *(or your hosted GitHub Pages URL `https://kyawzin19997.github.io/overlay-/overlay.html`)*
+4. Set **Width**: `1920`, **Height**: `1080`.
+5. Check **Shutdown source when not visible** and **Refresh browser when scene becomes active**.
+6. Place this source at the top of your scene stack.
 
 ---
 
 ### 2. Add Ready-Made OBS Frames
-1. In the **Frame Editor** tab of the studio app, select your desired frame layout (e.g. *Camera + Announcements*).
-2. Click **Copy URL** under the frame selector (e.g. `http://localhost:8000/index.html?view=frame&frame=cam-announce`).
-3. In OBS, add a **Browser Source** (1920×1080) with this URL.
-4. Place your Video Capture Device (Camera) directly **below** the frame Browser Source. The camera video will be perfectly visible through the transparent cutout windows!
+1. In OBS Studio, add a **Browser Source** (1920×1080).
+2. Set the URL:
+   ```text
+   http://localhost:8000/frame.html
+   ```
+   *(or with specific preset, e.g. `http://localhost:8000/frame.html?frame=cam-announce`)*
+3. Place your Video Capture Device (Camera) directly **below** the frame Browser Source. The camera video will be perfectly visible through the transparent cutout windows!
 
 ---
 
 ### 3. Add OBS Custom Browser Dock (Control Panel)
-1. In OBS Studio menu bar, click **Docks** ➔ **Custom Browser Docks...**
-2. In **Dock Name**, enter `Church CG Control`.
+1. In OBS Studio top menu, click **Docks** ➔ **Custom Browser Docks...**
+2. In **Dock Name**, enter `Church CG Dock`.
 3. In **URL**, enter:
    ```text
-   http://localhost:8000/index.html?view=control
+   http://localhost:8000/dock.html
    ```
 4. Click **Apply**.
-5. Dock the new panel into your OBS interface (e.g. on the right or bottom dock area). You now have 1-click lower thirds right inside OBS without opening an external browser!
+5. Dock the new panel into your OBS layout. You now have one-click Show/Hide buttons right inside OBS!
 
 ---
 
-### 4. Add OBS Custom Feed Dock (Rundown List)
+### 4. Stream Deck / Tablet Touch Control
+1. On your Elgato Stream Deck browser button, iPad, or mobile device on the local network, open:
+   ```text
+   http://<your-ip>:8000/deck.html
+   ```
+2. One-click touch triggers for all lower thirds, ticker presets, frame layouts, and emergency **CLEAR ALL**.
+
+---
+
+### 5. Add OBS Rundown Feed Dock
 1. In OBS menu: **Docks** ➔ **Custom Browser Docks...**
-2. In **Dock Name**, enter `Church CG Feed`.
+2. In **Dock Name**, enter `Church CG Rundown`.
 3. In **URL**, enter:
    ```text
-   http://localhost:8000/index.html?view=feed
+   http://localhost:8000/feed.html
    ```
 4. Click **Apply** and dock into your layout.
-
----
-
-### 5. Stream Deck / Tablet Touch Control
-1. On your Stream Deck, tablet, or secondary monitor, open:
-   ```text
-   http://<your-ip>:8000/index.html?view=deck
-   ```
-2. You will get a touch-optimized grid of high-contrast buttons for:
-   - Showing prepared lower thirds (turns red with countdown when active).
-   - Toggling ticker presets.
-   - Switching OBS frame overlays.
-   - Emergency **CLEAR ALL**.
 
 ---
 
@@ -137,7 +135,7 @@ Production-ready, ultra-stable, single-file church broadcast graphics system and
 
 ## 🎨 Themes & Custom Branding
 
-- **BCC Dark** (`bcc-crimson`): Deep charcoal and church crimson red.
+- **BCC Crimson** (`bcc-crimson`): Deep charcoal and church crimson red.
 - **BCC Light** (`bcc-light`): High-contrast crisp white paper matte with burgundy accents.
 - **Classic Gold** (`classic-gold`): Warm obsidian with liturgical gold.
 - **Navy** (`navy`): Deep midnight blue with amber accents.
@@ -145,13 +143,10 @@ Production-ready, ultra-stable, single-file church broadcast graphics system and
 
 ---
 
-## 🛠️ Build and Development
+## 🛠️ Verification Test
 
-This project is completely zero-dependency and runs directly in any modern browser or OBS Browser Source without requiring Node.js or Webpack at runtime.
-
-To regenerate or modify components:
+Run the automated test suite to verify all modular scripts, CSS, HTML views, and frame geometry:
 ```bash
-node build_scripts/generate.js
 node build_scripts/verify.js
 ```
 

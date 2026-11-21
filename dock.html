@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCC Broadcast CG — OBS Control Dock</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="css/broadcast.css" />
+  <link rel="stylesheet" href="css/studio.css" />
+</head>
+<body class="bg-zinc-950 text-slate-100 min-h-screen overflow-x-hidden selection:bg-red-500 selection:text-white">
+  <div id="dock-view" class="p-3 max-w-lg mx-auto flex flex-col gap-3">
+    <!-- Header with Tally & Emergency Clear -->
+    <div class="flex items-center justify-between pb-2.5 border-b border-zinc-800">
+      <div class="flex items-center gap-2">
+        <div id="dock-tally-pill" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[10px] font-bold text-zinc-400">
+          <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+          <span id="dock-tally-text">STANDBY</span>
+          <span id="dock-tally-timer" class="font-mono text-amber-400"></span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button type="button" onclick="triggerHide()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-red-300 font-bold text-[11px] uppercase tracking-wide transition">
+          Hide LT
+        </button>
+        <button type="button" onclick="clearAllGraphics()" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-[11px] uppercase tracking-wide shadow-sm transition">
+          CLEAR ALL
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="triggerShow()" class="py-2 px-3 rounded-xl bg-blue-950/80 border border-blue-500/80 hover:bg-blue-900 text-blue-200 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition">
+        <span>▶</span><span>Show Active LT</span>
+      </button>
+      <button type="button" onclick="toggleTickerPause()" class="py-2 px-3 rounded-xl bg-amber-950/80 border border-amber-600/80 hover:bg-amber-900 text-amber-200 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition">
+        <span>⏸</span><span>Pause Ticker</span>
+      </button>
+    </div>
+
+    <!-- One-Click Lower Thirds -->
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-400 font-['Montserrat']">One-Click Lower Thirds</span>
+        <button type="button" onclick="openCueModal(-1)" class="text-[11px] font-bold text-zinc-400 hover:text-white transition">
+          + New Preset
+        </button>
+      </div>
+      <div id="dock-cue-list" class="flex flex-col gap-1.5"></div>
+    </div>
+
+    <!-- Marquee / Ticker Presets -->
+    <div class="flex flex-col gap-2 pt-1 border-t border-zinc-800">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-400 font-['Montserrat']">Marquee Ticker Presets</span>
+        <button id="dock-btn-ticker" type="button" onclick="toggleTickerVisibility()" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-[10.5px] font-semibold text-zinc-300 transition">
+          Toggle Ticker
+        </button>
+      </div>
+      <div id="dock-marquee-list" class="grid grid-cols-1 gap-1.5"></div>
+    </div>
+
+    <!-- OBS Frame Presets -->
+    <div class="flex flex-col gap-2 pt-1 border-t border-zinc-800">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-400 font-['Montserrat']">OBS Frame Layouts</span>
+      </div>
+      <div id="dock-frames-list" class="grid grid-cols-2 gap-1.5"></div>
+    </div>
+  </div>
+
+  <!-- Cue Edit Modal -->
+  <div id="cue-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-zinc-900 border border-zinc-700 p-5 shadow-2xl flex flex-col gap-3">
+      <h3 id="cue-modal-title" class="text-sm font-bold text-white uppercase tracking-wider font-['Montserrat']">Edit Lower Third Preset</h3>
+      
+      <div class="flex flex-col gap-1">
+        <label class="text-[11px] font-semibold text-zinc-400">Category</label>
+        <input id="modal-category" type="text" class="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-red-500" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-[11px] font-semibold text-zinc-400">Primary (Speaker / Title)</label>
+        <input id="modal-primary" type="text" class="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-red-500" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-[11px] font-semibold text-zinc-400">Secondary (Role / Scripture)</label>
+        <input id="modal-secondary" type="text" class="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-red-500" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-[11px] font-semibold text-zinc-400">Duration (seconds, 0 for manual)</label>
+        <input id="modal-duration" type="number" min="0" max="120" class="w-full px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-red-500" />
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
+        <button type="button" onclick="closeCueModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300 font-semibold transition">Cancel</button>
+        <button type="button" onclick="saveCueModal()" class="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-xs text-white font-bold transition">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-zinc-900 border border-amber-400/70 text-xs font-semibold text-amber-200 shadow-2xl z-50"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/frames.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedState();
+      initSyncChannel();
+      renderDockView();
+    });
+  </script>
+</body>
+</html>

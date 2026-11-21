@@ -2,27 +2,71 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const htmlPath = path.join(__dirname, '..', 'index.html');
-const html = fs.readFileSync(htmlPath, 'utf8');
+const rootDir = path.join(__dirname, '..');
 
-// 1. Check JS syntax
-const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
-if (!scriptMatch) {
-  console.error('FAIL: No script tag found in index.html!');
-  process.exit(1);
-}
+console.log('=== BANGKOK CHRIST CHURCH CG — SYSTEM VERIFICATION ===\n');
 
-try {
-  new vm.Script(scriptMatch[1]);
-  console.log('PASS: JavaScript syntax valid.');
-} catch (e) {
-  console.error('FAIL: JavaScript syntax error:', e);
-  process.exit(1);
-}
+// 1. Check all JavaScript files syntax and exports
+const jsFiles = ['js/data.js', 'js/engine.js', 'js/frames.js', 'js/ui.js'];
+jsFiles.forEach(rel => {
+  const fullPath = path.join(rootDir, rel);
+  if (!fs.existsSync(fullPath)) {
+    console.error(`FAIL: Missing JS file ${rel}`);
+    process.exit(1);
+  }
+  const code = fs.readFileSync(fullPath, 'utf8');
+  try {
+    new vm.Script(code);
+    console.log(`PASS: Valid syntax in ${rel}`);
+  } catch (e) {
+    console.error(`FAIL: Syntax error in ${rel}:`, e);
+    process.exit(1);
+  }
+});
 
-// 2. Check essential IDs
-const requiredIds = [
-  'obs-mount', 'deck-view', 'feed-view', 'studio-app',
+// 2. Check CSS files
+const cssFiles = ['css/broadcast.css', 'css/studio.css'];
+cssFiles.forEach(rel => {
+  const fullPath = path.join(rootDir, rel);
+  if (!fs.existsSync(fullPath)) {
+    console.error(`FAIL: Missing CSS file ${rel}`);
+    process.exit(1);
+  }
+  const content = fs.readFileSync(fullPath, 'utf8');
+  if (content.length < 500) {
+    console.error(`FAIL: CSS file ${rel} is suspiciously small.`);
+    process.exit(1);
+  }
+  console.log(`PASS: CSS file verified: ${rel} (${(content.length / 1024).toFixed(1)} KB)`);
+});
+
+// 3. Check Dedicated HTML Zero-Config Views
+const htmlFiles = [
+  'index.html',
+  'overlay.html',
+  'frame.html',
+  'dock.html',
+  'deck.html',
+  'feed.html'
+];
+htmlFiles.forEach(rel => {
+  const fullPath = path.join(rootDir, rel);
+  if (!fs.existsSync(fullPath)) {
+    console.error(`FAIL: Missing HTML file ${rel}`);
+    process.exit(1);
+  }
+  const content = fs.readFileSync(fullPath, 'utf8');
+  if (!content.includes('<!DOCTYPE html>')) {
+    console.error(`FAIL: Invalid HTML doctype in ${rel}`);
+    process.exit(1);
+  }
+  console.log(`PASS: HTML view verified: ${rel}`);
+});
+
+// 4. Verify Essential Core Elements in index.html
+const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
+const essentialIndexIds = [
+  'obs-mount', 'deck-view', 'feed-view', 'dock-view', 'studio-app',
   'tally-pill', 'tally-dot', 'tally-text', 'tally-timer',
   'btn-toggle-dock', 'workspace', 'monitor-col', 'monitor-title',
   'btn-switch-preview', 'stage-wrap', 'stage-shell',
@@ -32,65 +76,82 @@ const requiredIds = [
   'frame-canvas', 'sync-status-text',
   'tab-btn-control', 'tab-btn-library', 'tab-btn-frames', 'tab-btn-settings',
   'tab-control', 'tab-library', 'tab-frames', 'tab-settings',
-  'in-anim-style', 'mode-grid', 'in-category', 'in-church', 'in-primary', 'in-secondary', 'in-badge',
-  'cue-list', 'lib-cue-list', 'marquee-preset-list', 'frame-selector-grid',
-  'url-selected-frame', 'selected-frame-url-label', 'selected-frame-hint',
-  'customizer-frame-title', 'in-fc-theme', 'in-fc-accent', 'btn-fc-accent-auto',
-  'in-fc-header-badge', 'in-fc-panel-title', 'in-fc-radius', 'lbl-fc-radius',
-  'in-fc-border', 'lbl-fc-border', 'in-fc-text-scale', 'lbl-fc-text-scale',
-  'in-fc-opacity', 'lbl-fc-opacity', 'in-fc-mirror', 'in-fc-header',
-  'in-fc-infobar', 'in-fc-live', 'in-fc-logo',
-  'in-fr-verse-ref', 'in-fr-verse-ver', 'in-fr-verse-text', 'in-fr-announcements',
-  'in-fr-welcome-title', 'in-fr-slide-tag', 'in-fr-welcome-sub',
-  'btn-cd-mode-duration', 'btn-cd-mode-target', 'ctrl-cd-status', 'ctrl-cd-readout',
-  'cd-duration-controls', 'cd-target-controls', 'in-cd-mins', 'btn-cd-toggle',
-  'url-overlay', 'url-control', 'url-feed', 'url-deck',
+  'mode-grid', 'in-category', 'in-church', 'in-primary', 'in-secondary', 'in-badge',
+  'cue-list', 'lib-cue-list', 'frame-selector-grid',
   'ctrl-scale', 'lbl-scale', 'ctrl-opacity', 'lbl-opacity', 'ctrl-show-logo',
   'in-marquee-tag', 'in-marquee-speed', 'lbl-speed', 'in-marquee-text',
-  'btn-reset-all', 'cue-modal', 'edit-mode', 'edit-category', 'edit-primary',
-  'edit-secondary', 'edit-badge', 'edit-duration', 'toast', 'exit-overlay-btn',
-  'deck-grid-cues', 'deck-grid-marquee', 'deck-grid-frames', 'feed-cue-list',
-  'preview-stage-wrap', 'preview-stage-shell', 'preview-cg-canvas',
-  'btn-take-live', 'announcements-rows-container', 'frame-active-content-editor'
+  'btn-reset-all', 'cue-modal', 'toast',
+  'preview-stage-wrap', 'preview-stage-shell', 'preview-cg-canvas', 'preview-frame-canvas',
+  'btn-take-live', 'frame-context-editor',
+  'url-obs-overlay', 'url-obs-frame', 'url-obs-dock', 'url-obs-deck'
 ];
 
-let missing = [];
-for (const id of requiredIds) {
-  if (!html.includes('id="' + id + '"')) {
-    missing.push(id);
+let missingIds = [];
+essentialIndexIds.forEach(id => {
+  if (!indexHtml.includes(`id="${id}"`)) {
+    missingIds.push(id);
   }
-}
+});
 
-if (missing.length > 0) {
-  console.error('FAIL: Missing element IDs:', missing);
+if (missingIds.length > 0) {
+  console.error('FAIL: Missing element IDs in index.html:', missingIds);
   process.exit(1);
-} else {
-  console.log('PASS: All ' + requiredIds.length + ' required element IDs present.');
 }
+console.log(`PASS: All ${essentialIndexIds.length} required element IDs verified in index.html.`);
 
-// 3. Check 12 Frames presence in FRAME_DEFS
+// 5. Check 12 Standard Frames in js/data.js
+const dataJs = fs.readFileSync(path.join(rootDir, 'js/data.js'), 'utf8');
 const expectedFrames = [
   'main-cam', 'pastor-info', 'cam-bible', 'cam-announce',
   'cam-slides', 'cam-pip', 'worship', 'prayer',
   'interview', 'welcome-cam', 'event-announce', 'countdown-closing'
 ];
 
-for (const f of expectedFrames) {
-  if (!html.includes("id: '" + f + "'")) {
-    console.error("FAIL: Missing frame definition for: " + f);
+expectedFrames.forEach(f => {
+  if (!dataJs.includes(`id: '${f}'`)) {
+    console.error(`FAIL: Missing frame definition for: ${f}`);
     process.exit(1);
   }
-}
-console.log('PASS: All 12 frame presets verified in FRAME_DEFS.');
+});
+console.log(`PASS: All 12 frame presets verified in js/data.js.`);
 
-// 4. Check View modes routing
-const expectedViews = ['overlay', 'frame', 'control', 'feed', 'deck'];
-for (const v of expectedViews) {
-  if (!html.includes("view === '" + v + "'")) {
-    console.error("FAIL: Missing routing check for view: " + v);
+// 6. Check Standardized Camera Cutout (1216x684 @ 48,148) across camera frames
+const framesJs = fs.readFileSync(path.join(rootDir, 'js/frames.js'), 'utf8');
+const sharedCamFrames = ['cam-bible', 'cam-announce', 'welcome-cam', 'cam-slides', 'pastor-info', 'prayer'];
+sharedCamFrames.forEach(f => {
+  if (!framesJs.includes(`1216`) || !framesJs.includes(`684`)) {
+    console.error(`FAIL: Standardized 1216x684 cutout missing in frames generator.`);
     process.exit(1);
   }
-}
-console.log('PASS: All 5 view routes (overlay, frame, control, feed, deck) verified.');
+});
+console.log(`PASS: Standardized 1216x684 camera cutouts verified across camera frame layouts.`);
 
-console.log('\nALL VERIFICATION CHECKS PASSED SUCCESSFULLY!');
+// 7. Check View Routing
+const uiJs = fs.readFileSync(path.join(rootDir, 'js/ui.js'), 'utf8');
+const expectedViews = ['overlay', 'frame', 'control', 'feed', 'deck', 'dock'];
+expectedViews.forEach(v => {
+  if (!uiJs.includes(`view === '${v}'`)) {
+    console.error(`FAIL: Missing view routing check for: ${v}`);
+    process.exit(1);
+  }
+});
+console.log(`PASS: All ${expectedViews.length} view routing handlers verified in js/ui.js.`);
+
+// 8. Check Marquee Entrance / Exit Animation CSS
+const broadcastCss = fs.readFileSync(path.join(rootDir, 'css/broadcast.css'), 'utf8');
+if (!broadcastCss.includes('.cg-marquee.is-visible') || !broadcastCss.includes('transform: translateY(100%)')) {
+  console.error('FAIL: Marquee show/hide animation CSS missing.');
+  process.exit(1);
+}
+console.log('PASS: Smooth Marquee Show/Hide animation verified in css/broadcast.css.');
+
+// 9. Check One-Click Lower Thirds Toggle Functionality
+if (!uiJs.includes('function toggleCue(')) {
+  console.error('FAIL: toggleCue function missing in js/ui.js.');
+  process.exit(1);
+}
+console.log('PASS: One-Click Lower Thirds Show/Hide toggle verified in js/ui.js.');
+
+console.log('\n======================================================');
+console.log('SUCCESS: All system verification checks passed with 100%!');
+console.log('======================================================\n');

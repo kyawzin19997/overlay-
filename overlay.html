@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCC Broadcast CG — OBS Lower Third &amp; Ticker Overlay (1920x1080)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Broadcast Styles -->
+  <link rel="stylesheet" href="css/broadcast.css" />
+
+  <style>
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- 1920x1080 Fullscreen Transparent Overlay Stage -->
+  <div id="cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
+    <!-- Top-Left LIVE Bug -->
+    <div id="cg-live-bug" class="cg-live-bug is-visible">
+      <span class="cg-live-dot"></span>
+      <span class="cg-live-label">LIVE</span>
+      <span id="cg-live-church" class="cg-live-church">BANGKOK CHRIST CHURCH</span>
+    </div>
+
+    <!-- Lower Third Graphic -->
+    <div class="cg-lt-anchor">
+      <div id="cg-lt" class="cg-lt mode-speaker style-modern-slide">
+        <div class="cg-spine"></div>
+        <div class="cg-mask">
+          <div class="cg-surface">
+            <!-- Church Logo Slot -->
+            <div id="cg-logo-slot" class="cg-logo-slot">
+              <img id="cg-logo-img" class="cg-logo-img hidden" src="" alt="Church Logo" />
+              <div id="cg-default-logo" class="cg-default-logo">
+                <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
+                  <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                  <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                  <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
+                  <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
+                  <path d="M74 80 C81 72, 89 74, 92 84 C95 66, 108 55, 117 52 C112 65, 114 74, 124 63 C119 77, 116 88, 109 95 C115 99, 116 105, 112 109 C101 102, 87 98, 82 87 L74 80 Z" fill="#fff" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
+                  <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Text Stack -->
+            <div class="cg-stack">
+              <div class="cg-meta">
+                <span id="cg-cat" class="cg-cat">SPEAKER</span>
+                <span id="cg-meta-line" class="cg-meta-line"></span>
+                <span id="cg-church" class="cg-church">BANGKOK CHRIST CHURCH</span>
+              </div>
+              <h1 id="cg-primary" class="cg-primary">Pastor John Smith</h1>
+              <div class="cg-sub-row">
+                <p id="cg-secondary" class="cg-secondary">Senior Pastor</p>
+                <span id="cg-badge" class="cg-badge has-badge">JOHN 14:6</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Scrolling News Ticker -->
+    <div id="cg-marquee" class="cg-marquee">
+      <div class="cg-marquee-tag">
+        <span class="cg-marquee-tag-dot"></span>
+        <span id="cg-marquee-tag">CHURCH NEWS</span>
+      </div>
+      <div class="cg-marquee-viewport">
+        <div id="cg-marquee-track" class="cg-marquee-track"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+    function fitSource() {
+      const el = document.getElementById('cg-canvas');
+      if (!el) return;
+      const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      el.style.transform = `scale(${scale})`;
+      el.style.transformOrigin = 'top left';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedState();
+      initSyncChannel();
+      renderLowerThirdCanvas();
+      if (isOnAir) playIntro();
+      fitSource();
+      window.addEventListener('resize', fitSource);
+      if (bus) bus.postMessage({ type: 'HELLO_FROM_OBS' });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+/* =========================================================================
+   Bangkok Christ Church — Studio Console CSS
+   Professional Broadcast Switcher Layout (Monitors Top, Settings Bottom)
+   ========================================================================= */
+
+@charset "UTF-8";
+
+/* Master Application Layout */
+.studio-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0c0b0e;
+  color: #f4f4f5;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Master Studio Header */
+.studio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 18px;
+  background: #141317;
+  border-bottom: 1px solid #27272a;
+  z-index: 30;
+}
+
+/* Top Dual Studio Monitors Section */
+.studio-monitor-deck {
+  padding: 12px 18px 8px;
+  background: radial-gradient(circle at 50% 0%, #18171d 0%, #0c0b0e 100%);
+  border-bottom: 1px solid #242429;
+}
+
+.dual-monitor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+  max-width: 1720px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .dual-monitor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.monitor-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #121115;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  padding: 8px 10px 10px;
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.monitor-box.is-preview-box {
+  border-color: rgba(59, 130, 246, 0.55);
+}
+
+.monitor-box.is-program-box {
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.monitor-screen-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 290px;
+  background: #000000;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.stage-shell {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  flex-shrink: 0;
+  overflow: hidden;
+  transform-origin: center center;
+}
+
+/* Preview Stage Backdrops */
+.bg-stage {
+  background:
+    radial-gradient(circle at 70% 25%, rgba(200, 169, 107, 0.22), transparent 45%),
+    radial-gradient(circle at 25% 45%, rgba(59, 130, 246, 0.18), transparent 55%),
+    linear-gradient(180deg, #12141c 0%, #1c1917 55%, #0c0b0a 100%);
+}
+.bg-bright {
+  background: linear-gradient(135deg, #e8e4db 0%, #d4cdc1 55%, #bcb4a8 100%);
+}
+.bg-checker {
+  background-color: #141416;
+  background-image:
+    linear-gradient(45deg, #202024 25%, transparent 25%),
+    linear-gradient(-45deg, #202024 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #202024 75%),
+    linear-gradient(-45deg, transparent 75%, #202024 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+}
+
+/* Broadcast Transition Bar */
+.transition-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  max-width: 1720px;
+  margin: 10px auto 0;
+  background: #141318;
+  border: 1px solid #27272a;
+  border-radius: 10px;
+}
+
+.btn-take-live {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.45);
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+.btn-take-live:hover {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  box-shadow: 0 0 22px rgba(239, 68, 68, 0.65);
+  transform: translateY(-1px);
+}
+.btn-take-live:active {
+  transform: translateY(1px);
+}
+
+/* Bottom Control & Settings Console */
+.studio-console-deck {
+  flex: 1;
+  padding: 12px 18px 24px;
+  max-width: 1720px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Tab Navigation */
+.console-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 2px solid #27272a;
+  margin-bottom: 14px;
+  overflow-x: auto;
+}
+
+.console-tab-btn {
+  padding: 10px 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #a1a1aa;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.console-tab-btn:hover {
+  color: #ffffff;
+}
+
+.console-tab-btn.is-active {
+  color: #fbbf24;
+  border-bottom-color: #fbbf24;
+}
+
+/* Structured Announcements Rows */
+.announce-row {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr auto;
+  gap: 10px;
+  align-items: center;
+  background: rgba(24, 24, 27, 0.7);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  border-radius: 8px;
+  padding: 8px 10px;
+  transition: all 0.15s;
+}
+
+.announce-row:focus-within {
+  border-color: rgba(220, 38, 38, 0.6);
+  background: rgba(24, 24, 27, 0.95);
+}
+
+/* Cue Cards */
+.cue-card {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cue-card.is-on-air {
+  background: rgba(127, 29, 29, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.85) !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+}
+
+/* Deck Dedicated View (?view=deck or deck.html) */
+.deck-container {
+  width: 100vw;
+  min-height: 100vh;
+  background: #09090b;
+  color: #fafafa;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #27272a;
+}
+
+.deck-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #fbbf24;
+  margin-bottom: 8px;
+}
+
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.deck-btn {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #3f3f46;
+  background: #18181b;
+  color: #f4f4f5;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s ease-in-out;
+}
+
+.deck-btn:active {
+  transform: scale(0.96);
+}
+
+.deck-btn.action-primary {
+  background: #1e1b4b;
+  border-color: #4338ca;
+  color: #c7d2fe;
+}
+.deck-btn.action-primary:hover {
+  background: #312e81;
+}
+
+.deck-btn.action-danger {
+  background: #450a0a;
+  border-color: #991b1b;
+  color: #fecaca;
+}
+.deck-btn.action-danger:hover {
+  background: #7f1d1d;
+}
+
+.deck-btn.action-warning {
+  background: #451a03;
+  border-color: #92400e;
+  color: #fef3c7;
+}
+.deck-btn.action-warning:hover {
+  background: #78350f;
+}
+
+.deck-btn.action-frame {
+  background: #172554;
+  border-color: #1d4ed8;
+  color: #dbeafe;
+}
+.deck-btn.action-frame:hover {
+  background: #1e40af;
+}
+
+.deck-btn.is-active {
+  background: #dc2626 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+  animation: pulse-live 1.6s infinite;
+}
+
+/* Feed Rundown Dedicated View (?view=feed or feed.html) */
+.feed-container {
+  width: 100vw;
+  min-height: 100vh;
+  background: #09090b;
+  color: #f4f4f5;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #18181b;
+  border: 1px solid #27272a;
+  transition: all 0.15s;
+}
+
+.feed-item.is-on-air {
+  border-color: #ef4444;
+  background: rgba(127, 29, 29, 0.3);
+}
+
+.feed-item.is-preview {
+  border-color: #3b82f6;
+  background: rgba(30, 58, 138, 0.3);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0c0b0e;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
