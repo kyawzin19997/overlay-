@@ -468,27 +468,186 @@ function syncAnnouncementsLegacy() {
    CONTEXT-SENSITIVE FRAME CONTENT CONTROLS
    ========================================================================= */
 function renderFrameContextEditor(frameId) {
-  const container = document.getElementById('frame-active-content-editor');
+  const container = document.getElementById('frame-context-editor') || document.getElementById('frame-active-content-editor');
   if (!container) return;
 
-  const panels = container.querySelectorAll('[data-frame-panel]');
-  let matched = false;
-  panels.forEach(p => {
-    const targets = (p.getAttribute('data-frame-panel') || '').split(',').map(s => s.trim());
-    if (targets.includes(frameId)) {
-      p.classList.remove('hidden');
-      matched = true;
-    } else {
-      p.classList.add('hidden');
-    }
-  });
+  const def = getFrameDef(frameId);
+  const frameName = def ? def.name : frameId;
 
-  const genericPanel = document.getElementById('panel-generic-frame');
-  if (genericPanel) {
-    genericPanel.classList.toggle('hidden', matched);
+  let html = `
+    <div class="p-4 bg-zinc-900/90 rounded-2xl border border-zinc-700/80 shadow-xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-800 flex-wrap gap-2">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-red-600 animate-pulse"></span>
+          <div>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider font-['Montserrat']">Editing Content: <span class="text-amber-400">${esc(frameName)}</span></h3>
+            <p class="text-[11px] text-zinc-400">Edit fields below to immediately update the live broadcast frame.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="setScreenView('frame')" class="px-3 py-1.5 rounded-lg bg-red-700 hover:bg-red-600 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+            <span>👁</span><span>Show on Monitor</span>
+          </button>
+        </div>
+      </div>
+  `;
+
+  if (frameId === 'cam-bible') {
+    html += `
+      <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-amber-400 mb-1 uppercase tracking-wider">Bible Scripture Reference</label>
+            <input type="text" id="in-fr-verse-ref" value="${esc(config.frameVerseRef || 'John 14:6')}" oninput="handleFrameContentEdit('frameVerseRef', this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500" placeholder="e.g. John 3:16 or Romans 8:28" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Translation Version</label>
+            <input type="text" id="in-fr-verse-ver" value="${esc(config.frameVerseVer || 'NIV')}" oninput="handleFrameContentEdit('frameVerseVer', this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500 uppercase" placeholder="NIV, ESV, KJV..." />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-300 mb-1 uppercase tracking-wider">Scripture Passage Text</label>
+          <textarea id="in-fr-verse-text" rows="4" oninput="handleFrameContentEdit('frameVerseText', this.value)" class="w-full p-3 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white leading-relaxed outline-none focus:border-red-500 resize-none font-serif" placeholder="Enter Bible scripture text here...">${esc(config.frameVerseText || '')}</textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-zinc-800 flex-wrap gap-2">
+          <button type="button" onclick="pullLowerThirdToBible()" class="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-xs font-bold border border-zinc-700 flex items-center gap-1.5 transition">
+            <span>⚡</span><span>Pull from Active Lower Third (Speaker &amp; Verse)</span>
+          </button>
+        </div>
+      </div>
+    `;
+  } else if (frameId === 'cam-announce' || frameId === 'event-announce') {
+    html += `
+      <div class="space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <label class="text-xs font-bold text-amber-400 uppercase tracking-wider">Church Announcements Bulletin</label>
+            <p class="text-[11px] text-zinc-400">Two distinct fields per row: Title and Description.</p>
+          </div>
+          <button type="button" onclick="addAnnouncementRow()" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+            <span>+</span><span>Add Announcement Row</span>
+          </button>
+        </div>
+
+        <div id="announcement-rows-container" class="space-y-2"></div>
+      </div>
+    `;
+  } else if (frameId === 'pastor-info') {
+    html += `
+      <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-amber-400 mb-1 uppercase tracking-wider">Minister / Pastor Name</label>
+            <input type="text" id="in-fr-pastor-name" value="${esc(config.framePastorName || config.primary || 'Pastor John Smith')}" oninput="handleFrameContentEdit('framePastorName', this.value); config.primary = this.value; renderAllCanvases();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Title / Role</label>
+            <input type="text" id="in-fr-pastor-title" value="${esc(config.framePastorTitle || config.secondary || 'Senior Pastor')}" oninput="handleFrameContentEdit('framePastorTitle', this.value); config.secondary = this.value; renderAllCanvases();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white outline-none focus:border-red-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-zinc-300 mb-1 uppercase tracking-wider">Sermon Series / Message Theme</label>
+          <input type="text" id="in-fr-sermon-series" value="${esc(config.frameSermonSeries || 'Walking by Faith Series')}" oninput="handleFrameContentEdit('frameSermonSeries', this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white outline-none focus:border-red-500" />
+        </div>
+      </div>
+    `;
+  } else if (frameId === 'welcome-cam' || frameId === 'countdown-closing') {
+    html += `
+      <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-amber-400 mb-1 uppercase tracking-wider">Header Title</label>
+            <input type="text" id="in-fr-welcome-title" value="${esc(config.frameWelcomeTitle || (frameId === 'welcome-cam' ? 'Welcome to Bangkok Christ Church' : 'Thank You For Joining Us'))}" oninput="handleFrameContentEdit('frameWelcomeTitle', this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Subtitle / Service Time</label>
+            <input type="text" id="in-fr-welcome-sub" value="${esc(config.frameWelcomeSub || (frameId === 'welcome-cam' ? 'Service Starts In' : 'See You Next Sunday!'))}" oninput="handleFrameContentEdit('frameWelcomeSub', this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white outline-none focus:border-red-500" />
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold uppercase text-zinc-300">Countdown:</span>
+            <span id="ctrl-cd-readout" class="font-mono text-xl font-bold text-amber-400 px-3 py-1 rounded bg-zinc-900 border border-zinc-700">10:00</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="number" id="in-cd-mins" value="${config.countdownMinutes || 10}" min="1" max="120" onchange="config.countdownMinutes = parseInt(this.value, 10); resetCountdown();" class="w-16 px-2 py-1 rounded bg-zinc-900 border border-zinc-700 text-xs text-white text-center font-bold" />
+            <span class="text-xs text-zinc-400">mins</span>
+            <button type="button" onclick="startCountdown()" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">Start</button>
+            <button type="button" onclick="pauseCountdown()" class="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold">Pause</button>
+            <button type="button" onclick="resetCountdown()" class="px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold">Reset</button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (frameId === 'cam-slides') {
+    html += `
+      <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-amber-400 mb-1 uppercase tracking-wider">Slide Category / Tag</label>
+            <input type="text" id="in-fr-slide-tag" value="${esc(config.frameSlideTag || 'PRESENTATION')}" oninput="handleFrameContentEdit('frameSlideTag', this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Presenter / Speaker</label>
+            <input type="text" value="${esc(config.primary || 'Pastor John Smith')}" oninput="config.primary = this.value; renderActiveFrame(); renderAllCanvases();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white outline-none focus:border-red-500" />
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (frameId === 'worship') {
+    html += `
+      <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-amber-400 mb-1 uppercase tracking-wider">Worship Song Title</label>
+            <input type="text" id="in-fr-song-title" value="${esc(config.frameSongTitle || config.primary || 'Amazing Grace (My Chains Are Gone)')}" oninput="handleFrameContentEdit('frameSongTitle', this.value); config.primary = this.value; renderActiveFrame();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Hymn / Author / CCLI</label>
+            <input type="text" id="in-fr-song-details" value="${esc(config.frameSongDetails || config.secondary || 'Chris Tomlin | Key of G')}" oninput="handleFrameContentEdit('frameSongDetails', this.value); config.secondary = this.value; renderActiveFrame();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white outline-none focus:border-red-500" />
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (frameId === 'prayer') {
+    html += `
+      <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-amber-400 mb-1 uppercase tracking-wider">Prayer Topic / Petition</label>
+            <input type="text" value="${esc(config.primary || 'Prayers for Healing & Community')}" oninput="config.primary = this.value; renderActiveFrame(); renderAllCanvases();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Leader / Scripture</label>
+            <input type="text" value="${esc(config.secondary || 'Philippians 4:6-7')}" oninput="config.secondary = this.value; renderActiveFrame(); renderAllCanvases();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white outline-none focus:border-red-500" />
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-amber-400 mb-1 uppercase tracking-wider">Primary Title / Speaker</label>
+            <input type="text" value="${esc(config.primary)}" oninput="config.primary = this.value; renderActiveFrame(); renderAllCanvases();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white font-semibold outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Secondary Subtitle</label>
+            <input type="text" value="${esc(config.secondary)}" oninput="config.secondary = this.value; renderActiveFrame(); renderAllCanvases();" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-sm text-white outline-none focus:border-red-500" />
+          </div>
+        </div>
+      </div>
+    `;
   }
 
-  if (frameId === 'cam-announce') {
+  html += `</div>`;
+  container.innerHTML = html;
+
+  if (frameId === 'cam-announce' || frameId === 'event-announce') {
     renderAnnouncementRows();
   }
 }
@@ -736,22 +895,29 @@ function copySelectedFrameUrl(btn) {
   copyText(getFrameUrl(activeFrameId), btn);
 }
 
-function handleFrameContentEdit() {
-  config.frameVerseRef = document.getElementById('in-fr-verse-ref').value;
-  config.frameVerseVer = document.getElementById('in-fr-verse-ver').value;
-  config.frameVerseText = document.getElementById('in-fr-verse-text').value;
-  config.frameAnnouncements = document.getElementById('in-fr-announcements').value;
-  config.frameSlideTag = document.getElementById('in-fr-slide-tag').value;
-  config.frameWelcomeTitle = document.getElementById('in-fr-welcome-title').value;
-  config.frameWelcomeSub = document.getElementById('in-fr-welcome-sub').value;
-  
-  const songTitle = document.getElementById('in-fr-song-title');
-  if (songTitle) config.frameSongTitle = songTitle.value;
-  const songDetails = document.getElementById('in-fr-song-details');
-  if (songDetails) config.frameSongDetails = songDetails.value;
+function handleFrameContentEdit(field, val) {
+  if (field && val !== undefined) {
+    config[field] = val;
+  } else {
+    const getVal = (id) => {
+      const el = document.getElementById(id);
+      return el ? el.value : null;
+    };
+    if (getVal('in-fr-verse-ref') !== null) config.frameVerseRef = getVal('in-fr-verse-ref');
+    if (getVal('in-fr-verse-ver') !== null) config.frameVerseVer = getVal('in-fr-verse-ver');
+    if (getVal('in-fr-verse-text') !== null) config.frameVerseText = getVal('in-fr-verse-text');
+    if (getVal('in-fr-announcements') !== null) config.frameAnnouncements = getVal('in-fr-announcements');
+    if (getVal('in-fr-slide-tag') !== null) config.frameSlideTag = getVal('in-fr-slide-tag');
+    if (getVal('in-fr-welcome-title') !== null) config.frameWelcomeTitle = getVal('in-fr-welcome-title');
+    if (getVal('in-fr-welcome-sub') !== null) config.frameWelcomeSub = getVal('in-fr-welcome-sub');
+    if (getVal('in-fr-song-title') !== null) config.frameSongTitle = getVal('in-fr-song-title');
+    if (getVal('in-fr-song-details') !== null) config.frameSongDetails = getVal('in-fr-song-details');
+    if (getVal('in-fr-pastor-name') !== null) config.framePastorName = getVal('in-fr-pastor-name');
+    if (getVal('in-fr-pastor-title') !== null) config.framePastorTitle = getVal('in-fr-pastor-title');
+    if (getVal('in-fr-sermon-series') !== null) config.frameSermonSeries = getVal('in-fr-sermon-series');
+  }
 
   stagedConfig = { ...config };
-
   renderActiveFrame();
   broadcastState('SYNC', isOnAir);
 }
@@ -1192,32 +1358,58 @@ function handleResetClick() {
 /* =========================================================================
    PREVIEW / PROGRAM TARGETS & FULLSCREEN MODES
    ========================================================================= */
-function setPreviewTarget(target) {
+function setScreenView(target) {
   previewTarget = target;
   
+  const cg = document.getElementById('cg-canvas');
+  const fr = document.getElementById('frame-canvas');
   const prevCg = document.getElementById('preview-cg-canvas');
   const prevFr = document.getElementById('preview-frame-canvas');
   const title = document.getElementById('monitor-title');
+  const btnOv = document.getElementById('btn-view-overlay');
+  const btnFr = document.getElementById('btn-view-frame');
   const switchBtn = document.getElementById('btn-switch-preview');
 
   if (target === 'frame') {
+    if (cg) cg.classList.add('hidden');
+    if (fr) fr.classList.remove('hidden');
     if (prevCg) prevCg.classList.add('hidden');
     if (prevFr) prevFr.classList.remove('hidden');
-    const def = getFrameDef(stagedFrameId || activeFrameId);
-    if (title) title.textContent = `Preview: ${def.name}`;
+
+    if (btnOv) {
+      btnOv.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white transition';
+    }
+    if (btnFr) {
+      btnFr.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-red-700 text-white shadow-sm transition';
+    }
+    const def = getFrameDef(activeFrameId);
+    if (title) title.textContent = `OBS FRAME: ${def ? def.name.toUpperCase() : 'ACTIVE'}`;
     if (switchBtn) switchBtn.textContent = 'Switch to Lower Third';
     renderActiveFrame();
   } else {
+    if (fr) fr.classList.add('hidden');
+    if (cg) cg.classList.remove('hidden');
     if (prevFr) prevFr.classList.add('hidden');
     if (prevCg) prevCg.classList.remove('hidden');
-    if (title) title.textContent = 'Preview: Lower Third Overlay';
+
+    if (btnOv) {
+      btnOv.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-red-700 text-white shadow-sm transition';
+    }
+    if (btnFr) {
+      btnFr.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white transition';
+    }
+    if (title) title.textContent = 'BROADCAST MONITOR: LOWER THIRDS & TICKER';
     if (switchBtn) switchBtn.textContent = 'Switch to OBS Frames';
     renderAllCanvases();
   }
 }
 
+function setPreviewTarget(target) {
+  setScreenView(target);
+}
+
 function togglePreviewTarget() {
-  setPreviewTarget(previewTarget === 'overlay' ? 'frame' : 'overlay');
+  setScreenView(previewTarget === 'overlay' ? 'frame' : 'overlay');
 }
 
 function toggleDockLayout(forceDock) {
@@ -1342,21 +1534,81 @@ function getTargetUrl(view) {
   return `${getBaseUrl()}?view=${view}`;
 }
 function getFrameUrl(frameId) {
-  return `${getBaseUrl()}?view=frame&frame=${encodeURIComponent(frameId)}`;
+  let base = getBaseUrl();
+  let dir = base.substring(0, base.lastIndexOf('/') + 1);
+  if (!dir.endsWith('/')) dir += '/';
+  return `${dir}frame.html?frame=${encodeURIComponent(frameId)}`;
 }
 
 function populateCoreObsUrls() {
-  const uO = document.getElementById('url-overlay');
-  if (uO) uO.value = getTargetUrl('overlay');
-  const uC = document.getElementById('url-control');
-  if (uC) uC.value = getTargetUrl('control');
-  const uF = document.getElementById('url-feed');
-  if (uF) uF.value = getTargetUrl('feed');
-  const uD = document.getElementById('url-deck');
-  if (uD) uD.value = getTargetUrl('deck');
+  let base = getBaseUrl();
+  let dir = base.substring(0, base.lastIndexOf('/') + 1);
+  if (!dir.endsWith('/')) dir += '/';
+
+  const overlayUrl = `${dir}overlay.html`;
+  const frameUrl = `${dir}frame.html`;
+  const dockUrl = `${dir}dock.html`;
+  const deckUrl = `${dir}deck.html`;
+  const feedUrl = `${dir}feed.html`;
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+
+  const setLink = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.href = val;
+  };
+
+  // Dedicated Zero-Config HTML Source & Dock URLs
+  setVal('url-obs-overlay', overlayUrl);
+  setVal('url-obs-frame', frameUrl);
+  setVal('url-obs-dock', dockUrl);
+  setVal('url-obs-deck', deckUrl);
+  setVal('url-obs-feed', feedUrl);
+
+  setLink('link-obs-overlay', overlayUrl);
+  setLink('link-obs-frame', frameUrl);
+  setLink('link-obs-dock', dockUrl);
+  setLink('link-obs-deck', deckUrl);
+  setLink('link-obs-feed', feedUrl);
+
+  // Fallback IDs for backward compatibility
+  setVal('url-overlay', overlayUrl);
+  setVal('url-control', dockUrl);
+  setVal('url-feed', feedUrl);
+  setVal('url-deck', deckUrl);
+
+  updateSelectedFrameUrlBox();
 }
 
-function copyText(text, btn) {
+function copyText(idOrText, btn) {
+  let val = idOrText;
+  const el = document.getElementById(idOrText);
+  if (el) {
+    val = el.value || el.textContent || idOrText;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(val).catch(() => fallbackCopy(val));
+  } else {
+    fallbackCopy(val);
+  }
+
+  if (btn) {
+    const prev = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('bg-emerald-600', 'text-white');
+    setTimeout(() => {
+      btn.textContent = prev;
+      btn.classList.remove('bg-emerald-600', 'text-white');
+    }, 1500);
+  }
+  showToast('Copied: ' + val);
+}
+
+function fallbackCopy(text) {
   try {
     const tmp = document.createElement('textarea');
     tmp.value = text;
@@ -1368,13 +1620,6 @@ function copyText(text, btn) {
     document.execCommand('copy');
     document.body.removeChild(tmp);
   } catch (_) {}
-
-  if (btn) {
-    const prev = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = prev; }, 1400);
-  }
-  showToast('URL copied to clipboard');
 }
 
 /* Keyboard Shortcuts */
@@ -1486,7 +1731,7 @@ if (typeof module !== 'undefined' && module.exports) {
     handleFrameContentEdit, pullLowerThirdToBible, populateAllInputs,
     renderDeckView, renderDockView, renderFeedView, toggleTickerVisibility, setCountdownMode, updateCountdownButtons,
     toggleCountdown, startCountdown, pauseCountdown, resetCountdown,
-    handleTargetTimeChange, handleResetClick, setPreviewTarget, togglePreviewTarget,
+    handleTargetTimeChange, handleResetClick, setScreenView, setPreviewTarget, togglePreviewTarget,
     toggleDockLayout, setBackdrop, toggleSafeGuide, scaleAllMonitors,
     scalePreviewMonitor, fitObsSource, testCurrentSourceFullscreen,
     enterOverlayMode, exitOverlayMode, getBaseUrl, getTargetUrl, getFrameUrl,

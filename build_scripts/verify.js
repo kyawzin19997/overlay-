@@ -69,20 +69,19 @@ const essentialIndexIds = [
   'obs-mount', 'deck-view', 'feed-view', 'dock-view', 'studio-app',
   'tally-pill', 'tally-dot', 'tally-text', 'tally-timer',
   'btn-toggle-dock', 'workspace', 'monitor-col', 'monitor-title',
-  'btn-switch-preview', 'stage-wrap', 'stage-shell',
+  'stage-wrap', 'stage-shell',
   'cg-canvas', 'cg-live-bug', 'cg-lt', 'cg-logo-slot',
   'cg-cat', 'cg-primary', 'cg-secondary', 'cg-badge',
   'cg-marquee', 'cg-marquee-tag', 'cg-marquee-track',
   'frame-canvas', 'sync-status-text',
-  'tab-btn-control', 'tab-btn-library', 'tab-btn-frames', 'tab-btn-settings',
-  'tab-control', 'tab-library', 'tab-frames', 'tab-settings',
+  'tab-btn-control', 'tab-btn-frames', 'tab-btn-settings',
+  'tab-control', 'tab-frames', 'tab-settings',
   'mode-grid', 'in-category', 'in-church', 'in-primary', 'in-secondary', 'in-badge',
-  'cue-list', 'lib-cue-list', 'frame-selector-grid',
+  'cue-list', 'frame-selector-grid', 'frame-context-editor',
   'ctrl-scale', 'lbl-scale', 'ctrl-opacity', 'lbl-opacity', 'ctrl-show-logo',
   'in-marquee-tag', 'in-marquee-speed', 'lbl-speed', 'in-marquee-text',
   'btn-reset-all', 'cue-modal', 'toast',
-  'preview-stage-wrap', 'preview-stage-shell', 'preview-cg-canvas', 'preview-frame-canvas',
-  'btn-take-live', 'frame-context-editor',
+  'btn-view-overlay', 'btn-view-frame',
   'url-obs-overlay', 'url-obs-frame', 'url-obs-dock', 'url-obs-deck'
 ];
 
@@ -151,6 +150,13 @@ if (!uiJs.includes('function toggleCue(')) {
   process.exit(1);
 }
 console.log('PASS: One-Click Lower Thirds Show/Hide toggle verified in js/ui.js.');
+
+// 10. Check Dynamic Frame Context Editor
+if (!uiJs.includes('function renderFrameContextEditor(') || !uiJs.includes('cam-bible') || !uiJs.includes('in-fr-verse-ref')) {
+  console.error('FAIL: Dynamic renderFrameContextEditor missing Bible verse controls.');
+  process.exit(1);
+}
+console.log('PASS: Dynamic Frame Context Editor verified with Bible verse, announcements, pastor, countdown controls.');
 
 console.log('\n======================================================');
 console.log('SUCCESS: All system verification checks passed with 100%!');

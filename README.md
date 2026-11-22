@@ -14,11 +14,14 @@ Production-ready, ultra-stable church broadcast graphics system and ready-made O
    - **4 Broadcast Animation Styles**: Modern Slide, Minimal Fade, Elegant Reveal, and Classic Bar.
    - Bulletproof State Machine (`IDLE` ➔ `ENTERING` ➔ `ACTIVE` ➔ `EXITING` ➔ `IDLE`) preventing race conditions, double triggers, flickering, or stuck overlays.
 
-2. **Top Dual Studio Monitors (Preview & Program Live)**
-   - Professional broadcast switcher layout with **PREVIEW** (staged graphics) on the left and **PROGRAM** (live on air) on the right.
-   - Constrained 16:9 monitor deck at the top of the interface eliminates vertical empty space on desktop screens.
-   - Big central **TAKE LIVE ➔** transition button transfers staged cues and frames from Preview directly to Live Program.
-   - Full-width operator settings deck positioned directly underneath the monitors.
+2. **Clean Main Broadcast Monitor & Simple Control Panel**
+   - Single, centered, broadcast-grade **Main Screen Monitor** at the top of the console showing the exact 1920×1080 output in real time.
+   - Quick one-click source toggle between **Lower Thirds & Ticker** and **OBS Frames**.
+   - Live tallies with real-time remaining countdown and sync indicators.
+   - 3 clean, focused operator tabs underneath:
+     1. **Lower Thirds & Ticker**: One-click Show/Hide toggle cards, live text inputs, duration, and ticker crawler controls (duplicate saved lists removed).
+     2. **OBS Frames**: 12 layout cards with instant context-sensitive content editor (Bible verse, announcements, pastor, countdown).
+     3. **OBS Setup & Settings**: Direct zero-config URLs with one-click copy and browser preview links.
 
 3. **12 Ready-Made Professional OBS Frames**
    100% transparent SVG camera cutouts at 1920×1080 resolution:

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bangkok Christ Church — Broadcast CG &amp; OBS Frames Master Studio</title>
+  <title>Bangkok Christ Church — Broadcast CG &amp; OBS Frames Control Panel</title>
 
   <!-- Tailwind CSS & Broadcast Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -102,18 +102,11 @@
           <div class="font-bold text-xs sm:text-sm tracking-wide uppercase font-['Montserrat']">
             Bangkok Christ Church <span class="text-amber-400 font-semibold">Broadcast CG</span>
           </div>
-          <div class="text-[11px] text-zinc-400">One-Click Lower-Thirds, Tickers, 12 Standard Frames &amp; Studio Mode</div>
+          <div class="text-[11px] text-zinc-400">One-Click Lower-Thirds, Tickers &amp; 12 Professional OBS Frames</div>
         </div>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
-        <!-- Live Tally Pill -->
-        <div id="tally-pill" class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-bold tracking-wider text-zinc-400">
-          <span id="tally-dot" class="w-2 h-2 rounded-full bg-zinc-600"></span>
-          <span id="tally-text">STANDBY</span>
-          <span id="tally-timer" class="text-red-300 font-mono"></span>
-        </div>
-
         <button id="btn-toggle-dock" type="button" onclick="toggleDockLayout()" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold text-zinc-200 transition">
           Dock View
         </button>
@@ -123,203 +116,135 @@
       </div>
     </header>
 
-    <!-- Top Dual Studio Monitors Section (Preview Left, Program Right) -->
+    <!-- Top Main Broadcast Monitor (Single Screen Control Panel) -->
     <section id="monitor-col" class="studio-monitor-deck">
-      <div class="max-w-[1720px] mx-auto flex items-center justify-between flex-wrap gap-2 mb-2 px-1">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span id="monitor-title" class="text-[11px] font-bold tracking-widest uppercase text-red-400">Studio Switcher Monitors</span>
-          <button id="btn-switch-preview" type="button" onclick="togglePreviewTarget()" class="px-2 py-0.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-[10.5px] font-semibold text-amber-300 transition">
-            Switch to OBS Frames
-          </button>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <button type="button" onclick="setBackdrop('bg-stage')" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-zinc-300">Stage</button>
-          <button type="button" onclick="setBackdrop('bg-bright')" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-zinc-300">Bright</button>
-          <button type="button" onclick="setBackdrop('bg-checker')" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-emerald-300" title="Verify true transparent cutouts">Alpha Check</button>
-          <button type="button" onclick="toggleSafeGuide()" class="px-2 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-amber-300">Safe Area</button>
-        </div>
-      </div>
-
-      <!-- Dual Monitors Grid -->
-      <div class="dual-monitor-grid">
-
-        <!-- MONITOR 1: PREVIEW (STAGED / TEST SCREEN) -->
-        <div class="monitor-box is-preview-box">
-          <div class="flex items-center justify-between px-1">
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-950/90 border border-blue-600/70 text-[10.5px] font-bold text-blue-300 uppercase tracking-wider">
-              <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-              <span>PREVIEW (STAGED)</span>
+      <div class="max-w-4xl mx-auto space-y-2">
+        <!-- Monitor Header Toolbar -->
+        <div class="flex items-center justify-between flex-wrap gap-2 px-1">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-red-950/90 border border-red-500/80 text-xs font-bold tracking-wider text-red-200 shadow-sm">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+              <span id="monitor-title">BROADCAST MONITOR (LIVE)</span>
             </span>
-            <span class="text-[10px] font-mono text-zinc-400">1920×1080</span>
+            <span class="text-[11px] font-mono text-zinc-500">1920×1080</span>
           </div>
 
-          <!-- Preview Screen Shell -->
-          <div id="preview-stage-wrap" class="monitor-screen-wrap">
-            <div id="preview-stage-shell" class="stage-shell bg-stage">
-              <div id="preview-safe-guide" class="hidden absolute inset-[6.5%] border-2 border-dashed border-blue-400/50 pointer-events-none z-40"></div>
+          <!-- Quick Display Mode Toggle: Lower Thirds vs OBS Frames -->
+          <div class="flex items-center gap-1.5 p-1 rounded-lg bg-zinc-900 border border-zinc-800">
+            <button id="btn-view-overlay" type="button" onclick="setScreenView('overlay')" class="px-3 py-1 rounded-lg text-xs font-bold bg-red-700 text-white shadow-sm transition">
+              Lower Thirds
+            </button>
+            <button id="btn-view-frame" type="button" onclick="setScreenView('frame')" class="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white transition">
+              OBS Frame
+            </button>
+          </div>
 
-              <!-- Preview CG Lower Third Canvas -->
-              <div id="preview-cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
-                <div class="cg-live-bug is-visible">
-                  <span class="cg-live-dot" style="background:#3b82f6;"></span>
-                  <span class="cg-live-label" style="background:#1d4ed8;">PREVIEW</span>
-                  <span class="cg-live-church">BANGKOK CHRIST CHURCH</span>
-                </div>
+          <!-- Backdrop & Safe Area Toggles -->
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="setBackdrop('bg-stage')" class="px-2 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-zinc-300">Stage</button>
+            <button type="button" onclick="setBackdrop('bg-bright')" class="px-2 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-zinc-300">Bright</button>
+            <button type="button" onclick="setBackdrop('bg-checker')" class="px-2 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-emerald-300" title="Transparent alpha check">Alpha</button>
+            <button type="button" onclick="toggleSafeGuide()" class="px-2 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-medium text-amber-300">Safe Area</button>
+          </div>
+        </div>
 
-                <div class="cg-lt-anchor">
-                  <div id="preview-cg-lt" class="cg-lt mode-speaker style-modern-slide is-active">
-                    <div class="cg-spine"></div>
-                    <div class="cg-mask">
-                      <div class="cg-surface">
-                        <div class="cg-logo-slot">
-                          <img class="cg-logo-img hidden" src="" alt="Church Logo" />
-                          <div class="cg-default-logo">
-                            <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
-                              <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
-                              <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
-                              <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
-                              <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
-                              <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
-                            </svg>
-                          </div>
+        <!-- 16:9 Broadcast Screen Shell -->
+        <div id="stage-wrap" class="monitor-screen-wrap" style="max-height: 380px;">
+          <div id="stage-shell" class="stage-shell bg-stage">
+            <div id="safe-guide" class="hidden absolute inset-[6.5%] border-2 border-dashed border-amber-400/50 pointer-events-none z-40"></div>
+
+            <!-- SOURCE A: LOWER-THIRD & TICKER CANVAS -->
+            <div id="cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
+              <div id="cg-live-bug" class="cg-live-bug is-visible">
+                <span class="cg-live-dot"></span>
+                <span class="cg-live-label">LIVE</span>
+                <span id="cg-live-church" class="cg-live-church">BANGKOK CHRIST CHURCH</span>
+              </div>
+
+              <div class="cg-lt-anchor">
+                <div id="cg-lt" class="cg-lt mode-speaker style-modern-slide">
+                  <div class="cg-spine"></div>
+                  <div class="cg-mask">
+                    <div class="cg-surface">
+                      <div id="cg-logo-slot" class="cg-logo-slot">
+                        <img id="cg-logo-img" class="cg-logo-img hidden" src="" alt="Church Logo" />
+                        <div id="cg-default-logo" class="cg-default-logo">
+                          <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
+                            <defs><path id="bcc-arch" d="M 28,96 A 74,74 0 0,1 172,96" /></defs>
+                            <text fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="800" letter-spacing="1.1">
+                              <textPath href="#bcc-arch" startOffset="50%" text-anchor="middle">BANGKOK CHRIST CHURCH</textPath>
+                            </text>
+                            <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                            <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
+                            <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
+                            <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
+                            <path d="M74 80 C81 72, 89 74, 92 84 C95 66, 108 55, 117 52 C112 65, 114 74, 124 63 C119 77, 116 88, 109 95 C115 99, 116 105, 112 109 C101 102, 87 98, 82 87 L74 80 Z" fill="#fff" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
+                            <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
+                          </svg>
                         </div>
-                        <div class="cg-stack">
-                          <div class="cg-meta">
-                            <span class="cg-cat">SPEAKER</span>
-                            <span class="cg-meta-line"></span>
-                            <span class="cg-church">BANGKOK CHRIST CHURCH</span>
-                          </div>
-                          <h1 class="cg-primary">Pastor John Smith</h1>
-                          <div class="cg-sub-row">
-                            <p class="cg-secondary">Senior Pastor</p>
-                            <span class="cg-badge has-badge">JOHN 14:6</span>
-                          </div>
+                      </div>
+
+                      <div class="cg-stack">
+                        <div class="cg-meta">
+                          <span id="cg-cat" class="cg-cat">SPEAKER</span>
+                          <span id="cg-meta-line" class="cg-meta-line"></span>
+                          <span id="cg-church" class="cg-church">BANGKOK CHRIST CHURCH</span>
+                        </div>
+                        <h1 id="cg-primary" class="cg-primary">Pastor John Smith</h1>
+                        <div class="cg-sub-row">
+                          <p id="cg-secondary" class="cg-secondary">Senior Pastor</p>
+                          <span id="cg-badge" class="cg-badge has-badge">JOHN 14:6</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div class="cg-marquee">
-                  <div class="cg-marquee-tag">
-                    <span class="cg-marquee-tag-dot"></span>
-                    <span>CHURCH NEWS</span>
-                  </div>
-                  <div class="cg-marquee-viewport">
-                    <div class="cg-marquee-track"></div>
-                  </div>
-                </div>
               </div>
 
-              <!-- Preview Frame Canvas -->
-              <div id="preview-frame-canvas" class="broadcast-stage hidden" data-theme="bcc-crimson"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- MONITOR 2: PROGRAM (LIVE / ON AIR OBS OUTPUT) -->
-        <div class="monitor-box is-program-box">
-          <div class="flex items-center justify-between px-1">
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-950/90 border border-red-600/70 text-[10.5px] font-bold text-red-300 uppercase tracking-wider">
-              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              <span>PROGRAM (ON AIR)</span>
-            </span>
-            <span class="text-[10px] font-mono text-zinc-400">1920×1080</span>
-          </div>
-
-          <!-- Program Screen Shell -->
-          <div id="stage-wrap" class="monitor-screen-wrap">
-            <div id="stage-shell" class="stage-shell bg-stage">
-              <div id="safe-guide" class="hidden absolute inset-[6.5%] border-2 border-dashed border-amber-400/50 pointer-events-none z-40"></div>
-
-              <!-- SOURCE A: LOWER-THIRD & TICKER OVERLAY (?view=overlay) -->
-              <div id="cg-canvas" class="broadcast-stage" data-theme="bcc-crimson">
-                <div id="cg-live-bug" class="cg-live-bug is-visible">
-                  <span class="cg-live-dot"></span>
-                  <span class="cg-live-label">LIVE</span>
-                  <span id="cg-live-church" class="cg-live-church">BANGKOK CHRIST CHURCH</span>
+              <div id="cg-marquee" class="cg-marquee">
+                <div class="cg-marquee-tag">
+                  <span class="cg-marquee-tag-dot"></span>
+                  <span id="cg-marquee-tag">CHURCH NEWS</span>
                 </div>
-
-                <div class="cg-lt-anchor">
-                  <div id="cg-lt" class="cg-lt mode-speaker style-modern-slide">
-                    <div class="cg-spine"></div>
-                    <div class="cg-mask">
-                      <div class="cg-surface">
-                        <div id="cg-logo-slot" class="cg-logo-slot">
-                          <img id="cg-logo-img" class="cg-logo-img hidden" src="" alt="Church Logo" />
-                          <div id="cg-default-logo" class="cg-default-logo">
-                            <svg viewBox="0 0 200 200" width="100%" height="100%" fill="none">
-                              <defs><path id="bcc-arch" d="M 28,96 A 74,74 0 0,1 172,96" /></defs>
-                              <text fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="800" letter-spacing="1.1">
-                                <textPath href="#bcc-arch" startOffset="50%" text-anchor="middle">BANGKOK CHRIST CHURCH</textPath>
-                              </text>
-                              <rect x="86" y="42" width="28" height="126" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
-                              <rect x="44" y="72" width="112" height="28" rx="6" fill="#fff" stroke="#111" stroke-width="3.5"/>
-                              <rect x="89" y="45" width="22" height="120" rx="4" fill="#9E1B1E"/>
-                              <rect x="47" y="75" width="106" height="22" rx="4" fill="#9E1B1E"/>
-                              <path d="M74 80 C81 72, 89 74, 92 84 C95 66, 108 55, 117 52 C112 65, 114 74, 124 63 C119 77, 116 88, 109 95 C115 99, 116 105, 112 109 C101 102, 87 98, 82 87 L74 80 Z" fill="#fff" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
-                              <text x="100" y="188" text-anchor="middle" fill="#111" font-family="Montserrat, sans-serif" font-size="13.5" font-weight="700">John 14:6</text>
-                            </svg>
-                          </div>
-                        </div>
-
-                        <div class="cg-stack">
-                          <div class="cg-meta">
-                            <span id="cg-cat" class="cg-cat">SPEAKER</span>
-                            <span id="cg-meta-line" class="cg-meta-line"></span>
-                            <span id="cg-church" class="cg-church">BANGKOK CHRIST CHURCH</span>
-                          </div>
-                          <h1 id="cg-primary" class="cg-primary">Pastor John Smith</h1>
-                          <div class="cg-sub-row">
-                            <p id="cg-secondary" class="cg-secondary">Senior Pastor</p>
-                            <span id="cg-badge" class="cg-badge has-badge">JOHN 14:6</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="cg-marquee" class="cg-marquee">
-                  <div class="cg-marquee-tag">
-                    <span class="cg-marquee-tag-dot"></span>
-                    <span id="cg-marquee-tag">CHURCH NEWS</span>
-                  </div>
-                  <div class="cg-marquee-viewport">
-                    <div id="cg-marquee-track" class="cg-marquee-track"></div>
-                  </div>
+                <div class="cg-marquee-viewport">
+                  <div id="cg-marquee-track" class="cg-marquee-track"></div>
                 </div>
               </div>
-
-              <!-- SOURCE B: READY-MADE OBS FRAMES (?view=frame&frame=...) -->
-              <div id="frame-canvas" class="broadcast-stage hidden" data-theme="bcc-crimson"></div>
             </div>
+
+            <!-- SOURCE B: READY-MADE OBS FRAMES CANVAS -->
+            <div id="frame-canvas" class="broadcast-stage hidden" data-theme="bcc-crimson"></div>
           </div>
         </div>
 
-      </div>
+        <!-- Live Status Bar & Fast Actions -->
+        <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs flex-wrap">
+          <div class="flex items-center gap-2">
+            <div id="tally-pill" class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-bold tracking-wider text-zinc-400">
+              <span id="tally-dot" class="w-2 h-2 rounded-full bg-zinc-600"></span>
+              <span id="tally-text">STANDBY</span>
+              <span id="tally-timer" class="text-red-300 font-mono"></span>
+            </div>
+            <div id="sync-status" class="font-mono text-emerald-400 text-xs flex items-center gap-1.5 ml-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span id="sync-status-text">Ready</span>
+            </div>
+          </div>
 
-      <!-- Studio Transition Action Bar -->
-      <div class="transition-action-bar">
-        <div class="flex items-center gap-2">
-          <button id="btn-take-live" type="button" onclick="takePreviewToLive()" class="btn-take-live px-6 py-2 rounded-xl text-xs flex items-center gap-2">
-            <span>TAKE LIVE</span>
-            <span>➔</span>
-          </button>
-          <button type="button" onclick="triggerSwapLive()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-amber-300 transition">
-            AUTO CUT
-          </button>
-        </div>
-
-        <div class="flex items-center gap-2 text-[11px] text-zinc-400">
-          <span>Hotkeys:</span>
-          <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">Space</kbd> Show/Hide
-          <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 font-mono text-[10px]">Esc</kbd> Hide
-        </div>
-
-        <div id="sync-status" class="font-mono text-emerald-400 text-xs flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span id="sync-status-text">Ready</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button type="button" onclick="triggerShow()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase shadow transition">
+              Show Active LT
+            </button>
+            <button type="button" onclick="triggerHide()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-red-300 font-bold text-xs uppercase transition">
+              Hide LT
+            </button>
+            <button type="button" onclick="toggleTickerPause()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-amber-300 font-bold text-xs uppercase transition">
+              Pause Ticker
+            </button>
+            <button type="button" onclick="clearAllGraphics()" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase shadow transition">
+              CLEAR ALL
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -327,32 +252,34 @@
     <!-- Bottom Full-Width Settings & Control Deck -->
     <main id="workspace" class="studio-console-deck">
 
-      <!-- Navigation Tabs -->
+      <!-- Navigation Tabs: Clean 3-Tab Architecture -->
       <div class="console-tabs">
         <button id="tab-btn-control" type="button" onclick="switchTab('control')" class="console-tab-btn is-active">
-          1. Live Control
-        </button>
-        <button id="tab-btn-library" type="button" onclick="switchTab('library')" class="console-tab-btn">
-          2. Graphics Library
+          1. Lower Thirds &amp; Ticker
         </button>
         <button id="tab-btn-frames" type="button" onclick="switchTab('frames')" class="console-tab-btn">
-          3. Frame Editor
+          2. OBS Frames
         </button>
         <button id="tab-btn-settings" type="button" onclick="switchTab('settings')" class="console-tab-btn">
-          4. OBS Setup &amp; Settings
+          3. OBS Setup &amp; Settings
         </button>
       </div>
 
-      <!-- TAB 1: LIVE CONTROL -->
+      <!-- Compatibility Containers (Hidden) -->
+      <div id="tab-library" class="hidden">
+        <div id="lib-cue-list" class="hidden"></div>
+      </div>
+
+      <!-- TAB 1: LOWER THIRDS & TICKER -->
       <section id="tab-control" class="space-y-4">
-        <!-- Sticky Live Transport -->
+        <!-- Live Transport Toolbar -->
         <div class="p-3 bg-zinc-900/90 rounded-2xl border border-zinc-800 flex flex-wrap items-center justify-between gap-3 shadow-lg">
           <div class="flex items-center gap-2 flex-wrap">
             <button type="button" onclick="triggerShow()" class="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition shadow">
-              Show Active
+              Show Graphic
             </button>
             <button type="button" onclick="triggerHide()" class="py-2 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider transition shadow">
-              Hide Active
+              Hide Graphic
             </button>
             <button type="button" onclick="triggerSwapLive()" class="py-2 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-amber-500/40 text-amber-200 font-bold text-xs uppercase tracking-wider transition">
               Swap Live
@@ -389,17 +316,17 @@
 
           <!-- Left Column: Lower Third Live Editor & One-Click Cues -->
           <div class="space-y-4">
-            <!-- Mode Preset Pills -->
+            <!-- Mode Preset Buttons -->
             <div class="p-3.5 bg-zinc-900/60 rounded-xl border border-zinc-800 space-y-2">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Lower-Third Mode</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Quick Presets</span>
               <div id="mode-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5"></div>
             </div>
 
             <!-- Active Graphic Live Text Inputs -->
             <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-white uppercase tracking-wider">Live Graphic Content</span>
-                <span class="text-[10.5px] text-zinc-400">Updates Preview immediately</span>
+                <span class="text-xs font-bold text-white uppercase tracking-wider">Active Graphic Content</span>
+                <span class="text-[10.5px] text-emerald-400">Updates Monitor Immediately</span>
               </div>
 
               <div class="grid grid-cols-2 gap-2">
@@ -431,7 +358,7 @@
 
               <div class="pt-2 flex items-center justify-between border-t border-zinc-800">
                 <div class="flex items-center gap-2">
-                  <label class="text-[10.5px] text-zinc-400">Style:</label>
+                  <label class="text-[10.5px] text-zinc-400">Animation Style:</label>
                   <select id="in-anim-style" onchange="handleControlChange()" class="px-2 py-1 rounded bg-zinc-950 border border-zinc-700 text-[11px] text-zinc-200 outline-none">
                     <option value="modern-slide">Modern Slide</option>
                     <option value="minimal-fade">Minimal Fade</option>
@@ -440,20 +367,20 @@
                   </select>
                 </div>
                 <button type="button" onclick="saveCurrentCue()" class="px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-xs font-semibold border border-zinc-700">
-                  + Save as Cue Preset
+                  + Save as New Preset
                 </button>
               </div>
             </div>
 
-            <!-- One-Click Lower Thirds Cues -->
+            <!-- Unified One-Click Lower Thirds -->
             <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-2.5">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-xs font-bold text-white uppercase tracking-wider">One-Click Lower Thirds</h3>
-                  <p class="text-[10.5px] text-zinc-400">Click Show to display; click Hide to take off air</p>
+                  <h3 class="text-xs font-bold text-white uppercase tracking-wider font-['Montserrat']">One-Click Lower Thirds</h3>
+                  <p class="text-[10.5px] text-zinc-400">One click to Show (Green ▶); click again to Hide (Red ■).</p>
                 </div>
-                <button type="button" onclick="openCueModal(-1)" class="px-2.5 py-1 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-300 text-xs font-bold border border-red-500/30">
-                  + New Preset
+                <button type="button" onclick="openCueModal(-1)" class="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition shadow">
+                  + Add Preset
                 </button>
               </div>
 
@@ -468,7 +395,7 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                  <h3 class="text-xs font-bold text-white uppercase tracking-wider">Scrolling Marquee Ticker</h3>
+                  <h3 class="text-xs font-bold text-white uppercase tracking-wider font-['Montserrat']">Scrolling Marquee Ticker</h3>
                 </div>
                 <div class="flex items-center gap-1.5">
                   <button type="button" onclick="toggleTickerPause()" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-[10.5px] font-semibold border border-zinc-700">
@@ -495,8 +422,8 @@
               </div>
 
               <div>
-                <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Ticker Message (use | to separate multiple items)</label>
-                <textarea id="in-marquee-text" rows="2" oninput="handleControlChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-amber-400 resize-none">Welcome to Bangkok Christ Church | Sunday Service 10:00 AM | Fellowship &amp; Prayer following service</textarea>
+                <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Ticker Message (use | to separate multiple messages)</label>
+                <textarea id="in-marquee-text" rows="2" oninput="handleControlChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-amber-400 resize-none">Welcome to Bangkok Christ Church | Sunday Worship 10:00 AM | Fellowship &amp; Prayer following service</textarea>
               </div>
 
               <!-- Saved Marquee Presets -->
@@ -511,7 +438,7 @@
 
             <!-- Appearance, Scale & Opacity Settings -->
             <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider">Appearance &amp; Scale</h3>
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider font-['Montserrat']">Appearance &amp; Scale</h3>
 
               <div class="grid grid-cols-2 gap-3">
                 <div>
@@ -546,50 +473,17 @@
         </div>
       </section>
 
-      <!-- TAB 2: GRAPHICS LIBRARY -->
-      <section id="tab-library" class="hidden space-y-4">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <!-- Lower Third Presets Library -->
-          <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Saved Lower Third Presets</h3>
-                <p class="text-[10.5px] text-zinc-400">Permanent library of pastors, scriptures, and speakers</p>
-              </div>
-              <button type="button" onclick="openCueModal(-1)" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition">
-                + New Preset
-              </button>
-            </div>
-            <div id="lib-cue-list" class="space-y-2"></div>
-          </div>
-
-          <!-- Marquee Ticker Presets Library -->
-          <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Saved Ticker Presets</h3>
-                <p class="text-[10.5px] text-zinc-400">Permanent library of announcements, prayer and schedule tickers</p>
-              </div>
-              <button type="button" onclick="saveCurrentMarqueePreset()" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition">
-                + Save Active
-              </button>
-            </div>
-            <div id="lib-marquee-list" class="space-y-2"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 3: FRAME EDITOR -->
+      <!-- TAB 2: OBS FRAMES & CONTENT EDITOR -->
       <section id="tab-frames" class="hidden space-y-4">
         <!-- Frame Layout Selector Grid -->
         <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider">12 Ready-Made OBS Broadcast Frames</h3>
-              <p class="text-[10.5px] text-zinc-400">Select any frame to stage it in Preview and customize its content</p>
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider font-['Montserrat']">12 Ready-Made OBS Broadcast Frames</h3>
+              <p class="text-[10.5px] text-zinc-400">Click any frame to show it on the monitor and edit its content fields below.</p>
             </div>
             <div class="flex items-center gap-2">
-              <button type="button" onclick="copySelectedFrameUrl()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700">
+              <button type="button" onclick="copySelectedFrameUrl(this)" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 transition">
                 Copy Frame URL
               </button>
             </div>
@@ -598,22 +492,23 @@
           <div id="frame-selector-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2.5"></div>
         </div>
 
-        <!-- Context-Sensitive Content Editor (Displays ONLY active frame fields!) -->
-        <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
-          <div id="frame-context-editor"></div>
-        </div>
+        <!-- Context-Sensitive Content Editor (Renders Scripture, Announcements, Pastor, Countdown inputs!) -->
+        <div id="frame-context-editor"></div>
 
         <!-- Collapsed Advanced Frame Settings -->
         <details class="p-3 bg-zinc-900/50 rounded-xl border border-zinc-800 text-xs text-zinc-300">
           <summary class="font-bold text-zinc-400 cursor-pointer select-none uppercase tracking-wider hover:text-white transition">
-            Advanced Frame Appearance &amp; Overlay Settings
+            Advanced Frame Appearance &amp; Settings
           </summary>
           <div class="pt-3 mt-2 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Selected Frame URL</label>
-              <input id="box-selected-frame-url" type="text" readonly class="w-full px-2.5 py-1.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400 text-xs font-mono" />
+              <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Selected Frame OBS URL</label>
+              <div class="flex items-center gap-1.5">
+                <input id="box-selected-frame-url" type="text" readonly class="w-full px-2.5 py-1.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-300 text-xs font-mono" />
+                <a id="link-selected-frame-url" href="frame.html" target="_blank" class="px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-blue-300 text-xs font-semibold shrink-0">Open ↗</a>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 pt-4">
               <button type="button" onclick="resetSelectedFrameSettings()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-red-950 text-red-300 text-xs font-semibold border border-zinc-700 transition">
                 Reset Frame to Defaults
               </button>
@@ -622,13 +517,13 @@
         </details>
       </section>
 
-      <!-- TAB 4: OBS SETUP & SETTINGS -->
+      <!-- TAB 3: OBS SETUP & SETTINGS -->
       <section id="tab-settings" class="hidden space-y-4">
         <!-- Direct OBS Browser Source URLs -->
         <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
           <div>
-            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Zero-Config OBS Browser Sources &amp; Docks</h3>
-            <p class="text-[10.5px] text-zinc-400">Copy these direct URLs into OBS Studio. No query parameters needed!</p>
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider font-['Montserrat']">Zero-Config OBS Browser Sources &amp; Docks</h3>
+            <p class="text-[10.5px] text-zinc-400">Copy these direct URLs into OBS Studio. Click 'Open ↗' to test them in a new tab.</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -640,8 +535,9 @@
               </div>
               <p class="text-[10.5px] text-zinc-400">Add as OBS Browser Source above your camera. 100% transparent background.</p>
               <div class="flex items-center gap-1.5">
-                <input id="url-obs-overlay" type="text" readonly class="flex-1 px-2 py-1 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-300" />
-                <button type="button" onclick="copyText('url-obs-overlay')" class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200">Copy</button>
+                <input id="url-obs-overlay" type="text" readonly class="flex-1 px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-200 outline-none" />
+                <button type="button" onclick="copyText('url-obs-overlay', this)" class="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition">Copy</button>
+                <a id="link-obs-overlay" href="overlay.html" target="_blank" class="px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-blue-300 font-semibold transition">Open ↗</a>
               </div>
             </div>
 
@@ -653,8 +549,9 @@
               </div>
               <p class="text-[10.5px] text-zinc-400">Transparent frame with camera cutouts and side graphics for scriptures and news.</p>
               <div class="flex items-center gap-1.5">
-                <input id="url-obs-frame" type="text" readonly class="flex-1 px-2 py-1 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-300" />
-                <button type="button" onclick="copyText('url-obs-frame')" class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200">Copy</button>
+                <input id="url-obs-frame" type="text" readonly class="flex-1 px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-200 outline-none" />
+                <button type="button" onclick="copyText('url-obs-frame', this)" class="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition">Copy</button>
+                <a id="link-obs-frame" href="frame.html" target="_blank" class="px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-blue-300 font-semibold transition">Open ↗</a>
               </div>
             </div>
 
@@ -666,8 +563,9 @@
               </div>
               <p class="text-[10.5px] text-zinc-400">Compact operator dock for OBS Docks menu. One-click Show/Hide buttons.</p>
               <div class="flex items-center gap-1.5">
-                <input id="url-obs-dock" type="text" readonly class="flex-1 px-2 py-1 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-300" />
-                <button type="button" onclick="copyText('url-obs-dock')" class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200">Copy</button>
+                <input id="url-obs-dock" type="text" readonly class="flex-1 px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-200 outline-none" />
+                <button type="button" onclick="copyText('url-obs-dock', this)" class="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition">Copy</button>
+                <a id="link-obs-dock" href="dock.html" target="_blank" class="px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-blue-300 font-semibold transition">Open ↗</a>
               </div>
             </div>
 
@@ -679,8 +577,9 @@
               </div>
               <p class="text-[10.5px] text-zinc-400">Large touch-friendly grid buttons for Stream Deck browser or iPad control.</p>
               <div class="flex items-center gap-1.5">
-                <input id="url-obs-deck" type="text" readonly class="flex-1 px-2 py-1 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-300" />
-                <button type="button" onclick="copyText('url-obs-deck')" class="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200">Copy</button>
+                <input id="url-obs-deck" type="text" readonly class="flex-1 px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-xs font-mono text-zinc-200 outline-none" />
+                <button type="button" onclick="copyText('url-obs-deck', this)" class="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition">Copy</button>
+                <a id="link-obs-deck" href="deck.html" target="_blank" class="px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-blue-300 font-semibold transition">Open ↗</a>
               </div>
             </div>
           </div>
@@ -688,7 +587,7 @@
 
         <!-- Branding & Custom Logo -->
         <div class="p-4 bg-zinc-900/80 rounded-xl border border-zinc-800 space-y-3">
-          <h3 class="text-xs font-bold text-white uppercase tracking-wider">Church Branding &amp; Logo</h3>
+          <h3 class="text-xs font-bold text-white uppercase tracking-wider font-['Montserrat']">Church Branding &amp; Logo</h3>
           <div class="flex items-center gap-3">
             <input type="file" id="in-custom-logo" accept="image/*" onchange="handleLogoUpload(event)" class="text-xs text-zinc-300 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer" />
             <button type="button" onclick="resetLogo()" class="px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-300 font-semibold border border-zinc-700">
@@ -699,7 +598,7 @@
 
         <!-- Factory Reset -->
         <div class="p-4 bg-zinc-900/80 rounded-xl border border-red-900/40 space-y-2">
-          <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider">Reset &amp; Troubleshooting</h3>
+          <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider font-['Montserrat']">Reset &amp; Troubleshooting</h3>
           <p class="text-[10.5px] text-zinc-400">Restore factory default lower thirds, marquee presets, and frame configurations.</p>
           <button id="btn-reset-all" type="button" onclick="handleResetClick()" class="px-3.5 py-1.5 rounded-lg bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-700 text-xs font-bold transition">
             Reset All to Defaults
